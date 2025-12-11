@@ -1,0 +1,145 @@
+.footer {
+  background-color: #1a1a1a;
+  color: #fff;
+  margin-top: 80px;
+}
+
+.footer-main {
+  border-bottom: 1px solid #333;
+  padding: 60px 0 40px;
+}
+
+/* .container removed for full width */
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 40px;
+}
+
+.footer-section h4 {
+  margin: 0 0 20px 0;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.footer-section p {
+  margin: 0 0 20px 0;
+  font-size: 14px;
+  color: #bbb;
+  line-height: 1.6;
+}
+
+.footer-section ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-section li {
+  margin-bottom: 12px;
+}
+
+.footer-section a {
+  color: #bbb;
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 0.3s;
+}
+
+.footer-section a:hover {
+  color: #ff6b35;
+}
+
+.social-links {
+  display: flex;
+  gap: 12px;
+}
+
+.social-links a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background-color: rgba(255, 107, 53, 0.1);
+  border-radius: 50%;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s;
+}
+
+.social-links a:hover {
+  background-color: #ff6b35;
+  color: white;
+  transform: translateY(-3px);
+}
+
+.footer-bottom {
+  padding: 24px 0;
+  border-top: 1px solid #333;
+}
+
+.footer-bottom-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.footer-bottom-content p {
+  margin: 0;
+  font-size: 14px;
+  color: #bbb;
+}
+
+.payment-methods {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: #bbb;
+}
+
+.payment-icons {
+  color: #999;
+  font-size: 12px;
+}
+
+@media (max-width: 768px) {
+  .footer-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px;
+  }
+
+  .footer-main {
+    padding: 40px 0 30px;
+  }
+
+  .footer-bottom-content {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .footer-main {
+    padding: 30px 0 20px;
+  }
+
+  .footer-section h4 {
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+
+  .footer-section a {
+    font-size: 13px;
+  }
+}
