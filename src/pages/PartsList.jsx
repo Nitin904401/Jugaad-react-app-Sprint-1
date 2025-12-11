@@ -10,7 +10,7 @@ export default function PartsList() {
   const [condition, setCondition] = useState('all');
   const [sortBy, setSortBy] = useState('featured');
 
-  // Generate more parts for realistic listing
+  // Generate more parts for
   const allParts = useMemo(() => {
     return [...featuredParts, ...featuredParts, ...featuredParts].map((part, idx) => ({
       ...part,
