@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from 'react-router-dom';
-import VendorLayout from "../../components/layout/VendorLayout";
+import VendorSidebar from './VendorSidebar';
 
 /**
  * VendorDashboard.jsx
@@ -21,7 +21,11 @@ export default function VendorDashboard() {
   ]);
 
   return (
-    <VendorLayout>
+    <div className="flex h-screen w-full overflow-hidden">
+      {/* Sidebar */}
+      <VendorSidebar />
+
+      {/* Main */}
       <main className="flex-1 flex flex-col h-full overflow-hidden relative">
         {/* Background blobs */}
         <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] pointer-events-none"></div>
@@ -276,7 +280,7 @@ export default function VendorDashboard() {
           </div>
         </div>
       </main>
-    </VendorLayout>
+    </div>
   );
 }
 

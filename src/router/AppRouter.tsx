@@ -4,9 +4,9 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from '../context/AuthContext';
 import { CartProvider } from '../context/CartContext';
 import { ProtectedRoute } from '../components/common/ProtectedRoute';
-import { MainLayout } from '../components/layout/MainLayout';
-import { VendorLayout } from '../components/layout/VendorLayout';
-import { AdminLayout } from '../components/layout/AdminLayout';
+import { MainLayout } from '../Components/layout/MainLayout';
+import { VendorLayout } from '../Components/layout/VendorLayout';
+import { AdminLayout } from '../Components/layout/AdminLayout';
 
 // Customer Pages
 import { HomePage } from '../pages/customer/Home';
@@ -22,10 +22,15 @@ import { AccountPage } from '../pages/customer/Account';
 // Vendor Pages
 import { VendorLoginPage } from '../pages/vendor/Login';
 import { VendorRegisterPage } from '../pages/vendor/Register';
-import { VendorDashboardPage } from '../pages/vendor/Dashboard';
-import { VendorProductsPage } from '../pages/vendor/Products';
-import { VendorProductEditPage } from '../pages/vendor/ProductEdit';
-import { VendorOrdersPage } from '../pages/vendor/Orders';
+import FinancialSetup from '../pages/vendor/FinancialSetup';
+import { VendorDashboardPage } from '../pages/vendor/VendorDashboard';
+import AddNewPart from '../pages/vendor/AddNewPart';
+import { VendorOrdersPage } from '../pages/vendor/VendorOrders';
+import InventoryDashboard from '../pages/vendor/InventoryDashboard';
+import VendorPayments from '../pages/vendor/VendorPayments';
+import { VendorAnalyticsPage } from '../pages/vendor/VendorAnalytics';
+import CreateManualOrder from '../pages/vendor/CreateManualOrder';
+import VendorSettings from '../pages/vendor/VendorSettings';
 
 // Admin Pages
 import { AdminLoginPage } from '../pages/admin/Login';
@@ -78,90 +83,29 @@ export const AppRouter: React.FC = () => {
             {/* Vendor Routes */}
             <Route path="/vendor/login" element={<VendorLoginPage />} />
             <Route path="/vendor/register" element={<VendorRegisterPage />} />
-            <Route element={<VendorLayout />}>
-              <Route
-                path="/vendor/dashboard"
-                element={
-                  <ProtectedRoute requiredRole="vendor">
-                    <VendorDashboardPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/vendor/products"
-                element={
-                  <ProtectedRoute requiredRole="vendor">
-                    <VendorProductsPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/vendor/products/new"
-                element={
-                  <ProtectedRoute requiredRole="vendor">
-                    <VendorProductEditPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/vendor/products/:id/edit"
-                element={
-                  <ProtectedRoute requiredRole="vendor">
-                    <VendorProductEditPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/vendor/orders"
-                element={
-                  <ProtectedRoute requiredRole="vendor">
-                    <VendorOrdersPage />
-                  </ProtectedRoute>
-                }
-              />
-            </Route>
-            <Route element={<VendorLayout />}>
-              <Route
-                path="/vendor/dashboard"
-                element={
-                  <ProtectedRoute requiredRole="vendor">
-                    <VendorDashboardPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/vendor/products"
-                element={
-                  <ProtectedRoute requiredRole="vendor">
-                    <VendorProductsPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/vendor/products/new"
-                element={
-                  <ProtectedRoute requiredRole="vendor">
-                    <VendorProductEditPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/vendor/products/:id/edit"
-                element={
-                  <ProtectedRoute requiredRole="vendor">
-                    <VendorProductEditPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/vendor/orders"
-                element={
-                  <ProtectedRoute requiredRole="vendor">
-                    <VendorOrdersPage />
-                  </ProtectedRoute>
-                }
-              />
-            </Route>
+            <Route path="/vendor/financial-setup" element={<FinancialSetup />} />
+            <Route path="/vendor/add-new-part" element={<AddNewPart />} />
+            <Route path="/vendor/create-manual-order" element={<CreateManualOrder />} />
+            <Route path="/vendor/orders" element={<VendorOrdersPage />} />
+            <Route path="/vendor/inventory" element={<InventoryDashboard />} />
+            <Route path="/vendor/analytics" element={<VendorAnalyticsPage />} />
+            <Route path="/vendor/settings" element={<VendorSettings />} />
+            <Route
+              path="/vendor/payments"
+              element={
+                <ProtectedRoute requiredRole="vendor">
+                  <VendorPayments />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/vendor/dashboard"
+              element={
+                <ProtectedRoute requiredRole="vendor">
+                  <VendorDashboardPage />
+                </ProtectedRoute>
+              }
+            />
 
             {/* Admin Routes */}
             <Route path="/admin/login" element={<AdminLoginPage />} />

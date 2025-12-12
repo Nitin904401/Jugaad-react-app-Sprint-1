@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import VendorLayout from "../../components/layout/VendorLayout";
 
 /**
  * FinancialSetup.jsx
@@ -39,8 +38,12 @@ export default function FinancialSetup() {
   }
 
   return (
-    <VendorLayout>
-      <div className="flex-1 flex flex-col h-full overflow-hidden relative bg-background-light dark:bg-background-dark">
+    <div className="flex h-screen w-full bg-background-light dark:bg-background-dark">
+      {/* Side Navigation */}
+      
+
+      {/* Main Content */}
+      <main className="flex flex-1 flex-col h-full overflow-hidden relative">
         {/* Decorations */}
         <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-primary/5 rounded-full blur-3xl pointer-events-none z-0" />
         <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-blue-900/10 rounded-full blur-3xl pointer-events-none z-0" />
@@ -275,7 +278,7 @@ export default function FinancialSetup() {
             <div style={{ height: 16 }} />
           </div>
         </div>
-      </div>
-    </VendorLayout>
+      </main>
+    </div>
   );
 }

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import VendorLayout from "../../components/layout/VendorLayout";
+import VendorSidebar from './VendorSidebar';
 
 /**
  * CreateManualOrder.jsx
@@ -74,11 +74,13 @@ export default function CreateManualOrder() {
   const grandTotal = +(subtotal + shipping + tax).toFixed(2);
 
   return (
-    <VendorLayout>
-      <div className="flex-1 flex flex-col h-full overflow-hidden relative">
+    <div className="flex h-screen w-full overflow-hidden bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display antialiased">
+      {/* Sidebar */}
+      <VendorSidebar />
+      {/* Main */}
+      <main className="flex-1 flex flex-col h-full overflow-hidden relative">
         {/* Header */}
         
-
         {/* Content */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 lg:p-10 relative">
           <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
@@ -338,7 +340,7 @@ export default function CreateManualOrder() {
 
           <div className="h-10" />
         </div>
-      </div>
-    </VendorLayout>
+      </main>
+    </div>
   );
 }

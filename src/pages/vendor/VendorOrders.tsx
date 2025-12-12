@@ -4,13 +4,17 @@
 
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import VendorLayout from "../../components/layout/VendorLayout";
+import VendorSidebar from './VendorSidebar';
 
 export default function VendorOrders() {
   const navigate = useNavigate();
   return (
-    <VendorLayout>
-      <div className="flex-1 w-full max-w-[1400px] mx-auto px-4 md:px-6 py-8 flex flex-col gap-8">
+    <div className="flex h-screen w-full overflow-hidden">
+      {/* Sidebar */}
+      <VendorSidebar />
+
+      {/* Main */}
+      <main className="flex-1 w-full max-w-[1400px] mx-auto px-4 md:px-6 py-8 flex flex-col gap-8">
         {/* Page Header & Key Actions */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div className="flex flex-col gap-2">
@@ -22,7 +26,10 @@ export default function VendorOrders() {
               <span className="material-symbols-outlined text-[20px]">file_download</span>
               Export CSV
             </button>
-            <button onClick={() => navigate('/vendor/create-manual-order')} className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-white font-medium shadow-lg shadow-primary/20 transition-all text-sm">
+            <button
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-white font-medium shadow-lg shadow-primary/20 transition-all text-sm"
+              onClick={() => navigate('/vendor/create-manual-order')}
+            >
               <span className="material-symbols-outlined text-[20px]">add</span>
               Create Manual Order
             </button>
@@ -359,9 +366,10 @@ export default function VendorOrders() {
           </div>
 
         </div>
-      </div>
-    </VendorLayout>
+
+      </main>
+    </div>
   );
 }
 
-export { VendorOrders as VendorOrdersPage };
+export const VendorOrdersPage = VendorOrders;
