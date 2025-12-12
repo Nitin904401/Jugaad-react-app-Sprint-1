@@ -1,81 +1,9 @@
-import React, { useEffect } from "react";
+
+import React from "react";
 import VendorSidebar from "./VendorSidebar";
 
 export default function VendorSettingsFull() {
-  useEffect(() => {
-    // Inject Google Fonts (Inter) and Material Symbols and Tailwind CDN (for quick prototype).
-    const head = document.head;
 
-    // Avoid duplicates if component remounts
-    const exists = (selector: string) => !!head.querySelector(selector);
-
-    if (!exists('link[data-vendor="inter-font"]')) {
-      const link1 = document.createElement("link");
-      link1.setAttribute("rel", "preconnect");
-      link1.setAttribute("href", "https://fonts.googleapis.com");
-      link1.setAttribute("data-vendor", "inter-font");
-      head.appendChild(link1);
-
-      const link2 = document.createElement("link");
-      link2.setAttribute("rel", "preconnect");
-      link2.setAttribute("href", "https://fonts.gstatic.com");
-      link2.setAttribute("crossorigin", "");
-      head.appendChild(link2);
-
-      const link3 = document.createElement("link");
-      link3.setAttribute(
-        "href",
-        "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap"
-      );
-      link3.setAttribute("rel", "stylesheet");
-      head.appendChild(link3);
-    }
-
-    if (!exists('link[data-vendor="material-symbols"]')) {
-      const ms = document.createElement("link");
-      ms.setAttribute(
-        "href",
-        "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
-      );
-      ms.setAttribute("rel", "stylesheet");
-      ms.setAttribute("data-vendor", "material-symbols");
-      head.appendChild(ms);
-    }
-
-    if (!exists('script[data-vendor="tailwind-cdn"]')) {
-      const script = document.createElement("script");
-      script.src = "https://cdn.tailwindcss.com?plugins=forms,container-queries";
-      script.setAttribute("data-vendor", "tailwind-cdn");
-      script.async = true;
-      head.appendChild(script);
-
-      // Set a small tailwind config override if tailwind CDN loads after
-      const inline = document.createElement("script");
-      inline.id = "tailwind-config-inject";
-      inline.innerHTML = `
-        tailwind.config = {
-          darkMode: "class",
-          theme: {
-            extend: {
-              colors: {
-                primary: "#067ff9",
-                "background-light": "#f5f7f8",
-                "background-dark": "#0f1923",
-                "surface-dark": "#1a212b",
-                "surface-light": "#ffffff"
-              },
-              fontFamily: { display: ["Inter", "sans-serif"] },
-            },
-          },
-        }
-      `;
-      head.appendChild(inline);
-    }
-
-    return () => {
-      // do not remove injected resources on unmount to avoid flicker when switching pages
-    };
-  }, []);
 
   return (
     <div className="relative min-h-screen font-display">
@@ -131,52 +59,13 @@ export default function VendorSettingsFull() {
 
       {/* Page content starts here */}
       <div className="flex h-screen w-full flex-col">
-        {/* Top Navigation */}
-        <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 dark:border-[#27303a] bg-surface-light dark:bg-[#111418] px-6 py-3 z-20">
-          <div className="flex items-center gap-4">
-            <div className="size-8 flex items-center justify-center text-primary">
-              <span className="material-symbols-outlined text-3xl">local_shipping</span>
-            </div>
-            <h2 className="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-tight">
-              AutoParts Pro <span className="text-slate-400 dark:text-slate-500 font-normal">Vendor</span>
-            </h2>
-          </div>
-          <div className="flex flex-1 justify-end gap-6 items-center">
-            <div className="flex gap-2">
-              <button className="flex items-center justify-center rounded-xl h-10 w-10 hover:bg-slate-100 dark:hover:bg-[#27303a] transition-colors text-slate-500 dark:text-slate-400">
-                <span className="material-symbols-outlined">notifications</span>
-              </button>
-              <button className="flex items-center justify-center rounded-xl h-10 w-10 hover:bg-slate-100 dark:hover:bg-[#27303a] transition-colors text-slate-500 dark:text-slate-400">
-                <span className="material-symbols-outlined">chat_bubble</span>
-              </button>
-            </div>
-
-            <div className="h-8 w-[1px] bg-slate-200 dark:bg-[#27303a]"></div>
-
-            <div className="flex items-center gap-3 cursor-pointer">
-              <div
-                className="bg-center bg-no-repeat bg-cover rounded-full size-10 border-2 border-slate-200 dark:border-[#27303a]"
-                data-alt="Vendor profile avatar showing a stylized mechanic logo"
-                style={{
-                  backgroundImage:
-                    "url('https://lh3.googleusercontent.com/aida-public/AB6AXuBqN2Zp22pnZQrnektkjnMMXaWJJ-UUaTOmjVzjpf8sSkogoCEr5BVDeOBYIoq03PWCku6aDASucLjKlWD4eXd893WevO3JM7_3i94uz5l-CtdkYR22j0vqQXrTnkjbDUDw3G9lhDKv4TiXu0D2TVwun7fBqPGsjdpGtjljmxY-NrcaLYvQt9tW1gRivgaZdb19dRtqauARWU35hvg0qLoxnzJxKoV91RunxI9OupJ9_OomLhrBWHBOEGxpytDWhYvfstKFTNbWmJiz')",
-                }}
-              />
-              <div className="hidden md:flex flex-col">
-                <span className="text-sm font-semibold text-slate-900 dark:text-white">Turbo Auto Parts</span>
-                <span className="text-xs text-slate-500 dark:text-slate-400">Verified Vendor</span>
-              </div>
-              <span className="material-symbols-outlined text-slate-400 text-sm">expand_more</span>
-            </div>
-          </div>
-        </header>
-
+        
         <div className="flex flex-1 overflow-hidden">
           {/* Side Navigation */}
             <VendorSidebar />
 
           {/* Main Content Area */}
-          <main className="flex-1 overflow-y-auto bg-white dark:bg-[#111418] p-4 lg:p-10 scroll-smooth">
+          <main className="flex-1 overflow-y-auto bg-[#111418] p-4 lg:p-10 scroll-smooth">
             <div className="max-w-5xl mx-auto space-y-8 pb-10">
               {/* Page Header */}
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -216,9 +105,13 @@ export default function VendorSettingsFull() {
                     </div>
                   </div>
 
-                  <div className="w-full sm:w-auto mt-4 sm:mt-0">
+                  <div className="w-full sm:w-auto mt-4 sm:mt-0 flex flex-col gap-2">
                     <button className="w-full sm:w-auto px-4 py-2.5 bg-slate-200 dark:bg-[#27303a] text-slate-700 dark:text-white text-sm font-semibold rounded-lg hover:bg-slate-300 dark:hover:bg-[#323b46] transition-colors border border-transparent dark:border-white/5">
                       View Public Storefront
+                    </button>
+                    <button className="w-full sm:w-auto px-4 py-2.5 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center gap-2">
+                      <span className="material-symbols-outlined">security</span>
+                      Security &amp; Login
                     </button>
                   </div>
                 </div>

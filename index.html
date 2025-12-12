@@ -3,6 +3,25 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <!-- Tailwind CDN and config for Vendor Portal (moved from VendorSettings.tsx) -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries" data-vendor="tailwind-cdn" async></script>
+    <script id="tailwind-config-inject">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#067ff9",
+              "background-light": "#f5f7f8",
+              "background-dark": "#0f1923",
+              "surface-dark": "#1a212b",
+              "surface-light": "#ffffff"
+            },
+            fontFamily: { display: ["Inter", "sans-serif"] },
+          },
+        },
+      }
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />

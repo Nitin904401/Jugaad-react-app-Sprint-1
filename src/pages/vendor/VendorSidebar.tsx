@@ -21,7 +21,7 @@ export default function VendorSidebar() {
           <span className="material-symbols-outlined text-[20px]">directions_car</span>
         </div>
         <div className="flex flex-col">
-          <h1 className="text-white text-base font-bold leading-tight tracking-tight">AutoParts Pro</h1>
+          <h1 className="text-white text-base font-bold leading-tight tracking-tight">S J A U T O P A R T</h1>
           <p className="text-slate-400 text-xs font-medium">Vendor Portal</p>
         </div>
       </div>
