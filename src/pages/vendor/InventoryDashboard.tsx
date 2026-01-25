@@ -16,38 +16,6 @@ function InventoryDashboard() {
       <VendorSidebar />
       {/* Main Content */}
       <main className="flex-1 flex flex-col h-full relative overflow-hidden bg-background-dark">
-          {/* TopNavBar */}
-          <header className="h-16 flex items-center justify-between px-8 border-b border-[#27303a] bg-[#111418] z-10 shrink-0">
-            <div className="flex items-center gap-4 text-white">
-              <div className="p-1.5 bg-primary/20 rounded-lg text-primary">
-                <span className="material-symbols-outlined">inventory</span>
-              </div>
-              <h2 className="text-white text-lg font-bold leading-tight tracking-[-0.015em]">Inventory Management</h2>
-            </div>
-
-            <div className="flex items-center gap-6">
-              <button className="relative text-[#9babbb] hover:text-white transition-colors">
-                <span className="material-symbols-outlined">notifications</span>
-                <span className="absolute top-0 right-0 size-2 bg-red-500 rounded-full border-2 border-[#111418]" />
-              </button>
-              <div className="h-8 w-[1px] bg-[#27303a]" />
-              <div className="flex items-center gap-3">
-                <div className="text-right hidden sm:block">
-                  <p className="text-sm font-medium text-white">John Doe</p>
-                  <p className="text-xs text-[#9babbb]">Vendor Admin</p>
-                </div>
-                <div
-                  className="bg-center bg-no-repeat bg-cover rounded-full size-9 ring-2 ring-[#27303a]"
-                  data-alt="User profile avatar"
-                  style={{
-                    backgroundImage:
-                      "url('https://lh3.googleusercontent.com/aida-public/AB6AXuBspCMmifN1UxAIt_EbBFqX6EMDz07p4vrBXaF3JL5K3u9r-CVyP3TZGzapsDi2FL9zicDNT2oRCqRmIJKfXfsIefh4V3CAr9Yd_XTT-0bhNnGbhFQorWVdPglKtT9ZHNIueZFkj_Ux2wpIe1u8ujJhrMFLiImA22aZ0uMKMvsTJz5W6sqfK9GQ4DzUUJA_7OUdZBGrOgI1039KcGOe1iaccr8ShtUOYvQ5k5sbKZlFPQ8RJo9Qnvdt-9eN-uuPDM6K5dJNeGnFJhgD')",
-                  }}
-                />
-              </div>
-            </div>
-          </header>
-
           {/* Scrollable Content Area */}
           <div className="flex-1 overflow-y-auto p-8">
             <div className="max-w-[1400px] mx-auto flex flex-col gap-8">
