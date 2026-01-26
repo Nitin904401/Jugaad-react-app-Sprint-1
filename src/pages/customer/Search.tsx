@@ -218,28 +218,46 @@ const Search = () => {
             {/* MAIN RESULTS */}
             <main className="flex flex-1 flex-col">
               {/* breadcrumb desktop */}
-              <div className="hidden lg:flex items-center flex-wrap gap-2 pb-6">
-                <a
-                  href="#"
-                  className="text-slate-400 text-sm font-medium hover:text-white transition-colors"
-                >
-                  Home
-                </a>
-                <span className="material-symbols-outlined text-[14px] text-slate-600">
-                  chevron_right
-                </span>
-                <a
-                  href="#"
-                  className="text-slate-400 text-sm font-medium hover:text-white transition-colors"
-                >
-                  Brakes
-                </a>
-                <span className="material-symbols-outlined text-[14px] text-slate-600">
-                  chevron_right
-                </span>
-                <span className="text-white text-sm font-semibold bg-slate-800 border border-slate-700 px-3 py-1 rounded-full shadow-sm">
-                  Brake Pads
-                </span>
+              <div className="hidden lg:flex items-center justify-between flex-wrap gap-2 pb-6">
+                <div className="flex items-center flex-wrap gap-2">
+                  <a
+                    href="#"
+                    className="text-slate-400 text-sm font-medium hover:text-white transition-colors"
+                  >
+                    Home
+                  </a>
+                  <span className="material-symbols-outlined text-[14px] text-slate-600">
+                    chevron_right
+                  </span>
+                  <a
+                    href="#"
+                    className="text-slate-400 text-sm font-medium hover:text-white transition-colors"
+                  >
+                    Brakes
+                  </a>
+                  <span className="material-symbols-outlined text-[14px] text-slate-600">
+                    chevron_right
+                  </span>
+                  <span className="text-white text-sm font-semibold bg-slate-800 border border-slate-700 px-3 py-1 rounded-full shadow-sm">
+                    Brake Pads
+                  </span>
+                </div>
+                {/* search bar on right */}
+                <div className="flex items-center w-96 border border-slate-700 rounded-2xl overflow-hidden bg-slate-800/50 ">
+                  <div className="relative flex-1 flex items-center">
+                    <span className="absolute left-4 text-slate-500">
+                      🔍
+                    </span>
+                    <input
+                      type="text"
+                      placeholder="Brake Pads"
+                      className="w-full bg-transparent pl-12 pr-4 py-3 text-slate-300 placeholder-slate-500 "
+                    />
+                  </div>
+                  <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 font-semibold transition-colors whitespace-nowrap">
+                    Search
+                  </button>
+                </div>
               </div>
 
               {/* header row */}

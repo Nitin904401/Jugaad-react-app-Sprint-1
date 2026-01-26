@@ -3,7 +3,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from '../context/AuthContext';
 import { CartProvider } from '../context/CartContext';
-import { ProtectedRoute } from '../components/common/ProtectedRoute';
+import { ProtectedRoute, AdminRoute } from '../components/common/ProtectedRoute';
 import { MainLayout } from '../Components/layout/MainLayout';
 import { VendorLayout } from '../Components/layout/VendorLayout';
 import { AdminLayout } from '../Components/layout/AdminLayout';
@@ -37,8 +37,11 @@ import { AdminLoginPage } from '../pages/admin/Login';
 import { AdminDashboardPage } from '../pages/admin/Dashboard';
 import { AdminVendorsPage } from '../pages/admin/Vendors';
 import { AdminProductsPage } from '../pages/admin/Products';
-import { AdminOrdersPage } from '../pages/admin/Orders';
-import { AdminCatalogPage } from '../pages/admin/Catalog';
+import { AdminUsersPage } from '../pages/admin/Users';
+import { AdminSettingsPage } from '../pages/admin/Settings';
+
+import { AdminVendorDetailsPage } from '../pages/admin/VendorDetails';
+import { AdminPublishedProductsPage } from '../pages/admin/PublishedProducts';
 
 export const AppRouter: React.FC = () => {
   return (
@@ -107,48 +110,68 @@ export const AppRouter: React.FC = () => {
               }
             />
 
-            {/* Admin Routes */}
-            <Route path="/admin/login" element={<AdminLoginPage />} />
+            {/* Admin Routes - Separate isolated URL path */}
+            <Route path="/admin-panel/login" element={<AdminLoginPage />} />
             <Route element={<AdminLayout />}>
               <Route
-                path="/admin/dashboard"
+                path="/admin-panel/dashboard"
                 element={
-                  <ProtectedRoute requiredRole="admin">
+                  <AdminRoute>
                     <AdminDashboardPage />
-                  </ProtectedRoute>
+                  </AdminRoute>
                 }
               />
               <Route
-                path="/admin/vendors"
+                path="/admin-panel/vendors"
                 element={
-                  <ProtectedRoute requiredRole="admin">
+                  <AdminRoute>
                     <AdminVendorsPage />
-                  </ProtectedRoute>
+                  </AdminRoute>
                 }
               />
               <Route
-                path="/admin/products"
+                path="/admin-panel/vendors/:vendorId"
                 element={
-                  <ProtectedRoute requiredRole="admin">
+                  <AdminRoute>
+                    <AdminVendorDetailsPage />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin-panel/products"
+                element={
+                  <AdminRoute>
                     <AdminProductsPage />
-                  </ProtectedRoute>
+                  </AdminRoute>
                 }
               />
               <Route
-                path="/admin/orders"
+                path="/admin-panel/published-products"
                 element={
-                  <ProtectedRoute requiredRole="admin">
-                    <AdminOrdersPage />
-                  </ProtectedRoute>
+                  <AdminRoute>
+                    <AdminPublishedProductsPage />
+                  </AdminRoute>
                 }
               />
               <Route
-                path="/admin/catalog"
+                path="/admin-panel/users"
                 element={
-                  <ProtectedRoute requiredRole="admin">
-                    <AdminCatalogPage />
-                  </ProtectedRoute>
+                  <AdminRoute>
+                    <AdminUsersPage />
+                  </AdminRoute>
                 }
+              />
+              <Route
+                path="/admin-panel/settings"
+                element={
+                  <AdminRoute>
+                    <AdminSettingsPage />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin-panel/catalog"
+               
               />
             </Route>
 
