@@ -15,6 +15,7 @@ import { RegisterPage } from '../pages/customer/Register';
 import { VehiclesPage } from '../pages/customer/Vehicles';
 import { SearchPage } from '../pages/customer/Search';
 import { ProductPage } from '../pages/customer/Product';
+import ProductDetail from '../pages/customer/ProductDetail';
 import { CartPage } from '../pages/customer/Cart';
 import { CheckoutPage } from '../pages/customer/Checkout';
 import { AccountPage } from '../pages/customer/Account';
@@ -56,7 +57,7 @@ export const AppRouter: React.FC = () => {
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/vehicles" element={<VehiclesPage />} />
               <Route path="/search" element={<SearchPage />} />
-              <Route path="/product/:productId" element={<ProductPage />} />
+              <Route path="/product/:productId" element={<ProductDetail />} />
               <Route
                 path="/cart"
                 element={

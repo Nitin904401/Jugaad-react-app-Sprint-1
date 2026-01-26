@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const Search = () => {
   return (
@@ -243,7 +244,7 @@ const Search = () => {
                   </span>
                 </div>
                 {/* search bar on right */}
-                <div className="flex items-center w-96 border border-slate-700 rounded-2xl overflow-hidden bg-slate-800/50 ">
+                  <div className="flex items-center w-96 rounded-2xl overflow-hidden bg-slate-800/50 ">
                   <div className="relative flex-1 flex items-center">
                     <span className="absolute left-4 text-slate-500">
                       🔍
@@ -251,10 +252,10 @@ const Search = () => {
                     <input
                       type="text"
                       placeholder="Brake Pads"
-                      className="w-full bg-transparent pl-12 pr-4 py-3 text-slate-300 placeholder-slate-500 "
+                      className="w-full bg-transparent pl-12 pr-4 py-3 text-slate-300 placeholder-slate-500 focus:outline-none focus:ring-0 border-none "
                     />
                   </div>
-                  <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 font-semibold transition-colors whitespace-nowrap">
+                  <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 font-semibold transition-colors whitespace-nowrap border-none focus:outline-none focus:ring-0">
                     Search
                   </button>
                 </div>
@@ -309,7 +310,7 @@ const Search = () => {
               {/* RESULT CARDS GRID */}
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
                 {/* Card 1 */}
-                <div className="group rounded-2xl overflow-hidden flex flex-col relative bg-slate-800/40 backdrop-blur-md border border-white/5 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.4)] hover:shadow-[0_0_15px_rgba(59,130,246,0.15)] hover:border-primary/40 transition-all duration-300">
+                <Link to="/product/1" className="group rounded-2xl overflow-hidden flex flex-col relative bg-slate-800/40 backdrop-blur-md border border-white/5 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.4)] hover:shadow-[0_0_15px_rgba(59,130,246,0.15)] hover:border-primary/40 transition-all duration-300 no-underline">
                   <div className="absolute top-4 left-4 z-20 flex items-center gap-1.5 bg-green-500/20 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-bold text-green-400 shadow-lg shadow-green-900/20 border border-green-500/30">
                     <span className="material-symbols-outlined text-[14px]">
                       check_circle
@@ -383,10 +384,10 @@ const Search = () => {
                       </button>
                     </div>
                   </div>
-                </div>
+                </Link>
 
                 {/* Card 2 */}
-                <div className="group rounded-2xl overflow-hidden flex flex-col relative bg-slate-800/40 backdrop-blur-md border border-white/5 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.4)] hover:shadow-[0_0_15px_rgba(59,130,246,0.15)] hover:border-primary/40 transition-all duration-300">
+                <Link to="/product/2" className="group rounded-2xl overflow-hidden flex flex-col relative bg-slate-800/40 backdrop-blur-md border border-white/5 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.4)] hover:shadow-[0_0_15px_rgba(59,130,246,0.15)] hover:border-primary/40 transition-all duration-300 no-underline">
                   <div className="absolute top-4 left-4 z-20 flex items-center gap-1.5 bg-green-500/20 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-bold text-green-400 shadow-lg shadow-green-900/20 border border-green-500/30">
                     <span className="material-symbols-outlined text-[14px]">
                       check_circle
@@ -458,10 +459,10 @@ const Search = () => {
                       </button>
                     </div>
                   </div>
-                </div>
+                </Link>
 
                 {/* Card 3 */}
-                <div className="group rounded-2xl overflow-hidden flex flex-col relative opacity-80 hover:opacity-100 bg-slate-800/40 backdrop-blur-md border border-white/5 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.4)] hover:shadow-[0_0_15px_rgba(59,130,246,0.15)] hover:border-primary/40 transition-all duration-300">
+                <Link to="/product/3" className="group rounded-2xl overflow-hidden flex flex-col relative opacity-80 hover:opacity-100 bg-slate-800/40 backdrop-blur-md border border-white/5 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.4)] hover:shadow-[0_0_15px_rgba(59,130,246,0.15)] hover:border-primary/40 transition-all duration-300 no-underline">
                   <div className="absolute top-4 left-4 z-20 flex items-center gap-1.5 bg-green-500/20 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-bold text-green-400 shadow-lg shadow-green-900/20 border border-green-500/30">
                     <span className="material-symbols-outlined text-[14px]">
                       check_circle
@@ -546,10 +547,10 @@ const Search = () => {
                       </button>
                     </div>
                   </div>
-                </div>
+                </Link>
 
                 {/* Card 4 */}
-                <div className="group rounded-2xl overflow-hidden flex flex-col relative bg-slate-800/40 backdrop-blur-md border border-white/5 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.4)] hover:shadow-[0_0_15px_rgba(59,130,246,0.15)] hover:border-primary/40 transition-all duration-300">
+                <Link to="/product/4" className="group rounded-2xl overflow-hidden flex flex-col relative bg-slate-800/40 backdrop-blur-md border border-white/5 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.4)] hover:shadow-[0_0_15px_rgba(59,130,246,0.15)] hover:border-primary/40 transition-all duration-300 no-underline">
                   <div className="absolute top-4 left-4 z-20 flex items-center gap-1.5 bg-green-500/20 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-bold text-green-400 shadow-lg shadow-green-900/20 border border-green-500/30">
                     <span className="material-symbols-outlined text-[14px]">
                       check_circle
@@ -621,10 +622,10 @@ const Search = () => {
                       </button>
                     </div>
                   </div>
-                </div>
+                </Link>
 
                 {/* Card 5 */}
-                <div className="group rounded-2xl overflow-hidden flex flex-col relative bg-slate-800/40 backdrop-blur-md border border-white/5 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.4)] hover:shadow-[0_0_15px_rgba(59,130,246,0.15)] hover:border-primary/40 transition-all duration-300">
+                <Link to="/product/5" className="group rounded-2xl overflow-hidden flex flex-col relative bg-slate-800/40 backdrop-blur-md border border-white/5 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.4)] hover:shadow-[0_0_15px_rgba(59,130,246,0.15)] hover:border-primary/40 transition-all duration-300 no-underline">
                   <div className="absolute top-4 left-4 z-20 flex items-center gap-1.5 bg-green-500/20 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-bold text-green-400 shadow-lg shadow-green-900/20 border border-green-500/30">
                     <span className="material-symbols-outlined text-[14px]">
                       check_circle
@@ -697,10 +698,10 @@ const Search = () => {
                       </button>
                     </div>
                   </div>
-                </div>
+                </Link>
 
                 {/* Card 6 */}
-                <div className="group rounded-2xl overflow-hidden flex flex-col relative bg-slate-800/40 backdrop-blur-md border border-white/5 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.4)] hover:shadow-[0_0_15px_rgba(59,130,246,0.15)] hover:border-primary/40 transition-all duration-300">
+                <Link to="/product/6" className="group rounded-2xl overflow-hidden flex flex-col relative bg-slate-800/40 backdrop-blur-md border border-white/5 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.4)] hover:shadow-[0_0_15px_rgba(59,130,246,0.15)] hover:border-primary/40 transition-all duration-300 no-underline">
                   <div className="absolute top-4 left-4 z-20 flex items-center gap-1.5 bg-green-500/20 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-bold text-green-400 shadow-lg shadow-green-900/20 border border-green-500/30">
                     <span className="material-symbols-outlined text-[14px]">
                       check_circle
@@ -766,7 +767,7 @@ const Search = () => {
                       </button>
                     </div>
                   </div>
-                </div>
+                </Link>
               </div>
 
               {/* pagination */}
