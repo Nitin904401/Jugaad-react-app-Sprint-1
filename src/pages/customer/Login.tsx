@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { useAuth } from "../../context/AuthContext";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const LoginPage = () => {
   const [activeTabState, setActiveTabState] = useState<"login" | "signup">("login");
@@ -212,8 +214,39 @@ const AuthCard: React.FC<{ activeTab: "login" | "signup"; onTabChange: (tab: "lo
 };
 
 const LoginForm: React.FC = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
+
+    try {
+      await login(email, password);
+      // Redirect to profile if coming from profile click, otherwise go to profile as default
+      const from = location.state?.from?.pathname || "/profile";
+      navigate(from, { replace: true });
+    } catch (err) {
+      setError("Invalid email or password");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <div className="p-6 sm:p-8 flex flex-col gap-5">
+    <form onSubmit={handleSubmit} className="p-6 sm:p-8 flex flex-col gap-5">
+      {error && (
+        <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+          {error}
+        </div>
+      )}
+      
       {/* email */}
       <label className="flex flex-col gap-2 group">
         <span className="text-sm font-semibold text-slate-300 transition-colors group-focus-within:text-primary">Email or Phone</span>
@@ -224,6 +257,9 @@ const LoginForm: React.FC = () => {
           <input
             type="text"
             placeholder="user@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
             className="w-full h-12 rounded-xl bg-slate-900/50 border border-slate-700 focus:bg-slate-900/70 transition-all duration-300 pl-11 pr-4 text-white placeholder-slate-400 focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm shadow-sm"
           />
         </div>
@@ -242,6 +278,9 @@ const LoginForm: React.FC = () => {
           <input
             type="password"
             placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
             className="w-full h-12 rounded-xl bg-slate-900/50 border border-slate-700 focus:bg-slate-900/70 transition-all duration-300 pl-11 pr-10 text-white placeholder-slate-400 focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm shadow-sm"
           />
           <button type="button" className="absolute right-4 text-slate-400 hover:text-slate-200 transition-colors outline-none focus:text-primary">
@@ -258,8 +297,12 @@ const LoginForm: React.FC = () => {
 
       {/* buttons */}
       <div className="flex flex-col gap-3 mt-4">
-        <button className="w-full h-[44px] rounded-xl font-bold text-white text-sm bg-gradient-to-r from-blue-500 to-indigo-500 shadow-lg flex items-center justify-center transition-all duration-300 hover:shadow-blue-500/40 focus:outline-none">
-          Log In
+        <button 
+          type="submit" 
+          disabled={isLoading}
+          className="w-full h-[44px] rounded-xl font-bold text-white text-sm bg-gradient-to-r from-blue-500 to-indigo-500 shadow-lg flex items-center justify-center transition-all duration-300 hover:shadow-blue-500/40 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isLoading ? "Logging in..." : "Log In"}
         </button>
         <button className="flex w-full items-center justify-center h-12 rounded-xl bg-slate-800 border border-slate-700 text-white font-bold text-sm hover:bg-slate-700 hover:border-slate-600 shadow-sm transform transition-all duration-300 hover:-translate-y-0.5 active:scale-95">
           <span className="material-symbols-outlined mr-2 text-lg text-slate-400">sms</span>
@@ -286,7 +329,7 @@ const LoginForm: React.FC = () => {
           Apple
         </button>
       </div>
-    </div>
+    </form>
   );
 };
 

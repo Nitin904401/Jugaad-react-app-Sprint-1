@@ -19,6 +19,7 @@ import ProductDetail from '../pages/customer/ProductDetail';
 import { CartPage } from '../pages/customer/Cart';
 import { CheckoutPage } from '../pages/customer/Checkout';
 import { AccountPage } from '../pages/customer/Account';
+import { UserProfile } from '../pages/customer/UserProfile';
 
 // Vendor Pages
 import { VendorLoginPage } from '../pages/vendor/Login';
@@ -58,14 +59,7 @@ export const AppRouter: React.FC = () => {
               <Route path="/vehicles" element={<VehiclesPage />} />
               <Route path="/search" element={<SearchPage />} />
               <Route path="/product/:productId" element={<ProductDetail />} />
-              <Route
-                path="/cart"
-                element={
-                  <ProtectedRoute>
-                    <CartPage />
-                  </ProtectedRoute>
-                }
-              />
+              <Route path="/cart" element={<CartPage />} />
               <Route
                 path="/checkout"
                 element={
@@ -79,6 +73,14 @@ export const AppRouter: React.FC = () => {
                 element={
                   <ProtectedRoute>
                     <AccountPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <UserProfile />
                   </ProtectedRoute>
                 }
               />
