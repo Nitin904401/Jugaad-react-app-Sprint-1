@@ -26,6 +26,33 @@ export interface AdminVendor {
   created_at: string;
 }
 
+export interface VendorDetails {
+  id: string;
+  name: string;
+  email: string;
+  company_name: string;
+  business_type: string;
+  phone_number: string;
+  legal_business_name: string;
+  tax_id: string;
+  address: string;
+  city: string;
+  state: string;
+  country: string;
+  postal_code: string;
+  website: string;
+  bank_account_holder: string;
+  bank_name: string;
+  bank_routing_number: string;
+  bank_account_number: string;
+  pan_document: string;
+  cheque_document: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  profile_picture: string;
+}
+
 // Admin API functions
 export const getAllVendors = async (): Promise<AdminVendor[]> => {
   const res = await fetch("/api/admin/vendors", {
@@ -35,6 +62,18 @@ export const getAllVendors = async (): Promise<AdminVendor[]> => {
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
     throw new Error(errorData.message || "Failed to fetch vendors");
+  }
+  return res.json();
+};
+
+export const getVendorById = async (vendorId: string): Promise<VendorDetails> => {
+  const res = await fetch(`/api/admin/vendors/${vendorId}`, {
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.message || "Failed to fetch vendor details");
   }
   return res.json();
 };
@@ -156,7 +195,7 @@ export const getVendors = async (): Promise<Vendor[]> => {
   });
 };
 
-export const getVendorById = async (id: string): Promise<Vendor | undefined> => {
+export const getMockVendorById = async (id: string): Promise<Vendor | undefined> => {
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve(mockVendors.find((v) => v.id === id));

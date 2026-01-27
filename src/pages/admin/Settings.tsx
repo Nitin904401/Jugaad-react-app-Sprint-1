@@ -448,28 +448,6 @@ const Input: React.FC<InputProps> = ({ label, defaultValue }) => (
   </label>
 );
 
-interface SelectProps {
-  label: string;
-  options: string[];
-  defaultValue?: string;
-}
-
-const Select: React.FC<SelectProps> = ({ label, options, defaultValue }) => (
-  <label className="block space-y-2">
-    <span className="text-slate-400 text-sm font-medium">{label}</span>
-    <select
-      defaultValue={defaultValue || options[0]}
-      className="w-full bg-slate-800/50 border border-white/10 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:outline-none transition cursor-pointer"
-    >
-      {options.map((opt) => (
-        <option key={opt} value={opt} className="bg-slate-900">
-          {opt}
-        </option>
-      ))}
-    </select>
-  </label>
-);
-
 interface ToggleItemProps {
   title: string;
   desc: string;

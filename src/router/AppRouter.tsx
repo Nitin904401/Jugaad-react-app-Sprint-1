@@ -1,11 +1,9 @@
 // AppRouter - Main routing configuration
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from '../context/AuthContext';
 import { CartProvider } from '../context/CartContext';
-import { ProtectedRoute } from '../components/common/ProtectedRoute';
+import { ProtectedRoute } from '../Components/common/ProtectedRoute';
 import { MainLayout } from '../Components/layout/MainLayout';
-import { VendorLayout } from '../Components/layout/VendorLayout';
 import { AdminLayout } from '../Components/layout/AdminLayout';
 
 // Customer Pages
@@ -14,7 +12,6 @@ import { LoginPage } from '../pages/customer/Login';
 import { RegisterPage } from '../pages/customer/Register';
 import { VehiclesPage } from '../pages/customer/Vehicles';
 import { SearchPage } from '../pages/customer/Search';
-import { ProductPage } from '../pages/customer/Product';
 import ProductDetail from '../pages/customer/ProductDetail';
 import { CartPage } from '../pages/customer/Cart';
 import { CheckoutPage } from '../pages/customer/Checkout';

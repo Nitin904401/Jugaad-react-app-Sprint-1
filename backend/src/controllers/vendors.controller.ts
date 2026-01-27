@@ -24,6 +24,31 @@ export const getAllVendors = async (req: Request, res: Response) => {
   }
 };
 
+// Get single vendor details (admin only)
+export const getVendorById = async (req: Request, res: Response) => {
+  const { vendorId } = req.params;
+
+  try {
+    const result = await pool.query(
+      `SELECT * FROM vendors WHERE id = $1`,
+      [vendorId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Vendor not found" });
+    }
+
+    const vendor = result.rows[0];
+    // Remove password from response
+    delete vendor.password;
+
+    res.json(vendor);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to fetch vendor details" });
+  }
+};
+
 // Update vendor status (admin only)
 export const updateVendorStatus = async (req: Request, res: Response) => {
   const { vendorId } = req.params;
