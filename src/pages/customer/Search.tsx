@@ -1,7 +1,31 @@
-import React from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import { fetchProducts, Product } from "../../api/products"; // adjust path if needed
 import { Link } from "react-router-dom";
 
+
+
 const Search = () => {
+  const [searchParams] = useSearchParams();
+const query = (searchParams.get("q") || "").toLowerCase();
+
+const [products, setProducts] = useState<Product[]>([]);
+const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    setLoading(true);
+
+    fetchProducts().then((data) => {
+      const filtered = data.filter((p) =>
+        p.name.toLowerCase().includes(query) ||
+        p.brand.toLowerCase().includes(query) ||
+        p.category.toLowerCase().includes(query)
+      );
+
+      setProducts(filtered);
+      setLoading(false);
+    });
+  }, [query]);
+
   return (
     <div className=" font-display text-slate-300 antialiased selection:bg-primary/30 selection:text-white min-h-screen w-full">
       {/* background blobs */}
@@ -309,466 +333,45 @@ const Search = () => {
 
               {/* RESULT CARDS GRID */}
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
-                {/* Card 1 */}
-                <Link to="/product/1" className="group rounded-2xl overflow-hidden flex flex-col relative bg-slate-800/40 backdrop-blur-md border border-white/5 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.4)] hover:shadow-[0_0_15px_rgba(59,130,246,0.15)] hover:border-primary/40 transition-all duration-300 no-underline">
-                  <div className="absolute top-4 left-4 z-20 flex items-center gap-1.5 bg-green-500/20 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-bold text-green-400 shadow-lg shadow-green-900/20 border border-green-500/30">
-                    <span className="material-symbols-outlined text-[14px]">
-                      check_circle
-                    </span>
-                    Guaranteed Fit
-                  </div>
-                  <div className="relative flex h-56 items-center justify-center bg-gradient-to-b from-slate-800/80 to-slate-900/80 p-6 group-hover:scale-[1.02] transition-transform duration-500">
-                    <img
-                      alt="Bosch QuietCast Brake Pads"
-                      className="max-h-full object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)]"
-                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuDkC-MxjDnJ1XEEqCfwBRsVvtgEqLiRJJwzSnq6vTXAeLwW3aEW8Ykq_o3w-GPkpEn_sZzSz6rsU0W1baATdTMq7hvFABqT1QSSSATsSt6CXjvjBe7Bm9ahKKzXIoqLqeusR310aSRd3GuzDKAK9Q32eOZPtxzAI23aEzuJVwlwE6IxR_BKAlhpKDHOJyJRdKmKHfWMqTJ5OzJpDYdeZXWtq1uZoTnsi_Qn4mERpur6zuR_sNV1QSA_JTcGRbNNhc4E1A6F9lXZ2rIA"
-                    />
-                    <button className="absolute right-4 top-4 rounded-full bg-slate-800/80 p-2 shadow-sm hover:bg-slate-700 hover:text-red-500 cursor-pointer text-slate-400 border border-white/10 transition-all hover:scale-110 active:scale-95">
-                      <span className="material-symbols-outlined text-[20px] block">
-                        favorite
-                      </span>
-                    </button>
-                  </div>
-                  <div className="flex flex-1 flex-col p-5 bg-slate-800/30 border-t border-white/5">
-                    <div className="mb-2 flex items-center justify-between">
-                      <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase bg-slate-800/80 border border-white/5 px-2 py-0.5 rounded">
-                        Bosch
-                      </span>
-                      <span className="text-xs text-slate-500 font-mono">
-                        #BC905
-                      </span>
-                    </div>
-                    <h3 className="mb-2 text-base font-bold leading-tight text-slate-200 group-hover:text-primary transition-colors line-clamp-2 h-10">
-                      QuietCast Premium Ceramic Brake Pads
-                    </h3>
-                    <div className="mb-4 flex items-center gap-2">
-                      <div className="flex text-amber-400 text-sm">
-                        {["star", "star", "star", "star", "star_half"].map(
-                          (icon) => (
-                            <span
-                              key={icon}
-                              className="material-symbols-outlined text-[16px] fill-current"
-                            >
-                              {icon}
-                            </span>
-                          )
-                        )}
-                      </div>
-                      <span className="text-xs font-medium text-slate-500">
-                        (428)
-                      </span>
-                    </div>
-                    <div className="mt-auto pt-4 border-t border-dashed border-white/10">
-                      <div className="flex items-baseline justify-between mb-3">
-                        <span className="text-2xl font-bold text-white">
-                          $45.99
-                        </span>
-                        <div className="flex items-center text-xs text-green-400 bg-green-500/10 px-2 py-1 rounded font-medium border border-green-500/20">
-                          <span className="material-symbols-outlined text-[14px] mr-1">
-                            local_shipping
-                          </span>
-                          Free Shipping
-                        </div>
-                      </div>
-                      <p className="mb-3 text-xs text-slate-500">
-                        Sold by{" "}
-                        <span className="font-semibold text-slate-300">
-                          PartsKing
-                        </span>
-                      </p>
-                      <button className="w-full flex items-center justify-center gap-2 rounded-xl bg-primary py-2.5 text-sm font-bold text-white shadow-lg shadow-blue-500/20 transition-all hover:bg-primary-dark hover:shadow-blue-500/40 active:scale-[0.98]">
-                        <span className="material-symbols-outlined text-[18px]">
-                          shopping_cart
-                        </span>
-                        Add to Cart
-                      </button>
-                    </div>
-                  </div>
-                </Link>
 
-                {/* Card 2 */}
-                <Link to="/product/2" className="group rounded-2xl overflow-hidden flex flex-col relative bg-slate-800/40 backdrop-blur-md border border-white/5 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.4)] hover:shadow-[0_0_15px_rgba(59,130,246,0.15)] hover:border-primary/40 transition-all duration-300 no-underline">
-                  <div className="absolute top-4 left-4 z-20 flex items-center gap-1.5 bg-green-500/20 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-bold text-green-400 shadow-lg shadow-green-900/20 border border-green-500/30">
-                    <span className="material-symbols-outlined text-[14px]">
-                      check_circle
-                    </span>
-                    Guaranteed Fit
-                  </div>
-                  <div className="relative flex h-56 items-center justify-center bg-gradient-to-b from-slate-800/80 to-slate-900/80 p-6 group-hover:scale-[1.02] transition-transform duration-500">
-                    <img
-                      alt="Brembo High Carbon Rotor"
-                      className="max-h-full object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)]"
-                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuCoRApDF1AkGhlcETUnS5KQy9ecliJpkV9zpZPvuAQtDgMImbM8g5S5KSbjjeKkePULwrmRa1sgrT3MSllBorTW1Mj1U5qHBPIoamrR-pnqC_C9qdIs__jv9pefSQ5T_PqegLbj-egQmYHdGNmpQ4gVyNk1wMt4aDiWQEwBNQJeT5qm80rkzDWa175MzFLQ06xqNAkrQDYxm9ddFLWkwJ3SL8tk6YhYSZD5Rybio4jUA4Qa9sw9nhkP7XtV8ASXjLHCZnZVpi5Y0k6U"
-                    />
-                    <button className="absolute right-4 top-4 rounded-full bg-slate-800/80 p-2 shadow-sm hover:bg-slate-700 hover:text-red-500 cursor-pointer text-slate-400 border border-white/10 transition-all hover:scale-110 active:scale-95">
-                      <span className="material-symbols-outlined text-[20px] block">
-                        favorite
-                      </span>
-                    </button>
-                  </div>
-                  <div className="flex flex-1 flex-col p-5 bg-slate-800/30 border-t border-white/5">
-                    <div className="mb-2 flex items-center justify-between">
-                      <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase bg-slate-800/80 border border-white/5 px-2 py-0.5 rounded">
-                        Brembo
-                      </span>
-                      <span className="text-xs text-slate-500 font-mono">
-                        #09.C499.11
-                      </span>
-                    </div>
-                    <h3 className="mb-2 text-base font-bold leading-tight text-slate-200 group-hover:text-primary transition-colors line-clamp-2 h-10">
-                      High Carbon Disc Brake Rotor (Front)
-                    </h3>
-                    <div className="mb-4 flex items-center gap-2">
-                      <div className="flex text-amber-400 text-sm">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <span
-                            key={i}
-                            className="material-symbols-outlined text-[16px] fill-current"
-                          >
-                            star
-                          </span>
-                        ))}
-                      </div>
-                      <span className="text-xs font-medium text-slate-500">
-                        (156)
-                      </span>
-                    </div>
-                    <div className="mt-auto pt-4 border-t border-dashed border-white/10">
-                      <div className="flex items-baseline justify-between mb-2">
-                        <span className="text-2xl font-bold text-white">
-                          $89.00
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2 mb-3">
-                        <span className="text-[10px] font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
-                          Low Stock
-                        </span>
-                        <span className="h-1 w-1 rounded-full bg-slate-600" />
-                        <p className="text-xs text-slate-500">
-                          Sold by{" "}
-                          <span className="font-semibold text-slate-300">
-                            EuroParts
-                          </span>
-                        </p>
-                      </div>
-                      <button className="w-full flex items-center justify-center gap-2 rounded-xl bg-primary py-2.5 text-sm font-bold text-white shadow-lg shadow-blue-500/20 transition-all hover:bg-primary-dark hover:shadow-blue-500/40 active:scale-[0.98]">
-                        <span className="material-symbols-outlined text-[18px]">
-                          shopping_cart
-                        </span>
-                        Add to Cart
-                      </button>
-                    </div>
-                  </div>
-                </Link>
+  {loading && (
+    <p className="col-span-full text-center text-slate-400">
+      Loading results...
+    </p>
+  )}
 
-                {/* Card 3 */}
-                <Link to="/product/3" className="group rounded-2xl overflow-hidden flex flex-col relative opacity-80 hover:opacity-100 bg-slate-800/40 backdrop-blur-md border border-white/5 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.4)] hover:shadow-[0_0_15px_rgba(59,130,246,0.15)] hover:border-primary/40 transition-all duration-300 no-underline">
-                  <div className="absolute top-4 left-4 z-20 flex items-center gap-1.5 bg-green-500/20 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-bold text-green-400 shadow-lg shadow-green-900/20 border border-green-500/30">
-                    <span className="material-symbols-outlined text-[14px]">
-                      check_circle
-                    </span>
-                    Guaranteed Fit
-                  </div>
-                  <div className="relative flex h-56 items-center justify-center bg-gradient-to-b from-slate-800/80 to-slate-900/80 p-6 group-hover:scale-[1.02] transition-transform duration-500">
-                    <div className="absolute right-0 top-16 bg-red-600/90 text-white text-[10px] font-bold px-2 py-1 shadow-md z-10 rounded-l backdrop-blur-sm">
-                      SALE -25%
-                    </div>
-                    <img
-                      alt="Duralast Gold Brake Pads"
-                      className="max-h-full object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)] grayscale group-hover:grayscale-0 transition-all duration-500"
-                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuDHdWip6F-9ywznk_AhZY-pRg7jHzQaiPWW5AFqktv4nJqThHg2kl52dbWdNIkShKjKqXMGyBeDsw3CQ-l9BGBk1tNYBjxe79Sg437EU77ly0IGQ16mIJiePVRSQPUTqd_6pWpUxGriPj-T8lQFgO87PFmToz6P9W_Moc1fS5vlrdpZx_JBeHl2voopUxTJhq42-ow3Mv0IMOYD3hxWL0fFXgLiIPZzH67c41ueUSxCiW4lklPa6rSHqChOCPa-nNOu2Znujc_J_v6C"
-                    />
-                    <button className="absolute right-4 top-4 rounded-full bg-slate-800/80 p-2 shadow-sm hover:bg-slate-700 hover:text-red-500 cursor-pointer text-slate-400 border border-white/10 transition-all hover:scale-110 active:scale-95">
-                      <span className="material-symbols-outlined text-[20px] block">
-                        favorite
-                      </span>
-                    </button>
-                  </div>
-                  <div className="flex flex-1 flex-col p-5 bg-slate-800/30 border-t border-white/5">
-                    <div className="mb-2 flex items-center justify-between">
-                      <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase bg-slate-800/80 border border-white/5 px-2 py-0.5 rounded">
-                        Duralast
-                      </span>
-                      <span className="text-xs text-slate-500 font-mono">
-                        #DG905
-                      </span>
-                    </div>
-                    <h3 className="mb-2 text-base font-bold leading-tight text-slate-200 group-hover:text-primary transition-colors line-clamp-2 h-10">
-                      Gold Ceramic Brake Pads (Set of 4)
-                    </h3>
-                    <div className="mb-4 flex items-center gap-2">
-                      <div className="flex text-amber-400 text-sm">
-                        <span className="material-symbols-outlined text-[16px] fill-current">
-                          star
-                        </span>
-                        <span className="material-symbols-outlined text-[16px] fill-current">
-                          star
-                        </span>
-                        <span className="material-symbols-outlined text-[16px] fill-current">
-                          star
-                        </span>
-                        <span className="material-symbols-outlined text-[16px] fill-current">
-                          star_half
-                        </span>
-                        <span className="material-symbols-outlined text-[16px] text-slate-600">
-                          star
-                        </span>
-                      </div>
-                      <span className="text-xs font-medium text-slate-500">
-                        (89)
-                      </span>
-                    </div>
-                    <div className="mt-auto pt-4 border-t border-dashed border-white/10">
-                      <div className="flex items-baseline gap-2 mb-2">
-                        <span className="text-2xl font-bold text-red-500">
-                          $32.50
-                        </span>
-                        <span className="text-sm text-slate-500 line-through decoration-slate-500">
-                          $42.00
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2 mb-3">
-                        <span className="text-[10px] font-bold text-slate-400 bg-slate-700 px-2 py-0.5 rounded">
-                          Out of Stock
-                        </span>
-                        <span className="h-1 w-1 rounded-full bg-slate-600" />
-                        <p className="text-xs text-slate-500">
-                          Sold by{" "}
-                          <span className="font-semibold text-slate-300">
-                            AutoMega
-                          </span>
-                        </p>
-                      </div>
-                      <button className="w-full flex items-center justify-center gap-2 rounded-xl bg-slate-800 py-2.5 text-sm font-bold text-slate-500 cursor-not-allowed hover:bg-slate-800 border border-slate-700 transition-colors">
-                        <span className="material-symbols-outlined text-[18px]">
-                          notifications
-                        </span>
-                        Notify Me
-                      </button>
-                    </div>
-                  </div>
-                </Link>
+  {!loading && products.length === 0 && (
+    <p className="col-span-full text-center text-slate-400">
+      No results found for "{query}"
+    </p>
+  )}
 
-                {/* Card 4 */}
-                <Link to="/product/4" className="group rounded-2xl overflow-hidden flex flex-col relative bg-slate-800/40 backdrop-blur-md border border-white/5 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.4)] hover:shadow-[0_0_15px_rgba(59,130,246,0.15)] hover:border-primary/40 transition-all duration-300 no-underline">
-                  <div className="absolute top-4 left-4 z-20 flex items-center gap-1.5 bg-green-500/20 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-bold text-green-400 shadow-lg shadow-green-900/20 border border-green-500/30">
-                    <span className="material-symbols-outlined text-[14px]">
-                      check_circle
-                    </span>
-                    Guaranteed Fit
-                  </div>
-                  <div className="relative flex h-56 items-center justify-center bg-gradient-to-b from-slate-800/80 to-slate-900/80 p-6 group-hover:scale-[1.02] transition-transform duration-500">
-                    <img
-                      alt="PowerStop Brake Kit"
-                      className="max-h-full object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)]"
-                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuAeVjMx1SQK-CEyW5lo1XQW_vGUPzSWIaP0TqQHqC1T-heKvz85KP6ydjToazSofClksIHtT1fiagq_r-Dlp15TLBfsUWcZJfGkVVbz_gf0Zf5e4wMNPztBpA-HanoZJH9VdRSt6gfPxEzeNLQrsyUlD2JzISpw3kNInYQp9mdgbZM-prZSkfmmhB_SekkYeDbGnBYWr-Becs6JkPnFxAYTomyelY5nW4IRXVFKPz_ilTSLRDs_MEj9s9JLuVc7iAmCnAq4gYWHUiVU"
-                    />
-                    <button className="absolute right-4 top-4 rounded-full bg-slate-800/80 p-2 shadow-sm hover:bg-slate-700 hover:text-red-500 cursor-pointer text-slate-400 border border-white/10 transition-all hover:scale-110 active:scale-95">
-                      <span className="material-symbols-outlined text-[20px] block">
-                        favorite
-                      </span>
-                    </button>
-                  </div>
-                  <div className="flex flex-1 flex-col p-5 bg-slate-800/30 border-t border-white/5">
-                    <div className="mb-2 flex items-center justify-between">
-                      <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase bg-slate-800/80 border border-white/5 px-2 py-0.5 rounded">
-                        PowerStop
-                      </span>
-                      <span className="text-xs text-slate-500 font-mono">
-                        #K2009
-                      </span>
-                    </div>
-                    <h3 className="mb-2 text-base font-bold leading-tight text-slate-200 group-hover:text-primary transition-colors line-clamp-2 h-10">
-                      Z23 Evolution Sport Brake Upgrade Kit
-                    </h3>
-                    <div className="mb-4 flex items-center gap-2">
-                      <div className="flex text-amber-400 text-sm">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <span
-                            key={i}
-                            className="material-symbols-outlined text-[16px] fill-current"
-                          >
-                            star
-                          </span>
-                        ))}
-                      </div>
-                      <span className="text-xs font-medium text-slate-500">
-                        (1024)
-                      </span>
-                    </div>
-                    <div className="mt-auto pt-4 border-t border-dashed border-white/10">
-                      <div className="flex items-baseline justify-between mb-3">
-                        <span className="text-2xl font-bold text-white">
-                          $219.99
-                        </span>
-                        <div className="flex items-center text-xs text-green-400 bg-green-500/10 px-2 py-1 rounded font-medium border border-green-500/20">
-                          <span className="material-symbols-outlined text-[14px] mr-1">
-                            local_shipping
-                          </span>
-                          Free Shipping
-                        </div>
-                      </div>
-                      <p className="mb-3 text-xs text-slate-500">
-                        Sold by{" "}
-                        <span className="font-semibold text-slate-300">
-                          AutoPartsPro Direct
-                        </span>
-                      </p>
-                      <button className="w-full flex items-center justify-center gap-2 rounded-xl bg-primary py-2.5 text-sm font-bold text-white shadow-lg shadow-blue-500/20 transition-all hover:bg-primary-dark hover:shadow-blue-500/40 active:scale-[0.98]">
-                        <span className="material-symbols-outlined text-[18px]">
-                          shopping_cart
-                        </span>
-                        Add to Cart
-                      </button>
-                    </div>
-                  </div>
-                </Link>
+  {!loading && products.map((product) => (
+    <Link
+      key={product.id}
+      to={`/product/${product.id}`}
+      className="group rounded-2xl overflow-hidden flex flex-col bg-slate-800/40 border border-white/5 hover:border-primary/40 transition-all no-underline"
+    >
+      <div className="h-56 flex items-center justify-center p-6">
+        <img
+          src={product.image}
+          alt={product.name}
+          className="max-h-full object-contain"
+        />
+      </div>
 
-                {/* Card 5 */}
-                <Link to="/product/5" className="group rounded-2xl overflow-hidden flex flex-col relative bg-slate-800/40 backdrop-blur-md border border-white/5 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.4)] hover:shadow-[0_0_15px_rgba(59,130,246,0.15)] hover:border-primary/40 transition-all duration-300 no-underline">
-                  <div className="absolute top-4 left-4 z-20 flex items-center gap-1.5 bg-green-500/20 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-bold text-green-400 shadow-lg shadow-green-900/20 border border-green-500/30">
-                    <span className="material-symbols-outlined text-[14px]">
-                      check_circle
-                    </span>
-                    Guaranteed Fit
-                  </div>
-                  <div className="relative flex h-56 items-center justify-center bg-gradient-to-b from-slate-800/80 to-slate-900/80 p-6 group-hover:scale-[1.02] transition-transform duration-500">
-                    <img
-                      alt="Wagner ThermoQuiet"
-                      className="max-h-full object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)]"
-                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuBoUYVwyqSy8cTUSANSwJU25YqIyKmECAImbNFPlkDGA2SOViemmE-M6xhleAfA_jjL0zJ35nzpAowEhrSyX8HWeHpcoZYKZ6gJ4N169lrBpj30p8PIoHxQptOZbI5EcSJXTp63vE8PlOVdAYnGLrN1cS1xE1n9uxGvBX3dAx3y5M1Kg5lCmpCxOfUnSL8mi72DjcaSxCsC0M9WZ1NNPIu1KK3eKCpQxdh-CpRT76s3VYWsZpYg1QzKK20O4lpUN9r1BpJwsmHyPcA-"
-                    />
-                    <button className="absolute right-4 top-4 rounded-full bg-slate-800/80 p-2 shadow-sm hover:bg-slate-700 hover:text-red-500 cursor-pointer text-slate-400 border border-white/10 transition-all hover:scale-110 active:scale-95">
-                      <span className="material-symbols-outlined text-[20px] block">
-                        favorite
-                      </span>
-                    </button>
-                  </div>
-                  <div className="flex flex-1 flex-col p-5 bg-slate-800/30 border-t border-white/5">
-                    <div className="mb-2 flex items-center justify-between">
-                      <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase bg-slate-800/80 border border-white/5 px-2 py-0.5 rounded">
-                        Wagner
-                      </span>
-                      <span className="text-xs text-slate-500 font-mono">
-                        #QC1324
-                      </span>
-                    </div>
-                    <h3 className="mb-2 text-base font-bold leading-tight text-slate-200 group-hover:text-primary transition-colors line-clamp-2 h-10">
-                      ThermoQuiet Ceramic Disc Brake Pad Set
-                    </h3>
-                    <div className="mb-4 flex items-center gap-2">
-                      <div className="flex text-amber-400 text-sm">
-                        <span className="material-symbols-outlined text-[16px] fill-current">
-                          star
-                        </span>
-                        <span className="material-symbols-outlined text-[16px] fill-current">
-                          star
-                        </span>
-                        <span className="material-symbols-outlined text-[16px] fill-current">
-                          star
-                        </span>
-                        <span className="material-symbols-outlined text-[16px] fill-current">
-                          star
-                        </span>
-                        <span className="material-symbols-outlined text-[16px] text-slate-600">
-                          star
-                        </span>
-                      </div>
-                      <span className="text-xs font-medium text-slate-500">
-                        (67)
-                      </span>
-                    </div>
-                    <div className="mt-auto pt-4 border-t border-dashed border-white/10">
-                      <div className="flex items-baseline justify-between mb-3">
-                        <span className="text-2xl font-bold text-white">
-                          $38.99
-                        </span>
-                      </div>
-                      <p className="mb-3 text-xs text-slate-500">
-                        Sold by{" "}
-                        <span className="font-semibold text-slate-300">
-                          Global Parts
-                        </span>
-                      </p>
-                      <button className="w-full flex items-center justify-center gap-2 rounded-xl bg-primary py-2.5 text-sm font-bold text-white shadow-lg shadow-blue-500/20 transition-all hover:bg-primary-dark hover:shadow-blue-500/40 active:scale-[0.98]">
-                        <span className="material-symbols-outlined text-[18px]">
-                          shopping_cart
-                        </span>
-                        Add to Cart
-                      </button>
-                    </div>
-                  </div>
-                </Link>
+      <div className="p-5">
+        <span className="text-xs text-slate-400">{product.brand}</span>
+        <h3 className="text-white font-bold mt-1">{product.name}</h3>
+        <p className="text-lg font-bold text-primary mt-2">
+          ${product.price}
+        </p>
+      </div>
+    </Link>
+  ))}
 
-                {/* Card 6 */}
-                <Link to="/product/6" className="group rounded-2xl overflow-hidden flex flex-col relative bg-slate-800/40 backdrop-blur-md border border-white/5 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.4)] hover:shadow-[0_0_15px_rgba(59,130,246,0.15)] hover:border-primary/40 transition-all duration-300 no-underline">
-                  <div className="absolute top-4 left-4 z-20 flex items-center gap-1.5 bg-green-500/20 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-bold text-green-400 shadow-lg shadow-green-900/20 border border-green-500/30">
-                    <span className="material-symbols-outlined text-[14px]">
-                      check_circle
-                    </span>
-                    Guaranteed Fit
-                  </div>
-                  <div className="relative flex h-56 items-center justify-center bg-gradient-to-b from-slate-800/80 to-slate-900/80 p-6 group-hover:scale-[1.02] transition-transform duration-500">
-                    <img
-                      alt="Motorcraft OEM Pads"
-                      className="max-h-full object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)]"
-                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGZZwhuf-HE2Zp0vEEoJdU_wROodTkCoigitxgwQdPCMLy_54XT-Mv_EcASqmx0lUHiFistByC2qMqJuLjmAryozt0xQrvyY4OkfoQppUSY-VMUDATYY1eCCuwcx36OUItccmdGuCwSUQDj5oxqmuFN8RbvSMMxESeOMsmLeLFDUuzzDRZybTVFzKygCfmDO5yvuxNA6LZsRd1nIKDQbb-XRgBySJWqOAGZVpRGH62J11SDSyhCsh7CenS_lSoO1XbXSrm6E2b-PeV"
-                    />
-                    <button className="absolute right-4 top-4 rounded-full bg-slate-800/80 p-2 shadow-sm hover:bg-slate-700 hover:text-red-500 cursor-pointer text-slate-400 border border-white/10 transition-all hover:scale-110 active:scale-95">
-                      <span className="material-symbols-outlined text-[20px] block">
-                        favorite
-                      </span>
-                    </button>
-                  </div>
-                  <div className="flex flex-1 flex-col p-5 bg-slate-800/30 border-t border-white/5">
-                    <div className="mb-2 flex items-center justify-between">
-                      <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase bg-slate-800/80 border border-white/5 px-2 py-0.5 rounded">
-                        Motorcraft
-                      </span>
-                      <span className="text-xs text-slate-500 font-mono">
-                        #BR1085
-                      </span>
-                    </div>
-                    <h3 className="mb-2 text-base font-bold leading-tight text-slate-200 group-hover:text-primary transition-colors line-clamp-2 h-10">
-                      Original Equipment Front Brake Pads
-                    </h3>
-                    <div className="mb-4 flex items-center gap-2">
-                      <div className="flex text-amber-400 text-sm">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <span
-                            key={i}
-                            className="material-symbols-outlined text-[16px] fill-current"
-                          >
-                            star
-                          </span>
-                        ))}
-                      </div>
-                      <span className="text-xs font-medium text-slate-500">
-                        (312)
-                      </span>
-                    </div>
-                    <div className="mt-auto pt-4 border-t border-dashed border-white/10">
-                      <div className="flex items-baseline justify-between mb-3">
-                        <span className="text-2xl font-bold text-white">
-                          $54.50
-                        </span>
-                      </div>
-                      <p className="mb-3 text-xs text-slate-500">
-                        Sold by{" "}
-                        <span className="font-semibold text-slate-300">
-                          Ford Parts Direct
-                        </span>
-                      </p>
-                      <button className="w-full flex items-center justify-center gap-2 rounded-xl bg-primary py-2.5 text-sm font-bold text-white shadow-lg shadow-blue-500/20 transition-all hover:bg-primary-dark hover:shadow-blue-500/40 active:scale-[0.98]">
-                        <span className="material-symbols-outlined text-[18px]">
-                          shopping_cart
-                        </span>
-                        Add to Cart
-                      </button>
-                    </div>
-                  </div>
-                </Link>
-              </div>
+</div>
+
 
               {/* pagination */}
               <div className="mt-12 flex items-center justify-center">

@@ -1,5 +1,8 @@
-import React from "react";
-import arrowDown from '../../assets/arrow_down.svg';
+import { useEffect, useState } from "react";
+import { fetchFeaturedProducts } from "../../api/products";
+
+import arrowDown from "../../assets/arrow_down.svg";
+import { useNavigate } from "react-router-dom";
 
 const categories = [
   { icon: "build_circle", label: "Brakes & Rotors" },
@@ -10,48 +13,8 @@ const categories = [
   { icon: "handyman", label: "Tools" },
 ];
 
-const deals = [
-  {
-    icon: "disc_full",
-    seller: "AutoKing",
-    title: "Premium Ceramic Brake Pads - Front Set",
-    oldPrice: "$45.00",
-    price: "$38.25",
-    rating: "4.5",
-    ratingCount: "(42)",
-    badge: "-15% OFF",
-    badgeColor: "bg-rose-500/90",
-    badgeBorder: "border-rose-400/20",
-    bestSeller: false,
-  },
-  {
-    icon: "battery_charging_full",
-    seller: "PartsDirect",
-    title: "12V Heavy Duty Car Battery",
-    price: "$129.99",
-    rating: "5.0",
-    ratingCount: "(128)",
-    bestSeller: false,
-  },
-  {
-    icon: "settings",
-    seller: "Gearheadz",
-    title: "Synthetic Motor Oil 5W-30 - 5 Quart",
-    price: "$28.50",
-    rating: "4.0+",
-    ratingCount: "(850+)",
-    bestSeller: true,
-  },
-  {
-    icon: "highlight",
-    seller: "Lumina",
-    title: "LED Headlight Conversion Kit",
-    price: "$49.99",
-    rating: "4.0",
-    ratingCount: "(56)",
-    bestSeller: false,
-  },
-];
+
+
 
 const brands = [
   { icon: "verified", name: "BOSCH" },
@@ -62,6 +25,36 @@ const brands = [
 ];
 
 const HomePage = () => {
+  const [deals, setDeals] = useState<any[]>([]);
+const [loading, setLoading] = useState(true);
+const [error, setError] = useState("");
+const navigate = useNavigate();
+const [query, setQuery] = useState("");
+
+  useEffect(() => {
+  fetchFeaturedProducts()
+
+    .then((products) => {
+      const mappedDeals = products.map((p, index) => ({
+  id: p.id, // ✅ ADD THIS
+  image: p.image,
+  seller: p.brand,
+  title: p.name,
+  oldPrice: index === 0 ? "$45.00" : undefined,
+  price: `$${p.price}`,
+  rating: "4.5",
+  ratingCount: "(120+)",
+  badge: index === 0 ? "-15% OFF" : undefined,
+  badgeColor: "bg-rose-500/90",
+  badgeBorder: "border-rose-400/20",
+  bestSeller: index === 2,
+}));
+      setDeals(mappedDeals);
+    })
+    .catch(() => setError("Failed to load products"))
+    .finally(() => setLoading(false));
+}, []);
+
   return (
     <div className="bg-[#0f172a] -mr-4 -ml-5 -mt-8 font-display text-slate-100 antialiased selection:bg-primary selection:text-white overflow-x-hidden">
       <div className="relative flex min-h-screen w-full flex-col">
@@ -114,15 +107,23 @@ const HomePage = () => {
                         </span>
                       </div>
                       <input
-                        className="flex-1 w-full bg-transparent border-none focus:ring-0 text-white placeholder:text-slate-400/70 px-4 text-lg h-14 rounded-none focus:outline-none"
-                        placeholder="Search part number, keyword or VIN..."
-                      />
+  value={query}
+  onChange={(e) => setQuery(e.target.value)}
+  className="flex-1 w-full bg-transparent border-none focus:ring-0 text-white placeholder:text-slate-400/70 px-4 text-lg h-14 focus:outline-none"
+  placeholder="Search part number, keyword or VIN..."
+/>
+
                       <button
-                        type="button"
-                        className="bg-primary hover:bg-blue-500 text-white font-bold px-8 rounded-xl transition-all h-14 flex items-center gap-2 shadow-lg shadow-blue-600/20 hover:shadow-blue-600/40 hover:-translate-y-0.5 active:translate-y-0"
-                      >
-                        <span>Search</span>
-                      </button>
+  type="button"
+  onClick={() => {
+    if (!query.trim()) return;
+    navigate(`/search?q=${encodeURIComponent(query)}`);
+  }}
+  className="bg-primary hover:bg-blue-500 text-white font-bold px-8 rounded-xl h-14 flex items-center gap-2"
+>
+  Search
+</button>
+
                     </form>
                   </div>
                 </div>
@@ -292,7 +293,7 @@ const HomePage = () => {
           </section>
 
           {/* FEATURED DEALS */}
-          <section className="py-16 px-0 bg-[#0f172a] relative w-full -mt-10 md:pl-20 md:pr-16">
+          <section className="py-16 px-0 bg-[#0f172a] relative w-full -mt-10">
             <div className="absolute top-1/2 left-0 w-96 h-96 bg-blue-600/10 rounded-full blur-[100px] -translate-y-1/2 -ml-20 pointer-events-none" />
             <div className="w-full relative z-10">
               <div className="w-full px-6 md:pl-20 md:pr-16">
@@ -324,94 +325,71 @@ const HomePage = () => {
                     </button>
                   </div>
                 </div>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                {deals.map((deal, i) => (
-                  <div
-                    key={deal.title}
-                    className="group bg-slate-800/40 backdrop-blur-sm rounded-2xl border border-white/5 flex flex-col shadow-lg hover:shadow-2xl hover:shadow-blue-900/20 hover:border-blue-500/30 transition-all duration-300 overflow-hidden relative"
-                  >
-                    <div className="h-56 bg-slate-900/40 relative p-6 flex items-center justify-center overflow-hidden">
-                      {i === 0 && (
-                        <div className="absolute inset-0 bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      )}
-                      <div className="transform group-hover:scale-105 transition-transform duration-500">
-                        <span className="material-symbols-outlined text-8xl text-slate-600 drop-shadow-lg">
-                          {deal.icon}
-                        </span>
-                      </div>
-                      {deal.badge && (
-                        <div
-                          className={`absolute top-3 right-3 ${deal.badgeColor} backdrop-blur-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-lg border ${deal.badgeBorder}`}
-                        >
-                          {deal.badge}
-                        </div>
-                      )}
-                      {deal.bestSeller && (
-                        <div className="absolute top-3 left-3 bg-emerald-500/90 backdrop-blur-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-lg flex items-center gap-1 border border-emerald-400/20">
-                          <span className="material-symbols-outlined text-[10px]">
-                            trending_up
-                          </span>
-                          Best Seller
-                        </div>
-                      )}
-                    </div>
-                    <div className="p-5 flex flex-col flex-1">
-                      <div className="text-xs text-slate-400 mb-2 font-medium">
-                        Sold by <span className="text-blue-400">{deal.seller}</span>
-                      </div>
-                      <h3 className="font-bold text-slate-100 text-lg mb-2 leading-snug group-hover:text-blue-400 transition-colors">
-                        {deal.title}
-                      </h3>
-                      <div className="flex items-center gap-1 mb-3">
-                        <span className="material-symbols-outlined text-yellow-500 text-sm">
-                          star
-                        </span>
-                        <span className="material-symbols-outlined text-yellow-500 text-sm">
-                          star
-                        </span>
-                        <span className="material-symbols-outlined text-yellow-500 text-sm">
-                          star
-                        </span>
-                        <span className="material-symbols-outlined text-yellow-500 text-sm">
-                          star
-                        </span>
-                        {i === 0 ? (
-                          <span className="material-symbols-outlined text-yellow-500 text-sm">
-                            star_half
-                          </span>
-                        ) : (
-                          <span className="material-symbols-outlined text-yellow-500 text-sm">
-                            star
-                          </span>
-                        )}
-                        <span className="text-xs text-slate-500 ml-1">
-                          {deal.ratingCount}
-                        </span>
-                      </div>
-                      <div className="mt-auto flex items-center justify-between pt-2 border-t border-white/5">
-                        <div className="flex flex-col">
-                          {deal.oldPrice && (
-                            <span className="text-sm text-slate-500 line-through">
-                              {deal.oldPrice}
-                            </span>
-                          )}
-                          <span className="text-2xl font-bold text-white">
-                            {deal.price}
-                          </span>
-                        </div>
-                        <button
-                          type="button"
-                          className="h-10 w-10 rounded-full bg-slate-700/50 text-white hover:bg-blue-600 hover:shadow-[0_0_10px_rgba(59,130,246,0.3)] flex items-center justify-center transition-all border border-white/5 hover:border-blue-500"
-                        >
-                          <span className="material-symbols-outlined">add</span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              
+               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+
+  {/* 🔄 Loading state */}
+  {loading && (
+    <p className="text-slate-400 text-center col-span-full">
+      Loading deals...
+    </p>
+  )}
+
+  {/* ❌ Error state */}
+  {error && (
+    <p className="text-red-400 text-center col-span-full">
+      {error}
+    </p>
+  )}
+
+  {/* ✅ Products */}
+  {!loading && !error && deals.map((deal) => (
+  <div
+    key={deal.id}
+    onClick={() => navigate(`/product/${deal.id}`)}
+    className="group cursor-pointer bg-slate-800/40 backdrop-blur-sm rounded-2xl border border-white/5 flex flex-col shadow-lg hover:shadow-2xl hover:shadow-blue-900/20 hover:border-blue-500/30 transition-all duration-300 overflow-hidden relative"
+  >
+
+
+    {/* IMAGE */}
+    <div className="h-56 bg-slate-900/40 relative overflow-hidden">
+      <img
+        src={deal.image}
+        alt={deal.title}
+        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+      />
+    </div>
+
+    {/* CONTENT */}
+    <div className="p-5 flex flex-col flex-1">
+      <div className="text-xs text-slate-400 mb-2 font-medium">
+        Sold by <span className="text-blue-400">{deal.seller}</span>
+      </div>
+
+      <h3 className="font-bold text-slate-100 text-lg mb-2 leading-snug group-hover:text-blue-400 transition-colors">
+        {deal.title}
+      </h3>
+
+      <div className="mt-auto flex items-center justify-between pt-2 border-t border-white/5">
+        <span className="text-2xl font-bold text-white">
+          {deal.price}
+        </span>
+
+        <button
+          type="button"
+          className="h-10 w-10 rounded-full bg-slate-700/50 text-white hover:bg-blue-600 flex items-center justify-center transition-all"
+        >
+          <span className="material-symbols-outlined">add</span>
+        </button>
+      </div>
+    </div>
+  </div>
+))}
+
+</div>
+
             </div>
+          </div>
           </section>
 
           {/* TRUSTED BRANDS */}

@@ -1,6 +1,37 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { fetchProductById, Product } from "../../api/products";
+
+
 
 const ProductDetail: React.FC = () => {
+const { productId } = useParams<{ productId: string }>();
+
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+    useEffect(() => {
+  if (!productId) return;
+
+  fetchProductById(productId)
+    .then((data) => {
+      setProduct(data);
+
+    })
+    .catch(() => setError("Product not found"))
+    .finally(() => setLoading(false));
+}, [productId]);
+
+
+    if (loading) {
+    return <div className="text-center text-slate-400 mt-20">Loading product...</div>;
+  }
+
+  if (error || !product) {
+    return <div className="text-center text-red-400 mt-20">{error}</div>;
+  }
+
   return (
     <div>
       <meta charSet="utf-8" />
@@ -27,10 +58,14 @@ const ProductDetail: React.FC = () => {
           </nav>
           <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 mb-20">
             <div className="lg:col-span-7 space-y-6">
-              <div className="relative aspect-[5/4] w-full rounded-3xl overflow-hidden glass-effect group">
-                <div className="absolute inset-0 bg-gradient-to-br from-slate-900/40 via-transparent to-blue-900/10" />
-                <div className="relative z-10 w-full h-full flex items-center justify-center p-16">
-                  <img alt="Product View" className="w-full h-full object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-transform duration-1000 ease-out group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDNTUFO1XdKYvaCpEcqGZuFhylyHqNFYpdWgmJjjfQ0oJl2oLgKs80oqWCXNSIkRgPH30GApqsbRlYfiGytCQR2D9qZ0L-lkDV5AaCHvamQvlw8L15JgvHqBLB_MGRSluXTBgw-qAzfA0ViDL1xLB2kTyixF8VGzk9YBi_BaGRb0xOnV-9C23e6oQuIDiWXZ9r77hv65YPR2sl1mjbCMH8-Kp7zU5czV53i-W59NzPQxe64zoRM8OSm39SqAJi5ROexUGx14d_jHrBy" />
+<div className="relative w-full h-[420px] md:h-[520px] rounded-3xl overflow-hidden glass-effect group">
+<div className="absolute inset-0 bg-gradient-to-br from-slate-900/40 via-transparent to-blue-900/10 pointer-events-none z-0" />
+<div className="relative z-10 w-full h-full flex items-center justify-center p-8">
+<img
+  alt={product.name}
+  className="w-full h-full object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-transform duration-1000 ease-out group-hover:scale-105"
+  src={product.image}
+/>
                 </div>
                 <div className="absolute top-8 left-8 flex gap-3">
                   <span className="bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg">Premium Grade</span>
@@ -57,10 +92,14 @@ const ProductDetail: React.FC = () => {
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-3xl rounded-full" />
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
-                    <span className="text-xs font-bold text-primary tracking-widest uppercase">Bosch Performance</span>
+<span className="text-xs font-bold text-primary tracking-widest uppercase">
+  {product.brand}
+</span>
                     <div className="h-[1px] flex-1 bg-white/10" />
                   </div>
-                  <h2 className="text-3xl lg:text-4xl font-extrabold text-white leading-[1.15] tracking-tight">Heavy Duty Alternator 12V 90A Series</h2>
+<h2 className="text-3xl lg:text-4xl font-extrabold text-white">
+  {product.name}
+</h2>
                   <div className="flex items-center gap-6">
                     <div className="flex items-center gap-1.5">
                       <div className="flex text-yellow-500">
@@ -70,9 +109,13 @@ const ProductDetail: React.FC = () => {
                         <span className="material-symbols-outlined text-sm fill-current">star</span>
                         <span className="material-symbols-outlined text-sm fill-current text-slate-600">star</span>
                       </div>
-                      <span className="text-xs font-bold text-slate-300">4.8 (124)</span>
+<span className="text-xs font-bold text-slate-300">
+  {product.rating} 
+</span>
                     </div>
-                    <span className="text-xs font-medium text-slate-500">Part No: 31400-M74L00</span>
+<span className="text-xs font-medium text-slate-500">
+  Part No: {product.partNumber ?? "N/A"}
+</span>
                   </div>
                 </div>
                 <div className="p-5 rounded-3xl bg-emerald-500/5 border border-emerald-500/20 flex items-center justify-between">
@@ -92,7 +135,9 @@ const ProductDetail: React.FC = () => {
                     <div>
                       <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Total Price</p>
                       <div className="flex items-center gap-4">
-                        <span className="text-5xl font-black text-white">$125.00</span>
+<span className="text-5xl font-black text-white">
+  ${product.price}
+</span>
                         <span className="text-lg text-slate-600 line-through font-bold">$160.00</span>
                       </div>
                     </div>
@@ -113,11 +158,15 @@ const ProductDetail: React.FC = () => {
                 <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
                   <div className="flex items-center gap-3">
                     <span className="material-symbols-outlined text-primary text-xl">verified</span>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-tight">12 Month<br />Warranty</span>
+<span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-tight">
+  {product.warranty}
+</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="material-symbols-outlined text-primary text-xl">local_shipping</span>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-tight">Next Day<br />Delivery</span>
+<span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-tight">
+  {product.delivery}
+</span>
                   </div>
                 </div>
               </div>
@@ -135,36 +184,45 @@ const ProductDetail: React.FC = () => {
                   <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-2">Electrical</p>
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium text-slate-400">Voltage</span>
-                    <span className="text-base font-bold text-white">12V</span>
+<span className="text-base font-bold text-white">
+  {product.voltage}
+</span>
                   </div>
                 </div>
                 <div className="glass-effect rounded-2xl p-6 group hover:border-neon-blue/40 transition-colors">
                   <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-2">Performance</p>
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium text-slate-400">Amperage</span>
-                    <span className="text-base font-bold text-white">90 Amps</span>
+<span className="text-base font-bold text-white">
+  {product.amperage}
+</span>
                   </div>
                 </div>
                 <div className="glass-effect rounded-2xl p-6 group hover:border-neon-blue/40 transition-colors">
                   <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-2">Hardware</p>
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium text-slate-400">Pulley Type</span>
-                    <span className="text-base font-bold text-white">6-Groove Serpentine</span>
+<span className="text-base font-bold text-white">
+  {product.pulleyType}
+</span>
                   </div>
                 </div>
                 <div className="glass-effect rounded-2xl p-6 group hover:border-neon-blue/40 transition-colors">
                   <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-2">Build</p>
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium text-slate-400">Housing</span>
-                    <span className="text-base font-bold text-white">Die-Cast Aluminum</span>
+<span className="text-base font-bold text-white">
+  {product.housing}
+</span>
                   </div>
                 </div>
               </div>
               <div className="prose prose-invert max-w-none">
                 <h3 className="text-xl font-bold text-white mb-4">Engineering Excellence</h3>
                 <p className="text-slate-400 leading-relaxed text-sm">
-                  Engineered to meet the highest industry standards, this Bosch alternator offers unmatched reliability for your vehicle's electrical demands. Utilizing advanced thermal management and precision bearings, it ensures consistent power delivery even under extreme engine bay temperatures. The high-density copper windings maximize efficiency while reducing noise and vibration.
-                </p>
+  {product.description}
+</p>
+
               </div>
             </div>
             <div className="lg:col-span-4 space-y-6">
