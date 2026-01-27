@@ -32,6 +32,11 @@ export const adminLogin = async (req: Request, res: Response) => {
       return res.status(401).json({ message: "Invalid admin credentials" });
     }
 
+    // Check if admin account is blocked
+    if (admin.status === 'blocked') {
+      return res.status(403).json({ message: "Your admin account has been blocked. Please contact support." });
+    }
+
     const isValid = await bcrypt.compare(password, admin.password);
 
     if (!isValid) {
@@ -44,7 +49,7 @@ export const adminLogin = async (req: Request, res: Response) => {
       { expiresIn: "7d" }
     );
 
-    res.cookie("token", token, cookieOptions).json({
+    res.cookie("admin_token", token, cookieOptions).json({
       id: admin.id,
       name: admin.name,
       email: admin.email,
@@ -57,7 +62,7 @@ export const adminLogin = async (req: Request, res: Response) => {
 };
 
 export const adminLogout = (_req: Request, res: Response) => {
-  res.clearCookie("token", cookieOptions);
+  res.clearCookie("admin_token", cookieOptions);
   res.json({ message: "Logged out" });
 };
 

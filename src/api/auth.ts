@@ -9,7 +9,10 @@ export const loginUser = async (data: {
     body: JSON.stringify(data),
   });
 
-  if (!res.ok) throw new Error("Login failed");
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.message || "Login failed");
+  }
   return res.json();
 };
 

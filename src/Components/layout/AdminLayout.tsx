@@ -20,13 +20,20 @@ export const AdminLayout: React.FC = () => {
     const fetchAdmin = async () => {
       try {
         const data = await getAdminProfile();
+        // Verify that the user is actually an admin
+        if (data.role !== 'admin') {
+          console.error('Access denied: Not an admin user');
+          navigate('/admin-panel/login');
+          return;
+        }
         setAdmin(data);
       } catch (err) {
         console.error('Failed to fetch admin profile:', err);
+        navigate('/admin-panel/login');
       }
     };
     fetchAdmin();
-  }, []);
+  }, [navigate]);
 
   const handleLogout = async () => {
     try {

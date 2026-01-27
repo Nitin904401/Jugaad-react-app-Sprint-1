@@ -251,7 +251,7 @@ const LoginForm: React.FC = () => {
         isOpen: true,
         type: "error",
         title: "Login Failed",
-        message: "Invalid email or password. Please try again.",
+        message: (err as Error).message || "Invalid email or password. Please try again.",
       });
     } finally {
       setIsLoading(false);

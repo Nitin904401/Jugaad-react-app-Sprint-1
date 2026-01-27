@@ -78,7 +78,7 @@ export const vendorRegister = async (req: VendorRequest, res: Response) => {
     const vendor = result.rows[0];
     const token = signToken({ id: vendor.id, role: "vendor" });
 
-    res.cookie("token", token, cookieOptions).json({
+    res.cookie("vendor_token", token, cookieOptions).json({
       ...vendor,
       role: "vendor",
       message: "Registration submitted successfully. Awaiting verification.",
@@ -110,6 +110,11 @@ export const vendorLogin = async (req: Request, res: Response) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
+    // Check if vendor account is blocked
+    if (vendor.status === 'blocked') {
+      return res.status(403).json({ message: "Your account has been blocked by admin. Please contact support." });
+    }
+
     const match = await bcrypt.compare(password, vendor.password);
     if (!match) {
       return res.status(401).json({ message: "Invalid credentials" });
@@ -117,7 +122,7 @@ export const vendorLogin = async (req: Request, res: Response) => {
 
     const token = signToken({ id: vendor.id, role: "vendor" });
 
-    res.cookie("token", token, cookieOptions).json({
+    res.cookie("vendor_token", token, cookieOptions).json({
       id: vendor.id,
       name: vendor.name,
       email: vendor.email,
@@ -134,7 +139,7 @@ export const vendorLogin = async (req: Request, res: Response) => {
 };
 
 export const vendorLogout = (_req: Request, res: Response) => {
-  res.clearCookie("token", cookieOptions);
+  res.clearCookie("vendor_token", cookieOptions);
   res.json({ message: "Logged out" });
 };
 
