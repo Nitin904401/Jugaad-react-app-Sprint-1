@@ -1,72 +1,100 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getAllVendors, updateVendorStatus, type AdminVendor } from '../../api/vendors';
+import Modal from '../../Components/common/Modal';
 
 export const AdminVendorsPage: React.FC = () => {
   const navigate = useNavigate();
   const [statusFilter, setStatusFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
+  const [vendors, setVendors] = useState<AdminVendor[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [updatingVendorId, setUpdatingVendorId] = useState<string | null>(null);
+  const [modal, setModal] = useState<{
+    isOpen: boolean;
+    type: 'success' | 'error';
+    title: string;
+    message: string;
+  }>({ isOpen: false, type: 'success', title: '', message: '' });
 
-  const vendors = [
-    {
-      name: 'Autopart Pro',
-      email: 'contact@autopartpro.com',
-      date: '2023-10-26',
-      status: 'Approved',
-      color: 'green',
-    },
-    {
-      name: 'Speedy Spares',
-      email: 'info@speedyspares.co',
-      date: '2023-10-25',
-      status: 'Pending',
-      color: 'amber',
-    },
-    {
-      name: 'Gearhead Supply',
-      email: 'support@gearheadsupply.com',
-      date: '2023-10-24',
-      status: 'Suspended',
-      color: 'red',
-    },
-    {
-      name: 'AutoParts Hub',
-      email: 'hello@autohub.com',
-      date: '2023-10-23',
-      status: 'Approved',
-      color: 'green',
-    },
-    {
-      name: 'Quick Parts Co',
-      email: 'support@quickparts.com',
-      date: '2023-10-22',
-      status: 'Pending',
-      color: 'amber',
-    },
-  ];
+  useEffect(() => {
+    fetchVendors();
+  }, []);
+
+  const fetchVendors = async () => {
+    try {
+      const data = await getAllVendors();
+      setVendors(data);
+    } catch (err) {
+      console.error('Failed to fetch vendors:', err);
+      setModal({
+        isOpen: true,
+        type: 'error',
+        title: 'Error',
+        message: 'Failed to load vendors',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleStatusChange = async (vendorId: string, newStatus: string) => {
+    setUpdatingVendorId(vendorId);
+
+    try {
+      await updateVendorStatus(vendorId, newStatus);
+      // Update local state
+      setVendors(vendors.map(vendor => 
+        vendor.id === vendorId ? { ...vendor, status: newStatus } : vendor
+      ));
+      setModal({
+        isOpen: true,
+        type: 'success',
+        title: 'Success',
+        message: `Vendor ${newStatus} successfully`,
+      });
+    } catch (err: any) {
+      setModal({
+        isOpen: true,
+        type: 'error',
+        title: 'Error',
+        message: err.message || 'Failed to update vendor status',
+      });
+    } finally {
+      setUpdatingVendorId(null);
+    }
+  };
 
   const filteredVendors = vendors.filter((vendor) => {
     const matchesSearch =
       vendor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      vendor.email.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === 'All' || vendor.status === statusFilter;
+      vendor.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      vendor.company_name?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = statusFilter === 'All' || 
+      (statusFilter.toLowerCase() === vendor.status?.toLowerCase());
     return matchesSearch && matchesStatus;
   });
 
   const statusColorMap: Record<string, { bg: string; text: string }> = {
-    Approved: { bg: 'bg-green-500/20', text: 'text-green-400' },
-    Pending: { bg: 'bg-amber-500/20', text: 'text-amber-400' },
-    Suspended: { bg: 'bg-red-500/20', text: 'text-red-400' },
+    approved: { bg: 'bg-green-500/20', text: 'text-green-400' },
+    pending: { bg: 'bg-amber-500/20', text: 'text-amber-400' },
+    suspended: { bg: 'bg-red-500/20', text: 'text-red-400' },
+    rejected: { bg: 'bg-gray-500/20', text: 'text-gray-400' },
   };
+
+  if (loading) {
+    return (
+      <div className="w-full flex items-center justify-center py-20">
+        <div className="text-white text-lg">Loading vendors...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full">
       {/* Heading */}
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <h1 className="text-3xl font-bold text-white">Manage Vendors</h1>
-        <button className="flex items-center gap-2 h-10 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold transition">
-          ➕ Add New Vendor
-        </button>
       </div>
 
       {/* Search & Filters */}
@@ -116,37 +144,68 @@ export const AdminVendorsPage: React.FC = () => {
           <tbody className="divide-y divide-white/10">
             {filteredVendors.length > 0 ? (
               filteredVendors.map((vendor) => (
-                <tr key={vendor.email} className="hover:bg-white/5 transition">
+                <tr key={vendor.id} className="hover:bg-white/5 transition">
                   <td className="px-6 py-4 font-medium text-white">{vendor.name}</td>
                   <td className="px-6 py-4 text-slate-400">{vendor.email}</td>
-                  <td className="px-6 py-4 text-slate-400">{vendor.date}</td>
+                  <td className="px-6 py-4 text-slate-400">
+                    {new Date(vendor.created_at).toLocaleDateString()}
+                  </td>
                   <td className="px-6 py-4">
                     <span
                       className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        statusColorMap[vendor.status].bg
-                      } ${statusColorMap[vendor.status].text}`}
+                        statusColorMap[vendor.status?.toLowerCase()]?.bg || 'bg-gray-500/20'
+                      } ${statusColorMap[vendor.status?.toLowerCase()]?.text || 'text-gray-400'}`}
                     >
-                      {vendor.status}
+                      {vendor.status?.charAt(0).toUpperCase() + vendor.status?.slice(1)}
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <button 
-                      onClick={() => {
-                        if (vendor.status === 'Approved') {
-                          navigate(`/admin-panel/vendors/${vendor.email}`);
-                        }
-                      }}
-                      className="text-blue-400 hover:text-blue-300 font-medium transition"
-                    >
-                      {vendor.status === 'Approved' && 'View Details'}
-                      {vendor.status === 'Suspended' && 'Unsuspend'}
-                      {vendor.status === 'Pending' && 'Approve'}
-                    </button>
-                    {vendor.status === 'Pending' && (
-                      <button className="ml-4 text-red-400 hover:text-red-300 font-medium transition">
-                        Reject
-                      </button>
-                    )}
+                    <div className="flex items-center gap-3">
+                      {vendor.status === 'approved' && (
+                        <button 
+                          onClick={() => navigate(`/admin-panel/vendors/${vendor.id}`)}
+                          className="text-blue-400 hover:text-blue-300 font-medium transition"
+                        >
+                          View Details
+                        </button>
+                      )}
+                      {vendor.status === 'suspended' && (
+                        <button 
+                          onClick={() => handleStatusChange(vendor.id, 'approved')}
+                          disabled={updatingVendorId === vendor.id}
+                          className="text-green-400 hover:text-green-300 font-medium transition disabled:opacity-50"
+                        >
+                          {updatingVendorId === vendor.id ? 'Updating...' : 'Unsuspend'}
+                        </button>
+                      )}
+                      {vendor.status === 'pending' && (
+                        <>
+                          <button 
+                            onClick={() => handleStatusChange(vendor.id, 'approved')}
+                            disabled={updatingVendorId === vendor.id}
+                            className="text-green-400 hover:text-green-300 font-medium transition disabled:opacity-50"
+                          >
+                            {updatingVendorId === vendor.id ? 'Updating...' : 'Approve'}
+                          </button>
+                          <button 
+                            onClick={() => handleStatusChange(vendor.id, 'rejected')}
+                            disabled={updatingVendorId === vendor.id}
+                            className="text-red-400 hover:text-red-300 font-medium transition disabled:opacity-50"
+                          >
+                            Reject
+                          </button>
+                        </>
+                      )}
+                      {vendor.status === 'approved' && (
+                        <button 
+                          onClick={() => handleStatusChange(vendor.id, 'suspended')}
+                          disabled={updatingVendorId === vendor.id}
+                          className="text-red-400 hover:text-red-300 font-medium transition disabled:opacity-50"
+                        >
+                          Suspend
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))
@@ -164,9 +223,9 @@ export const AdminVendorsPage: React.FC = () => {
       {/* Pagination */}
       <div className="mt-6 flex items-center justify-between">
         <p className="text-sm text-slate-400">
-          Showing <span className="text-white font-medium">1</span> to{' '}
-          <span className="text-white font-medium">5</span> of{' '}
-          <span className="text-white font-medium">42</span> results
+          Showing <span className="text-white font-medium">{filteredVendors.length > 0 ? 1 : 0}</span> to{' '}
+          <span className="text-white font-medium">{filteredVendors.length}</span> of{' '}
+          <span className="text-white font-medium">{vendors.length}</span> results
         </p>
         <div className="flex items-center gap-2">
           <button
@@ -179,20 +238,19 @@ export const AdminVendorsPage: React.FC = () => {
             1
           </button>
           <button className="size-9 rounded-lg bg-slate-800 hover:bg-slate-700 text-white transition">
-            2
-          </button>
-          <button className="size-9 rounded-lg bg-slate-800 hover:bg-slate-700 text-white transition">
-            3
-          </button>
-          <span className="text-slate-400">…</span>
-          <button className="size-9 rounded-lg bg-slate-800 hover:bg-slate-700 text-white transition">
-            9
-          </button>
-          <button className="size-9 rounded-lg bg-slate-800 hover:bg-slate-700 text-white transition">
             ❯
           </button>
         </div>
       </div>
+
+      {/* Modal */}
+      <Modal
+        isOpen={modal.isOpen}
+        onClose={() => setModal({ ...modal, isOpen: false })}
+        type={modal.type}
+        title={modal.title}
+        message={modal.message}
+      />
     </div>
   );
 };

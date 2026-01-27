@@ -110,14 +110,26 @@ export const vendorLogin = async (req: Request, res: Response) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    // Check if vendor account is blocked
-    if (vendor.status === 'blocked') {
-      return res.status(403).json({ message: "Your account has been blocked by admin. Please contact support." });
-    }
-
     const match = await bcrypt.compare(password, vendor.password);
     if (!match) {
       return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    // Check vendor status
+    if (vendor.status === 'pending') {
+      return res.status(403).json({ message: "Your account is pending approval. Please wait for admin verification." });
+    }
+
+    if (vendor.status === 'suspended' || vendor.status === 'blocked') {
+      return res.status(403).json({ message: "Your account has been suspended. Please contact admin for assistance." });
+    }
+
+    if (vendor.status === 'rejected') {
+      return res.status(403).json({ message: "Your account application has been rejected. Please contact admin for more information." });
+    }
+
+    if (vendor.status !== 'approved') {
+      return res.status(403).json({ message: "Your account is not active. Please contact admin." });
     }
 
     const token = signToken({ id: vendor.id, role: "vendor" });

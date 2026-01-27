@@ -16,6 +16,57 @@ export interface Vendor {
   phone: string;
 }
 
+export interface AdminVendor {
+  id: string;
+  name: string;
+  email: string;
+  company_name: string;
+  phone_number: string;
+  status: string;
+  created_at: string;
+}
+
+// Admin API functions
+export const getAllVendors = async (): Promise<AdminVendor[]> => {
+  const res = await fetch("/api/admin/vendors", {
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.message || "Failed to fetch vendors");
+  }
+  return res.json();
+};
+
+export const updateVendorStatus = async (vendorId: string, status: string) => {
+  const res = await fetch(`/api/admin/vendors/${vendorId}/status`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ status }),
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.message || "Failed to update vendor status");
+  }
+  return res.json();
+};
+
+export const deleteVendor = async (vendorId: string) => {
+  const res = await fetch(`/api/admin/vendors/${vendorId}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.message || "Failed to delete vendor");
+  }
+  return res.json();
+};
+
 const mockVendors: Vendor[] = [
   {
     id: '1',

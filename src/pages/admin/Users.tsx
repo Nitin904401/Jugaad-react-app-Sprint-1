@@ -135,9 +135,7 @@ export const AdminUsersPage: React.FC = () => {
       {/* Title */}
       <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
         <h1 className="text-3xl font-bold text-white">Manage Users</h1>
-        <button className="flex items-center gap-2 h-10 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold transition">
-          ➕ Add New User
-        </button>
+      
       </div>
 
       {/* Filters */}
