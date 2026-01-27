@@ -162,6 +162,7 @@ export const vendorMe = (req: any, res: Response) => {
     bank_name: req.user.bank_name,
     pan_document: req.user.pan_document,
     cheque_document: req.user.cheque_document,
+    profile_picture: req.user.profile_picture,
     role: "vendor",
     created_at: req.user.created_at,
   });
@@ -184,14 +185,68 @@ export const vendorUpdateProfile = async (req: any, res: Response) => {
     currency
   } = req.body;
   const vendorId = req.user.id;
+  
+  // Handle profile picture upload or deletion
+  let shouldUpdateProfilePicture = false;
+  let profilePictureValue = null;
+  
+  if (req.file) {
+    // New file uploaded
+    shouldUpdateProfilePicture = true;
+    profilePictureValue = `uploads/${req.file.filename}`;
+  } else if (req.body.delete_profile_picture === 'true') {
+    // Delete existing profile picture
+    shouldUpdateProfilePicture = true;
+    profilePictureValue = null;
+  }
 
   if (!name || !company_name) {
     return res.status(400).json({ message: "Name and company name are required" });
   }
 
   try {
-    const result = await pool.query(
-      `UPDATE vendors SET 
+    let query, params;
+    
+    if (shouldUpdateProfilePicture) {
+      // Update with profile picture (set or delete)
+      query = `UPDATE vendors SET 
+        name = $1, 
+        email = $2,
+        phone_number = $3, 
+        company_name = $4, 
+        business_type = $5,
+        description = $6,
+        address = $7,
+        city = $8,
+        state = $9,
+        country = $10,
+        postal_code = $11,
+        website = $12,
+        currency = $13,
+        profile_picture = $14,
+        updated_at = CURRENT_TIMESTAMP
+       WHERE id = $15
+       RETURNING id, name, email, company_name, business_type, description, phone_number, address, city, state, country, postal_code, website, currency, tax_id, status, profile_picture, created_at`;
+      params = [
+        name, 
+        email || null,
+        phone_number || null, 
+        company_name, 
+        business_type || null,
+        description || null,
+        address || null,
+        city || null,
+        state || null,
+        country || null,
+        postal_code || null,
+        website || null,
+        currency || null,
+        profilePictureValue, // Can be URL string or null (for deletion)
+        vendorId
+      ];
+    } else {
+      // Don't update profile picture column
+      query = `UPDATE vendors SET 
         name = $1, 
         email = $2,
         phone_number = $3, 
@@ -207,8 +262,8 @@ export const vendorUpdateProfile = async (req: any, res: Response) => {
         currency = $13,
         updated_at = CURRENT_TIMESTAMP
        WHERE id = $14
-       RETURNING id, name, email, company_name, business_type, description, phone_number, address, city, state, country, postal_code, website, currency, tax_id, status, created_at`,
-      [
+       RETURNING id, name, email, company_name, business_type, description, phone_number, address, city, state, country, postal_code, website, currency, tax_id, status, profile_picture, created_at`;
+      params = [
         name, 
         email || null,
         phone_number || null, 
@@ -223,8 +278,10 @@ export const vendorUpdateProfile = async (req: any, res: Response) => {
         website || null,
         currency || null,
         vendorId
-      ]
-    );
+      ];
+    }
+    
+    const result = await pool.query(query, params);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ message: "Vendor not found" });

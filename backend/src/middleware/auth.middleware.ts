@@ -20,7 +20,7 @@ export const requireAuth = async (req: any, res: Response, next: NextFunction) =
     if (isVendorRoute || decoded.role === 'vendor') {
       // Fetch vendor data from vendors table
       const result = await pool.query(
-        "SELECT id, name, email, company_name, business_type, description, phone_number, address, city, state, country, postal_code, website, currency, tax_id, status, bank_account_holder, bank_routing_number, bank_account_number, bank_name, pan_document, cheque_document, created_at FROM vendors WHERE id = $1",
+        "SELECT id, name, email, company_name, business_type, description, phone_number, address, city, state, country, postal_code, website, currency, tax_id, status, bank_account_holder, bank_routing_number, bank_account_number, bank_name, pan_document, cheque_document, profile_picture, created_at FROM vendors WHERE id = $1",
         [decoded.id]
       );
 

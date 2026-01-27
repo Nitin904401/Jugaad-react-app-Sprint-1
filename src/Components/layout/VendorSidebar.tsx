@@ -1,10 +1,24 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { getVendorProfile } from "../../api/vendor";
 
 export default function VendorSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const isActive = (path: string) => location.pathname.startsWith(path);
+  const [vendor, setVendor] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchVendor = async () => {
+      try {
+        const data = await getVendorProfile();
+        setVendor(data);
+      } catch (err) {
+        console.error("Failed to fetch vendor:", err);
+      }
+    };
+    fetchVendor();
+  }, []);
 
   return (
     <aside className="hidden w-64 flex-col border-r border-white/10 bg-[#111418] lg:flex z-20">
@@ -50,16 +64,20 @@ export default function VendorSidebar() {
       </nav>
       <div className="p-4 border-t border-white/5">
         <div className="flex items-center gap-3 rounded-xl bg-white/5 p-3 hover:bg-white/10 cursor-pointer transition-colors border border-white/5">
-          <div
-            className="size-9 rounded-full bg-cover bg-center"
-            style={{
-              backgroundImage:
-                "url('https://lh3.googleusercontent.com/aida-public/AB6AXuA9dk5nKwdBV4cuAYFQf6JqkQeLaEgCTjedMAM_u4mlkJPGwx1IMA8ioBw90oNNjLaxFqj0a4q9Ga9Gd4ivccenA5l5RAG6ap7cbd0bi-_DLL25hRgc9sODVttSFA6dXa-5ihuNv0x60E3tu6WMiU853huvkDjhPmEEGndYFZKVicXPv07BBQPjbhpkulSYO1HnpNG0GnkdXT-DveoSnF7PEwugupL6UEDy2yfakwxQJEUYl_hjxOvB3xD3BDihFw5NKknJfqT1K8X5')",
-            }}
-          />
+          <div className="size-9 rounded-full bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center overflow-hidden">
+            {vendor?.profile_picture ? (
+              <img 
+                src={vendor.profile_picture.startsWith('http') ? vendor.profile_picture : `http://localhost:5050/${vendor.profile_picture}`} 
+                alt="Profile" 
+                className="w-full h-full object-cover" 
+              />
+            ) : (
+              <span className="text-white text-sm font-bold">{vendor?.name?.charAt(0).toUpperCase() || "V"}</span>
+            )}
+          </div>
           <div className="flex flex-col overflow-hidden">
-            <p className="text-white text-sm font-semibold truncate">Alex Johnson</p>
-            <p className="text-slate-400 text-xs truncate">TurboSupplies Inc.</p>
+            <p className="text-white text-sm font-semibold truncate">{vendor?.name || "Vendor"}</p>
+            <p className="text-slate-400 text-xs truncate">{vendor?.company_name || "Loading..."}</p>
           </div>
         </div>
       </div>

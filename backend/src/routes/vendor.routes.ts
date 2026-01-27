@@ -17,7 +17,12 @@ const router = Router();
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads/vendor-documents/");
+    // Profile pictures go to uploads root, documents go to vendor-documents
+    if (file.fieldname === 'profile_picture') {
+      cb(null, "uploads/");
+    } else {
+      cb(null, "uploads/vendor-documents/");
+    }
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
@@ -48,7 +53,7 @@ router.post("/register", upload.fields([
 router.post("/login", vendorLogin);
 router.post("/logout", vendorLogout);
 router.get("/profile", requireAuth, vendorMe);
-router.put("/profile", requireAuth, vendorUpdateProfile);
+router.put("/profile", requireAuth, upload.single("profile_picture"), vendorUpdateProfile);
 
 // Financial setup endpoints
 router.put("/financial", requireAuth, upload.fields([

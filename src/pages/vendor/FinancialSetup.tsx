@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getVendorProfile } from "../../api/vendor";
+import { getVendorProfile, vendorUpdateFinancial, vendorSubmitFinancial } from "../../api/vendor";
 import VendorSidebar from './VendorSidebar';
 import Modal from '../../Components/common/Modal';
 
@@ -56,7 +56,10 @@ export default function FinancialSetup() {
         // Pre-fill form with existing data
         if (data.bank_account_holder) setAccountHolder(data.bank_account_holder);
         if (data.bank_routing_number) setIfsc(data.bank_routing_number);
-        if (data.bank_account_number) setAccountNumber(data.bank_account_number);
+        if (data.bank_account_number) {
+          setAccountNumber(data.bank_account_number);
+          setConfirmAccount(data.bank_account_number); // Also set confirm field
+        }
         if (data.bank_name) setBankName(data.bank_name);
       } catch (err) {
         console.error("Failed to fetch vendor data:", err);
@@ -80,6 +83,14 @@ export default function FinancialSetup() {
     setChequeFile(file);
   }
 
+  const handleDocumentPreview = (documentUrl: string) => {
+    // Construct full URL - documents are served from backend on port 5050
+    const fullUrl = documentUrl.startsWith('http') 
+      ? documentUrl 
+      : `http://localhost:5050/${documentUrl}`;
+    window.open(fullUrl, '_blank');
+  };
+
   const handleSaveDraft = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
@@ -95,7 +106,6 @@ export default function FinancialSetup() {
       if (panFile) formData.append("pan_document", panFile);
       if (chequeFile) formData.append("cheque_document", chequeFile);
 
-      const { vendorUpdateFinancial } = await import("../../api/vendor");
       await vendorUpdateFinancial(formData);
       
       setModal({
@@ -105,7 +115,6 @@ export default function FinancialSetup() {
         message: "Your financial information has been saved as draft.",
       });
 
-      const { getVendorProfile } = await import("../../api/vendor");
       const updatedData = await getVendorProfile();
       setVendor(updatedData);
     } catch (err: any) {
@@ -176,7 +185,6 @@ export default function FinancialSetup() {
       if (panFile) formData.append("pan_document", panFile);
       if (chequeFile) formData.append("cheque_document", chequeFile);
 
-      const { vendorSubmitFinancial } = await import("../../api/vendor");
       await vendorSubmitFinancial(formData);
       
       setModal({
@@ -186,7 +194,6 @@ export default function FinancialSetup() {
         message: "Your financial information has been submitted successfully.",
       });
 
-      const { getVendorProfile } = await import("../../api/vendor");
       const updatedData = await getVendorProfile();
       setVendor(updatedData);
     } catch (err: any) {
@@ -398,9 +405,24 @@ export default function FinancialSetup() {
                               {panFile ? `${(panFile.size / 1024 / 1024).toFixed(2)} MB` : 'Uploaded'}
                             </p>
                           </div>
+                          {!panFile && vendor?.pan_document && (
+                            <button 
+                              className="p-2 text-[#9babbb] hover:text-primary transition-colors" 
+                              onClick={() => handleDocumentPreview(vendor.pan_document!)}
+                              type="button"
+                              title="Preview document"
+                            >
+                              <span className="material-symbols-outlined">visibility</span>
+                            </button>
+                          )}
                           <button 
                             className="p-2 text-[#9babbb] hover:text-red-400 transition-colors" 
-                            onClick={() => setPanFile(null)}
+                            onClick={() => {
+                              setPanFile(null);
+                              if (vendor?.pan_document) {
+                                setVendor({ ...vendor, pan_document: undefined });
+                              }
+                            }}
                             type="button"
                           >
                             <span className="material-symbols-outlined">delete</span>
@@ -442,9 +464,24 @@ export default function FinancialSetup() {
                               {chequeFile ? `${(chequeFile.size / 1024 / 1024).toFixed(2)} MB` : 'Uploaded'}
                             </p>
                           </div>
+                          {!chequeFile && vendor?.cheque_document && (
+                            <button 
+                              className="p-2 text-[#9babbb] hover:text-primary transition-colors" 
+                              onClick={() => handleDocumentPreview(vendor.cheque_document!)}
+                              type="button"
+                              title="Preview document"
+                            >
+                              <span className="material-symbols-outlined">visibility</span>
+                            </button>
+                          )}
                           <button 
                             className="p-2 text-[#9babbb] hover:text-red-400 transition-colors" 
-                            onClick={() => setChequeFile(null)}
+                            onClick={() => {
+                              setChequeFile(null);
+                              if (vendor?.cheque_document) {
+                                setVendor({ ...vendor, cheque_document: undefined });
+                              }
+                            }}
                             type="button"
                           >
                             <span className="material-symbols-outlined">delete</span>

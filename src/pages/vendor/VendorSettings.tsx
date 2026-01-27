@@ -22,6 +22,7 @@ interface VendorData {
   status?: string;
   created_at?: string;
   currency?: string;
+  profile_picture?: string;
 }
 
 export default function VendorSettingsFull() {
@@ -35,6 +36,7 @@ export default function VendorSettingsFull() {
     message: string;
   }>({ isOpen: false, type: "success", title: "", message: "" });
   const [shopName, setShopName] = useState("");
+  const [vendorName, setVendorName] = useState("");
   const [supportEmail, setSupportEmail] = useState("");
   const [shopDescription, setShopDescription] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -45,6 +47,46 @@ export default function VendorSettingsFull() {
   const [postalCode, setPostalCode] = useState("");
   const [country, setCountry] = useState("India");
   const [currency, setCurrency] = useState("INR (₹)");
+  const [profilePicture, setProfilePicture] = useState<File | null>(null);
+  const [profilePictureUrl, setProfilePictureUrl] = useState<string>("");
+  const [showPhotoOptions, setShowPhotoOptions] = useState(false);
+  const [deleteProfilePicture, setDeleteProfilePicture] = useState(false);
+
+  const handleProfilePicClick = () => {
+    // Trigger file input click
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = (e: any) => {
+      const file = e.target?.files?.[0];
+      if (file) {
+        setProfilePicture(file);
+        // Create preview URL
+        const url = URL.createObjectURL(file);
+        setProfilePictureUrl(url);
+        setShowPhotoOptions(false);
+        setDeleteProfilePicture(false); // Cancel any pending delete
+      }
+    };
+    input.click();
+  };
+
+  const handlePhotoClick = () => {
+    if (profilePictureUrl) {
+      // Show options menu if photo exists
+      setShowPhotoOptions(!showPhotoOptions);
+    } else {
+      // Upload new photo if none exists
+      handleProfilePicClick();
+    }
+  };
+
+  const handleDeletePhoto = () => {
+    setProfilePictureUrl("");
+    setProfilePicture(null);
+    setDeleteProfilePicture(true); // Mark for deletion on save
+    setShowPhotoOptions(false);
+  };
 
   useEffect(() => {
     const fetchVendorData = async () => {
@@ -54,6 +96,7 @@ export default function VendorSettingsFull() {
         
         // Prefill form fields
         setShopName(data.company_name || "");
+        setVendorName(data.name || "");
         setSupportEmail(data.email || "");
         setShopDescription(data.description || "");
         setPhoneNumber(data.phone_number || "");
@@ -64,6 +107,9 @@ export default function VendorSettingsFull() {
         setPostalCode(data.postal_code || "");
         setCountry(data.country || "India");
         setCurrency(data.currency || "INR (₹)");
+        if (data.profile_picture) {
+          setProfilePictureUrl(data.profile_picture);
+        }
       } catch (err) {
         console.error("Failed to fetch vendor data:", err);
       } finally {
@@ -78,24 +124,77 @@ export default function VendorSettingsFull() {
     setSaving(true);
 
     try {
-      const updateData = {
-        name: vendor?.name || "",
-        email: supportEmail,
-        phone_number: phoneNumber,
-        company_name: shopName,
-        business_type: vendor?.business_type || "",
-        description: shopDescription,
-        address: streetAddress,
-        city: city,
-        state: state,
-        country: country,
-        postal_code: postalCode,
-        website: website,
-        currency: currency,
-      };
+      let updatedVendor;
+      
+      if (profilePicture) {
+        // Use FormData if new profile picture is selected
+        const formData = new FormData();
+        formData.append("name", vendorName);
+        formData.append("email", supportEmail);
+        formData.append("phone_number", phoneNumber);
+        formData.append("company_name", shopName);
+        formData.append("business_type", vendor?.business_type || "");
+        formData.append("description", shopDescription);
+        formData.append("address", streetAddress);
+        formData.append("city", city);
+        formData.append("state", state);
+        formData.append("country", country);
+        formData.append("postal_code", postalCode);
+        formData.append("website", website);
+        formData.append("currency", currency);
+        formData.append("profile_picture", profilePicture);
+        
+        const { vendorUpdateProfileWithPicture } = await import("../../api/vendor");
+        updatedVendor = await vendorUpdateProfileWithPicture(formData);
+      } else if (deleteProfilePicture) {
+        // If profile picture was marked for deletion
+        const formData = new FormData();
+        formData.append("name", vendorName);
+        formData.append("email", supportEmail);
+        formData.append("phone_number", phoneNumber);
+        formData.append("company_name", shopName);
+        formData.append("business_type", vendor?.business_type || "");
+        formData.append("description", shopDescription);
+        formData.append("address", streetAddress);
+        formData.append("city", city);
+        formData.append("state", state);
+        formData.append("country", country);
+        formData.append("postal_code", postalCode);
+        formData.append("website", website);
+        formData.append("currency", currency);
+        formData.append("delete_profile_picture", "true");
+        
+        const { vendorUpdateProfileWithPicture } = await import("../../api/vendor");
+        updatedVendor = await vendorUpdateProfileWithPicture(formData);
+        setDeleteProfilePicture(false); // Reset after successful delete
+      } else {
+        // Use JSON if no profile picture
+        const updateData = {
+          name: vendorName,
+          email: supportEmail,
+          phone_number: phoneNumber,
+          company_name: shopName,
+          business_type: vendor?.business_type || "",
+          description: shopDescription,
+          address: streetAddress,
+          city: city,
+          state: state,
+          country: country,
+          postal_code: postalCode,
+          website: website,
+          currency: currency,
+        };
 
-      const updatedVendor = await vendorUpdateProfile(updateData);
+        updatedVendor = await vendorUpdateProfile(updateData);
+      }
+      
       setVendor(updatedVendor);
+      if (updatedVendor.profile_picture) {
+        setProfilePictureUrl(updatedVendor.profile_picture);
+      } else {
+        setProfilePictureUrl(""); // Clear if deleted
+      }
+      setProfilePicture(null); // Clear selected file
       setModal({
         isOpen: true,
         type: "success",
@@ -218,16 +317,56 @@ export default function VendorSettingsFull() {
                 <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
                 <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start relative z-10">
                   <div className="relative">
-                    <div className="w-32 h-32 rounded-xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center border-4 border-slate-200 dark:border-[#27303a] shadow-xl">
-                      <span className="text-5xl font-bold text-white">{vendor?.company_name?.charAt(0).toUpperCase() || "V"}</span>
-                      <button className="absolute -bottom-3 -right-3 h-10 w-10 bg-surface-dark dark:bg-[#27303a] text-white rounded-full flex items-center justify-center border-2 border-slate-50 dark:border-[#111418] hover:bg-primary transition-colors shadow-lg cursor-pointer">
-                        <span className="material-symbols-outlined text-lg">edit</span>
-                      </button>
+                    <div 
+                      className="w-32 h-32 rounded-xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center border-4 border-slate-200 dark:border-[#27303a] shadow-xl overflow-hidden cursor-pointer"
+                      onClick={handlePhotoClick}
+                    >
+                      {profilePictureUrl ? (
+                        <img src={profilePictureUrl.startsWith('http') ? profilePictureUrl : `http://localhost:5050/${profilePictureUrl}`} alt="Profile" className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-5xl font-bold text-white">{vendor?.name?.charAt(0).toUpperCase() || "V"}</span>
+                      )}
                     </div>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleProfilePicClick();
+                      }}
+                      type="button"
+                      className="absolute -bottom-3 -right-3 h-10 w-10 bg-surface-dark dark:bg-[#27303a] text-white rounded-full flex items-center justify-center border-2 border-slate-50 dark:border-[#111418] hover:bg-primary transition-colors shadow-lg cursor-pointer"
+                    >
+                      <span className="material-symbols-outlined text-lg">edit</span>
+                    </button>
+                    
+                    {/* Photo Options Menu */}
+                    {showPhotoOptions && profilePictureUrl && (
+                      <div className="absolute top-0 left-full ml-2 bg-white dark:bg-slate-800 rounded-lg shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden z-[9999] min-w-[180px]">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleProfilePicClick();
+                          }}
+                          className="w-full px-4 py-3 text-left text-sm text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors flex items-center gap-2"
+                        >
+                          <span className="material-symbols-outlined text-[18px]">photo_camera</span>
+                          Change Photo
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeletePhoto();
+                          }}
+                          className="w-full px-4 py-3 text-left text-sm text-red-600 dark:text-red-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors flex items-center gap-2 border-t border-slate-200 dark:border-slate-700"
+                        >
+                          <span className="material-symbols-outlined text-[18px]">delete</span>
+                          Remove Photo
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex-1 text-center sm:text-left">
-                    <h3 className="text-xl font-bold text-slate-900 dark:text-white">{vendor?.company_name || "Vendor Name"}</h3>
+                    <h3 className="text-xl font-bold text-slate-900 dark:text-white">{vendor?.name || "Vendor Name"}</h3>
                     <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
                       Member since {vendor?.created_at ? new Date(vendor.created_at).getFullYear() : "2024"} • ID: #{vendor?.id?.slice(0, 8) || "VND-0000"}
                     </p>
@@ -273,7 +412,17 @@ export default function VendorSettingsFull() {
                       <span className="material-symbols-outlined text-primary">storefront</span> Shop Details
                     </h3>
                     <div className="space-y-6">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Vendor Name</label>
+                          <input 
+                            className="w-full rounded-lg bg-slate-50 dark:bg-[#0f151b] border-slate-200 dark:border-[#27303a] text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 focus:border-primary px-4 py-3 text-sm placeholder:text-slate-400 dark:placeholder:text-slate-600 transition-all shadow-sm" 
+                            type="text" 
+                            placeholder="Your name"
+                            value={vendorName}
+                            onChange={(e) => setVendorName(e.target.value)}
+                          />
+                        </div>
                         <div className="space-y-2">
                           <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Shop Name</label>
                           <input 

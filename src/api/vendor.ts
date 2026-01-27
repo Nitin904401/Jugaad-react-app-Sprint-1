@@ -79,6 +79,21 @@ export const vendorUpdateProfile = async (data: {
   return res.json();
 };
 
+// Update profile with profile picture (uses FormData)
+export const vendorUpdateProfileWithPicture = async (data: FormData) => {
+  const res = await fetch("/api/vendor/auth/profile", {
+    method: "PUT",
+    credentials: "include",
+    body: data, // FormData for file upload
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.message || "Update failed");
+  }
+  return res.json();
+};
+
 // Update financial information (save draft)
 export const vendorUpdateFinancial = async (data: FormData) => {
   const res = await fetch("/api/vendor/auth/financial", {
