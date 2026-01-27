@@ -16,7 +16,7 @@ export const requireAuth = async (req: any, res: Response, next: NextFunction) =
     
     // Fetch complete user data from database
     const result = await pool.query(
-      "SELECT id, name, email, role, created_at FROM users WHERE id = $1",
+      "SELECT id, name, email, role, phone_number, created_at FROM users WHERE id = $1",
       [decoded.id]
     );
 

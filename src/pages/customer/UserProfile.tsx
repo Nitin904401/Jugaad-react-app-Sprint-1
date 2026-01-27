@@ -1,10 +1,84 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { updateProfile } from "../../api/auth";
+import Modal from "../../Components/common/Modal";
 
 const UserProfile: React.FC = () => {
   const { user, logout } = useAuth();
   const [activeSection, setActiveSection] = useState("Profile Settings");
-  
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [modal, setModal] = useState<{
+    isOpen: boolean;
+    type: "success" | "error";
+    title: string;
+    message: string;
+  }>({ isOpen: false, type: "success", title: "", message: "" });
+
+  // Prefill form with user data
+  useEffect(() => {
+    if (user?.name) {
+      const nameParts = user.name.split(" ");
+      setFirstName(nameParts[0] || "");
+      setLastName(nameParts.slice(1).join(" ") || "");
+    }
+    setEmail(user?.email || "");
+    setPhoneNumber(user?.phone_number || "");
+  }, [user]);
+
+  const handleSaveChanges = async () => {
+    if (!firstName.trim()) {
+      setModal({
+        isOpen: true,
+        type: "error",
+        title: "Validation Error",
+        message: "First name is required",
+      });
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const fullName = lastName.trim() ? `${firstName} ${lastName}` : firstName;
+      const updatedUser = await updateProfile({
+        name: fullName,
+        phone_number: phoneNumber || undefined,
+      });
+
+      setModal({
+        isOpen: true,
+        type: "success",
+        title: "Profile Updated!",
+        message: "Your profile has been saved successfully.",
+      });
+      
+      console.log("Profile updated successfully:", updatedUser);
+    } catch (err: any) {
+      console.error("Error updating profile:", err);
+      setModal({
+        isOpen: true,
+        type: "error",
+        title: "Update Failed",
+        message: err.message || "Failed to update your profile. Please try again.",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCancel = () => {
+    if (user?.name) {
+      const nameParts = user.name.split(" ");
+      setFirstName(nameParts[0] || "");
+      setLastName(nameParts.slice(1).join(" ") || "");
+    }
+    setEmail(user?.email || "");
+    setPhoneNumber(user?.phone_number || "");
+  };
+
   return (
     <div className="min-h-screen bg-slate-900 text-white">
       {/* Background blobs */}
@@ -66,11 +140,19 @@ const UserProfile: React.FC = () => {
                 </p>
               </div>
               <div className="flex gap-3">
-                <button className="px-4 py-2 border border-slate-600 rounded-lg text-slate-300 hover:text-white hover:border-slate-500 transition-colors">
+                <button
+                  onClick={handleCancel}
+                  disabled={isSaving}
+                  className="px-4 py-2 border border-slate-600 rounded-lg text-slate-300 hover:text-white hover:border-slate-500 transition-colors disabled:opacity-50"
+                >
                   Cancel
                 </button>
-                <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                  Save Changes
+                <button
+                  onClick={handleSaveChanges}
+                  disabled={isSaving}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSaving ? "Saving..." : "Save Changes"}
                 </button>
               </div>
             </div>
@@ -105,7 +187,8 @@ const UserProfile: React.FC = () => {
                         <label className="block text-sm font-medium text-slate-300 mb-2">FIRST NAME</label>
                         <input
                           type="text"
-                          defaultValue={user?.name?.split(' ')[0] || "John"}
+                          value={firstName}
+                          onChange={(e) => setFirstName(e.target.value)}
                           className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
                         />
                       </div>
@@ -113,7 +196,8 @@ const UserProfile: React.FC = () => {
                         <label className="block text-sm font-medium text-slate-300 mb-2">LAST NAME</label>
                         <input
                           type="text"
-                          defaultValue={user?.name?.split(' ')[1] || "Doe"}
+                          value={lastName}
+                          onChange={(e) => setLastName(e.target.value)}
                           className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
                         />
                       </div>
@@ -122,8 +206,9 @@ const UserProfile: React.FC = () => {
                         <div className="relative">
                           <input
                             type="email"
-                            defaultValue={user?.email || "john.doe@example.com"}
-                            className="w-full px-12 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                            value={email}
+                            disabled
+                            className="w-full px-12 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500 opacity-60 cursor-not-allowed"
                           />
                           <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400">✉️</span>
                           <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-green-500 text-sm">✓ Verified</span>
@@ -134,6 +219,8 @@ const UserProfile: React.FC = () => {
                         <div className="relative">
                           <input
                             type="tel"
+                            value={phoneNumber}
+                            onChange={(e) => setPhoneNumber(e.target.value)}
                             placeholder="+1 (555) 123-4567"
                             className="w-full px-12 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500 placeholder-slate-400"
                           />
@@ -270,6 +357,14 @@ const UserProfile: React.FC = () => {
           </div>
         </main>
       </div>
+
+      <Modal
+        isOpen={modal.isOpen}
+        onClose={() => setModal({ ...modal, isOpen: false })}
+        type={modal.type}
+        title={modal.title}
+        message={modal.message}
+      />
     </div>
   );
 };
