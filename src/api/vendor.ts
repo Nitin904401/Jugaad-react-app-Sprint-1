@@ -56,6 +56,7 @@ export const vendorUpdateProfile = async (data: {
   phone_number?: string;
   company_name: string;
   business_type?: string;
+  description?: string;
   address?: string;
   city?: string;
   state?: string;
@@ -77,3 +78,34 @@ export const vendorUpdateProfile = async (data: {
   }
   return res.json();
 };
+
+// Update financial information (save draft)
+export const vendorUpdateFinancial = async (data: FormData) => {
+  const res = await fetch("/api/vendor/auth/financial", {
+    method: "PUT",
+    credentials: "include",
+    body: data, // FormData for file uploads
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.message || "Failed to update financial information");
+  }
+  return res.json();
+};
+
+// Submit financial information for verification
+export const vendorSubmitFinancial = async (data: FormData) => {
+  const res = await fetch("/api/vendor/auth/financial/submit", {
+    method: "POST",
+    credentials: "include",
+    body: data, // FormData for file uploads
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.message || "Failed to submit financial information");
+  }
+  return res.json();
+};
+

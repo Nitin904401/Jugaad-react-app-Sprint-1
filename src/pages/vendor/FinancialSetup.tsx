@@ -1,38 +1,50 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { vendorGetMe } from "../../api/vendor";
 import VendorSidebar from './VendorSidebar';
-
-/**
- * FinancialSetup.jsx
- * Single-file React component converted from the provided HTML page.
- * - Uses Tailwind utility classes.
- * - Uses Material Symbols via <span className="material-symbols-outlined">...</span>
- * - Minimal local state for bank fields + KYC file preview placeholders.
- * - Keep Tailwind and fonts loaded in your app as noted above.
- */
+import Modal from '../../Components/common/Modal';
 
 interface VendorData {
-  id: number;
+  id: string;
   name: string;
   email: string;
   company_name: string;
   business_type: string;
+  bank_account_holder?: string;
+  bank_routing_number?: string;
+  bank_account_number?: string;
+  bank_name?: string;
+  pan_document?: string;
+  cheque_document?: string;
 }
 
 export default function FinancialSetup() {
-  const navigate = useNavigate();
   const [vendor, setVendor] = useState<VendorData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [accountHolder, setAccountHolder] = useState("AutoParts Ltd");
-  const [ifsc, setIfsc] = useState("");
-  const [accountNumber, setAccountNumber] = useState("123456789012");
-  const [confirmAccount, setConfirmAccount] = useState("");
-  const [panUploaded, setPanUploaded] = useState(true);
-  const [panFileName, setPanFileName] = useState("pan_card_autoparts.pdf");
-  const [panFileSize, setPanFileSize] = useState("2.4 MB");
-  const [chequeFile, setChequeFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  
+  const [accountHolder, setAccountHolder] = useState("");
+  const [bankName, setBankName] = useState("");
+  const [ifsc, setIfsc] = useState("");
+  const [accountNumber, setAccountNumber] = useState("");
+  const [confirmAccount, setConfirmAccount] = useState("");
+  
+  const [chequeFile, setChequeFile] = useState<File | null>(null);
+  const [panFile, setPanFile] = useState<File | null>(null);
+  
+  const [showAccountNumber, setShowAccountNumber] = useState(false);
+  const [showConfirmAccount, setShowConfirmAccount] = useState(false);
+  
+  // Modal state
+  const [modal, setModal] = useState({
+    isOpen: false,
+    type: "success" as "success" | "error",
+    title: "",
+    message: "",
+  });
+  // Check if account numbers match
+  const accountNumbersMatch = accountNumber.length > 0 && confirmAccount.length > 0 && accountNumber === confirmAccount;
+  const showMismatchError = confirmAccount.length > 0 && accountNumber.length > 0 && accountNumber !== confirmAccount;
+
 
   // Fetch vendor data on mount
   useEffect(() => {
@@ -40,6 +52,12 @@ export default function FinancialSetup() {
       try {
         const data = await vendorGetMe();
         setVendor(data);
+        
+        // Pre-fill form with existing data
+        if (data.bank_account_holder) setAccountHolder(data.bank_account_holder);
+        if (data.bank_routing_number) setIfsc(data.bank_routing_number);
+        if (data.bank_account_number) setAccountNumber(data.bank_account_number);
+        if (data.bank_name) setBankName(data.bank_name);
       } catch (err) {
         console.error("Failed to fetch vendor data:", err);
       } finally {
@@ -50,19 +68,148 @@ export default function FinancialSetup() {
     fetchVendorData();
   }, []);
 
+  const onPanChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setPanFile(e.target.files[0]);
+    }
+  };
+
   function onChequeChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
     setChequeFile(file);
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  const handleSaveDraft = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    // simulate upload / API call
-    await new Promise((r) => setTimeout(r, 900));
-    setSubmitting(false);
-    alert("Saved & Submitted for Verification (simulated).");
+
+    try {
+      const formData = new FormData();
+      
+      if (accountHolder) formData.append("bank_account_holder", accountHolder);
+      if (ifsc) formData.append("bank_routing_number", ifsc);
+      if (accountNumber) formData.append("bank_account_number", accountNumber);
+      if (bankName) formData.append("bank_name", bankName);
+      
+      if (panFile) formData.append("pan_document", panFile);
+      if (chequeFile) formData.append("cheque_document", chequeFile);
+
+      const { vendorUpdateFinancial } = await import("../../api/vendor");
+      await vendorUpdateFinancial(formData);
+      
+      setModal({
+        isOpen: true,
+        type: "success",
+        title: "Draft Saved Successfully",
+        message: "Your financial information has been saved as draft.",
+      });
+
+      const { vendorGetMe } = await import("../../api/vendor");
+      const updatedData = await vendorGetMe();
+      setVendor(updatedData);
+    } catch (err: any) {
+      setModal({
+        isOpen: true,
+        type: "error",
+        title: "Failed to Save Draft",
+        message: err.message || "An error occurred while saving.",
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+
+    if (!accountHolder || !ifsc || !accountNumber || !bankName) {
+      setModal({
+        isOpen: true,
+        type: "error",
+        title: "Incomplete Information",
+        message: "Please fill in all bank account fields.",
+      });
+      return;
+    }
+
+    if (accountNumber !== confirmAccount) {
+      setModal({
+        isOpen: true,
+        type: "error",
+        title: "Account Number Mismatch",
+        message: "Account numbers do not match.",
+      });
+      return;
+    }
+
+    if (!panFile && !vendor?.pan_document) {
+      setModal({
+        isOpen: true,
+        type: "error",
+        title: "PAN Document Required",
+        message: "Please upload your PAN card document.",
+      });
+      return;
+    }
+
+    if (!chequeFile && !vendor?.cheque_document) {
+      setModal({
+        isOpen: true,
+        type: "error",
+        title: "Cheque Document Required",
+        message: "Please upload a cancelled cheque or bank statement.",
+      });
+      return;
+    }
+
+    setSubmitting(true);
+
+    try {
+      const formData = new FormData();
+      
+      formData.append("bank_account_holder", accountHolder);
+      formData.append("bank_routing_number", ifsc);
+      formData.append("bank_account_number", accountNumber);
+      formData.append("bank_name", bankName);
+      
+      if (panFile) formData.append("pan_document", panFile);
+      if (chequeFile) formData.append("cheque_document", chequeFile);
+
+      const { vendorSubmitFinancial } = await import("../../api/vendor");
+      await vendorSubmitFinancial(formData);
+      
+      setModal({
+        isOpen: true,
+        type: "success",
+        title: "Submitted for Verification",
+        message: "Your financial information has been submitted successfully.",
+      });
+
+      const { vendorGetMe } = await import("../../api/vendor");
+      const updatedData = await vendorGetMe();
+      setVendor(updatedData);
+    } catch (err: any) {
+      setModal({
+        isOpen: true,
+        type: "error",
+        title: "Submission Failed",
+        message: err.message || "An error occurred.",
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex h-screen w-full overflow-hidden">
+        <VendorSidebar />
+        <div className="flex-1 flex items-center justify-center bg-background-dark">
+          <div className="text-white">Loading...</div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -142,8 +289,9 @@ export default function FinancialSetup() {
 
                       <div className="space-y-1.5">
                         <label className="text-sm font-medium text-[#9babbb]">Bank Name</label>
-                        <div className="glass-input rounded-lg flex items-center px-3 h-12 bg-white/5">
-                          <input className="w-full bg-transparent border-none text-[#9babbb] focus:ring-0 ml-2 text-sm cursor-not-allowed" disabled type="text" value="HDFC Bank" />
+                        <div className="glass-input rounded-lg flex items-center px-3 h-12">
+                          <span className="material-symbols-outlined text-[#5a6b7c]" style={{ fontSize: 20 }}>account_balance</span>
+                          <input className="w-full bg-transparent border-none text-white focus:ring-0 placeholder-[#5a6b7c] ml-2 text-sm" placeholder="e.g. HDFC Bank, ICICI Bank" value={bankName} onChange={(e) => setBankName(e.target.value)} />
                         </div>
                       </div>
                     </div>
@@ -151,22 +299,49 @@ export default function FinancialSetup() {
                     {/* Account number */}
                     <div className="space-y-1.5">
                       <label className="text-sm font-medium text-[#9babbb]">Account Number</label>
-                      <div className="glass-input rounded-lg flex items-center px-3 h-12 group">
+                      <div className={`glass-input rounded-lg flex items-center px-3 h-12 group ${showMismatchError ? 'border border-red-500/50' : accountNumbersMatch ? 'border border-green-500/50' : ''}`}>
                         <span className="material-symbols-outlined text-[#5a6b7c]" style={{ fontSize: 20 }}>numbers</span>
-                        <input className="w-full bg-transparent border-none text-white focus:ring-0 placeholder-[#5a6b7c] ml-2 text-sm tracking-widest" placeholder="Enter account number" type="password" value={accountNumber} onChange={(e) => setAccountNumber(e.target.value)} />
-                        <button className="text-[#5a6b7c] hover:text-white transition-colors" onClick={(ev) => { ev.preventDefault(); alert("toggle visibility (mock)"); }}>
-                          <span className="material-symbols-outlined" style={{ fontSize: 20 }}>visibility_off</span>
+                        <input className="w-full bg-transparent border-none text-white focus:ring-0 placeholder-[#5a6b7c] ml-2 text-sm tracking-widest" placeholder="Enter account number" type={showAccountNumber ? "text" : "password"} value={accountNumber} onChange={(e) => setAccountNumber(e.target.value)} />
+                        <button type="button" className="text-[#5a6b7c] hover:text-white transition-colors" onClick={() => setShowAccountNumber(!showAccountNumber)}>
+                          <span className="material-symbols-outlined" style={{ fontSize: 20 }}>{showAccountNumber ? "visibility" : "visibility_off"}</span>
                         </button>
                       </div>
+                      {showMismatchError && (
+                        <p className="text-xs text-red-500 flex items-center gap-1 mt-1">
+                          <span className="material-symbols-outlined" style={{ fontSize: 14 }}>error</span>
+                          Account numbers do not match
+                        </p>
+                      )}
+                      {accountNumbersMatch && (
+                        <p className="text-xs text-green-500 flex items-center gap-1 mt-1">
+                          <span className="material-symbols-outlined" style={{ fontSize: 14 }}>check_circle</span>
+                          Account numbers match
+                        </p>
+                      )}
                     </div>
 
                     {/* Confirm account */}
                     <div className="space-y-1.5">
                       <label className="text-sm font-medium text-[#9babbb]">Confirm Account Number</label>
-                      <div className="glass-input rounded-lg flex items-center px-3 h-12">
+                      <div className={`glass-input rounded-lg flex items-center px-3 h-12 ${showMismatchError ? 'border border-red-500/50' : accountNumbersMatch ? 'border border-green-500/50' : ''}`}>
                         <span className="material-symbols-outlined text-[#5a6b7c]" style={{ fontSize: 20 }}>lock</span>
-                        <input className="w-full bg-transparent border-none text-white focus:ring-0 placeholder-[#5a6b7c] ml-2 text-sm tracking-widest" placeholder="Re-enter account number" type="password" value={confirmAccount} onChange={(e) => setConfirmAccount(e.target.value)} />
+                        <input className="w-full bg-transparent border-none text-white focus:ring-0 placeholder-[#5a6b7c] ml-2 text-sm tracking-widest" placeholder="Re-enter account number" type={showConfirmAccount ? "text" : "password"} value={confirmAccount} onChange={(e) => setConfirmAccount(e.target.value)} />
+                        <button type="button" className="text-[#5a6b7c] hover:text-white transition-colors" onClick={() => setShowConfirmAccount(!showConfirmAccount)}>
+                          <span className="material-symbols-outlined" style={{ fontSize: 20 }}>{showConfirmAccount ? "visibility" : "visibility_off"}</span>
+                        </button>
                       </div>
+                      {showMismatchError && (
+                        <p className="text-xs text-red-500 flex items-center gap-1 mt-1">
+                          <span className="material-symbols-outlined" style={{ fontSize: 14 }}>error</span>
+                          Account numbers do not match
+                        </p>
+                      )}
+                      {accountNumbersMatch && (
+                        <p className="text-xs text-green-500 flex items-center gap-1 mt-1">
+                          <span className="material-symbols-outlined" style={{ fontSize: 14 }}>check_circle</span>
+                          Account numbers match
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -203,40 +378,88 @@ export default function FinancialSetup() {
                     <div className="flex flex-col gap-2">
                       <div className="flex justify-between">
                         <label className="text-sm font-medium text-[#9babbb]">PAN Card</label>
-                        <span className="text-xs text-green-400 flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">check</span> Uploaded</span>
+                        {(panFile || vendor?.pan_document) && (
+                          <span className="text-xs text-green-400 flex items-center gap-1">
+                            <span className="material-symbols-outlined text-[14px]">check</span> Uploaded
+                          </span>
+                        )}
                       </div>
 
-                      <div className="relative flex items-center p-3 rounded-lg border border-green-500/30 bg-green-500/5 group">
-                        <div className="size-10 rounded bg-[#27303a] flex items-center justify-center mr-3 text-red-400">
-                          <span className="material-symbols-outlined">picture_as_pdf</span>
+                      {panFile || vendor?.pan_document ? (
+                        <div className="relative flex items-center p-3 rounded-lg border border-green-500/30 bg-green-500/5 group">
+                          <div className="size-10 rounded bg-[#27303a] flex items-center justify-center mr-3 text-red-400">
+                            <span className="material-symbols-outlined">picture_as_pdf</span>
+                          </div>
+                          <div className="flex flex-col min-w-0 flex-1">
+                            <p className="text-sm text-white truncate font-medium">
+                              {panFile ? panFile.name : vendor?.pan_document?.split('/').pop() || 'pan_document.pdf'}
+                            </p>
+                            <p className="text-xs text-[#9babbb]">
+                              {panFile ? `${(panFile.size / 1024 / 1024).toFixed(2)} MB` : 'Uploaded'}
+                            </p>
+                          </div>
+                          <button 
+                            className="p-2 text-[#9babbb] hover:text-red-400 transition-colors" 
+                            onClick={() => setPanFile(null)}
+                            type="button"
+                          >
+                            <span className="material-symbols-outlined">delete</span>
+                          </button>
                         </div>
-                        <div className="flex flex-col min-w-0 flex-1">
-                          <p className="text-sm text-white truncate font-medium">{panFileName}</p>
-                          <p className="text-xs text-[#9babbb]">{panFileSize}</p>
+                      ) : (
+                        <div className="relative flex flex-col items-center justify-center p-6 border-2 border-dashed border-[#3e4c5a] rounded-xl hover:border-primary hover:bg-primary/5 transition-all cursor-pointer group">
+                          <div className="size-12 rounded-full bg-[#27303a] group-hover:bg-primary/20 flex items-center justify-center mb-3 transition-colors">
+                            <span className="material-symbols-outlined text-[#9babbb] group-hover:text-primary" style={{ fontSize: 24 }}>cloud_upload</span>
+                          </div>
+                          <p className="text-sm text-white font-medium">Click to upload PAN Card</p>
+                          <p className="text-xs text-[#9babbb] mt-1 text-center">PDF, JPG (max 5MB)</p>
+                          <input className="absolute inset-0 opacity-0 cursor-pointer" type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={onPanChange} />
                         </div>
-                        <button className="p-2 text-[#9babbb] hover:text-red-400 transition-colors" onClick={() => { setPanUploaded(false); setPanFileName(""); setPanFileSize(""); }}>
-                          <span className="material-symbols-outlined">delete</span>
-                        </button>
-                      </div>
+                      )}
                     </div>
 
                     {/* Cancelled Cheque upload */}
                     <div className="flex flex-col gap-2">
-                      <label className="text-sm font-medium text-[#9babbb]">Cancelled Cheque / Bank Statement</label>
-
-                      <div className="relative flex flex-col items-center justify-center p-6 border-2 border-dashed border-[#3e4c5a] rounded-xl hover:border-primary hover:bg-primary/5 transition-all cursor-pointer group">
-                        <div className="size-12 rounded-full bg-[#27303a] group-hover:bg-primary/20 flex items-center justify-center mb-3 transition-colors">
-                          <span className="material-symbols-outlined text-[#9babbb] group-hover:text-primary" style={{ fontSize: 24 }}>cloud_upload</span>
-                        </div>
-                        <p className="text-sm text-white font-medium">Click to upload</p>
-                        <p className="text-xs text-[#9babbb] mt-1 text-center">or drag and drop<br/>PDF, JPG (max 5MB)</p>
-                        <input className="absolute inset-0 opacity-0 cursor-pointer" type="file" onChange={onChequeChange} />
-                        {chequeFile && (
-                          <div className="mt-3 text-xs text-slate-300">
-                            Selected: {chequeFile.name} ({Math.round(chequeFile.size / 1024)} KB)
-                          </div>
+                      <div className="flex justify-between">
+                        <label className="text-sm font-medium text-[#9babbb]">Cancelled Cheque / Bank Statement</label>
+                        {(chequeFile || vendor?.cheque_document) && (
+                          <span className="text-xs text-green-400 flex items-center gap-1">
+                            <span className="material-symbols-outlined text-[14px]">check</span> Uploaded
+                          </span>
                         )}
                       </div>
+
+                      {chequeFile || vendor?.cheque_document ? (
+                        <div className="relative flex items-center p-3 rounded-lg border border-green-500/30 bg-green-500/5 group">
+                          <div className="size-10 rounded bg-[#27303a] flex items-center justify-center mr-3 text-red-400">
+                            <span className="material-symbols-outlined">picture_as_pdf</span>
+                          </div>
+                          <div className="flex flex-col min-w-0 flex-1">
+                            <p className="text-sm text-white truncate font-medium">
+                              {chequeFile ? chequeFile.name : vendor?.cheque_document?.split('/').pop() || 'cheque_document.pdf'}
+                            </p>
+                            <p className="text-xs text-[#9babbb]">
+                              {chequeFile ? `${(chequeFile.size / 1024 / 1024).toFixed(2)} MB` : 'Uploaded'}
+                            </p>
+                          </div>
+                          <button 
+                            className="p-2 text-[#9babbb] hover:text-red-400 transition-colors" 
+                            onClick={() => setChequeFile(null)}
+                            type="button"
+                          >
+                            <span className="material-symbols-outlined">delete</span>
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="relative flex flex-col items-center justify-center p-6 border-2 border-dashed border-[#3e4c5a] rounded-xl hover:border-primary hover:bg-primary/5 transition-all cursor-pointer group">
+                          <div className="size-12 rounded-full bg-[#27303a] group-hover:bg-primary/20 flex items-center justify-center mb-3 transition-colors">
+                            <span className="material-symbols-outlined text-[#9babbb] group-hover:text-primary" style={{ fontSize: 24 }}>cloud_upload</span>
+                          </div>
+                          <p className="text-sm text-white font-medium">Click to upload</p>
+                          <p className="text-xs text-[#9babbb] mt-1 text-center">or drag and drop<br/>PDF, JPG (max 5MB)</p>
+                          <input className="absolute inset-0 opacity-0 cursor-pointer" type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={onChequeChange} />
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -247,12 +470,20 @@ export default function FinancialSetup() {
                     By clicking Submit, you agree to our <a className="text-primary hover:underline" href="#">Vendor Terms</a> and certify that the information provided is accurate.
                   </p>
                   <div className="flex flex-col gap-3">
-                    <button onClick={handleSubmit} className="flex items-center justify-center gap-2 w-full h-12 bg-primary hover:bg-blue-600 text-white font-bold rounded-lg shadow-lg shadow-blue-500/20 transition-all transform hover:-translate-y-0.5">
+                    <button 
+                      onClick={handleSubmit} 
+                      disabled={submitting}
+                      className="flex items-center justify-center gap-2 w-full h-12 bg-primary hover:bg-blue-600 text-white font-bold rounded-lg shadow-lg shadow-blue-500/20 transition-all transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
                       <span>{submitting ? "Submitting..." : "Save & Submit for Verification"}</span>
-                      <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
+                      {!submitting && <span className="material-symbols-outlined text-[20px]">arrow_forward</span>}
                     </button>
-                    <button className="flex items-center justify-center gap-2 w-full h-12 bg-[#27303a] hover:bg-[#323d4a] text-white font-semibold rounded-lg border border-[#3e4c5a] transition-all">
-                      Save Draft
+                    <button 
+                      onClick={handleSaveDraft}
+                      disabled={submitting}
+                      className="flex items-center justify-center gap-2 w-full h-12 bg-[#27303a] hover:bg-[#323d4a] text-white font-semibold rounded-lg border border-[#3e4c5a] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {submitting ? "Saving..." : "Save Draft"}
                     </button>
                   </div>
                 </div>
@@ -264,6 +495,15 @@ export default function FinancialSetup() {
           </div>
         </div>
       </main>
+
+      {/* Modal */}
+      <Modal
+        isOpen={modal.isOpen}
+        onClose={() => setModal({ ...modal, isOpen: false })}
+        title={modal.title}
+        message={modal.message}
+        type={modal.type}
+      />
     </div>
   );
 }

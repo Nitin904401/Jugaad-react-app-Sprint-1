@@ -7,6 +7,8 @@ import {
   vendorLogout,
   vendorMe,
   vendorUpdateProfile,
+  vendorUpdateFinancial,
+  vendorSubmitFinancial,
 } from "../controllers/vendor.controller";
 import { requireAuth } from "../middleware/auth.middleware";
 
@@ -47,5 +49,15 @@ router.post("/login", vendorLogin);
 router.post("/logout", vendorLogout);
 router.get("/profile", requireAuth, vendorMe);
 router.put("/profile", requireAuth, vendorUpdateProfile);
+
+// Financial setup endpoints
+router.put("/financial", requireAuth, upload.fields([
+  { name: "pan_document", maxCount: 1 },
+  { name: "cheque_document", maxCount: 1 },
+]), vendorUpdateFinancial);
+router.post("/financial/submit", requireAuth, upload.fields([
+  { name: "pan_document", maxCount: 1 },
+  { name: "cheque_document", maxCount: 1 },
+]), vendorSubmitFinancial);
 
 export default router;

@@ -10,6 +10,7 @@ interface VendorData {
   email: string;
   company_name: string;
   business_type?: string;
+  description?: string;
   phone_number?: string;
   address?: string;
   city?: string;
@@ -54,7 +55,7 @@ export default function VendorSettingsFull() {
         // Prefill form fields
         setShopName(data.company_name || "");
         setSupportEmail(data.email || "");
-        setShopDescription(data.business_type ? `Premium auto parts supplier specializing in ${data.business_type}` : "");
+        setShopDescription(data.description || "");
         setPhoneNumber(data.phone_number || "");
         setWebsite(data.website || "");
         setStreetAddress(data.address || "");
@@ -83,6 +84,7 @@ export default function VendorSettingsFull() {
         phone_number: phoneNumber,
         company_name: shopName,
         business_type: vendor?.business_type || "",
+        description: shopDescription,
         address: streetAddress,
         city: city,
         state: state,
