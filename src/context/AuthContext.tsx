@@ -4,7 +4,7 @@ import {
   useEffect,
   useState,
 } from "react";
-import { getMe, loginUser, logoutUser, registerUser } from "../api/auth";
+import { getCurrentUser, loginUser, logoutUser, registerUser } from "../api/auth";
 
 type Role = "customer" | "vendor" | "admin";
 
@@ -32,7 +32,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    getMe()
+    getCurrentUser()
       .then(setUser)
       .catch(() => {
         // User is not authenticated, which is fine

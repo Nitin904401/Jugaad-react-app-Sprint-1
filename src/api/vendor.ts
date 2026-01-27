@@ -34,7 +34,7 @@ export const vendorRegister = async (data: FormData | any) => {
   return res.json();
 };
 
-export const vendorGetMe = async () => {
+export const getVendorProfile = async () => {
   const res = await fetch("/api/vendor/auth/profile", {
     credentials: "include",
   });

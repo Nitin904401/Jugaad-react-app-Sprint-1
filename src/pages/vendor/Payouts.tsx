@@ -19,7 +19,7 @@ export default function VendorPayments() {
   useEffect(() => {
     const fetchVendorData = async () => {
       try {
-        const data = await vendorGetMe();
+        const data = await getVendorProfile();
         setVendor(data);
       } catch (err) {
         console.error("Failed to fetch vendor data:", err);
@@ -52,7 +52,7 @@ export default function VendorPayments() {
   return (
     <div className="flex h-screen w-full bg-background-dark text-white font-display overflow-hidden">
       {/* Sidebar */}
-      <VendorSidebar />
+      <VendorSidebar vendor={vendor} />
 
       {/* Main Body */}
       <main className="flex-1 flex flex-col h-full overflow-hidden bg-[radial-gradient(ellipse_at_top_right,var(--tw-gradient-stops))] from-[#1a2332] via-[#0f1923] to-[#0f1923]">

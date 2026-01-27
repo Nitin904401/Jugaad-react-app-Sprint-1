@@ -48,8 +48,7 @@ import { AdminPublishedProductsPage } from '../pages/admin/PublishedProducts';
 export const AppRouter: React.FC = () => {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <CartProvider>
+      <CartProvider>
           <Routes>
             {/* Customer Routes */}
             <Route element={<MainLayout />}>
@@ -175,7 +174,6 @@ export const AppRouter: React.FC = () => {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </CartProvider>
-      </AuthProvider>
     </BrowserRouter>
   );
 };

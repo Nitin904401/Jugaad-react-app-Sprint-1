@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { vendorGetMe } from "../../api/vendor";
+import { getVendorProfile } from "../../api/vendor";
 import VendorSidebar from './VendorSidebar';
 import Modal from '../../Components/common/Modal';
 
@@ -50,7 +50,7 @@ export default function FinancialSetup() {
   useEffect(() => {
     const fetchVendorData = async () => {
       try {
-        const data = await vendorGetMe();
+        const data = await getVendorProfile();
         setVendor(data);
         
         // Pre-fill form with existing data
@@ -105,8 +105,8 @@ export default function FinancialSetup() {
         message: "Your financial information has been saved as draft.",
       });
 
-      const { vendorGetMe } = await import("../../api/vendor");
-      const updatedData = await vendorGetMe();
+      const { getVendorProfile } = await import("../../api/vendor");
+      const updatedData = await getVendorProfile();
       setVendor(updatedData);
     } catch (err: any) {
       setModal({
@@ -186,8 +186,8 @@ export default function FinancialSetup() {
         message: "Your financial information has been submitted successfully.",
       });
 
-      const { vendorGetMe } = await import("../../api/vendor");
-      const updatedData = await vendorGetMe();
+      const { getVendorProfile } = await import("../../api/vendor");
+      const updatedData = await getVendorProfile();
       setVendor(updatedData);
     } catch (err: any) {
       setModal({
@@ -204,7 +204,7 @@ export default function FinancialSetup() {
   if (loading) {
     return (
       <div className="flex h-screen w-full overflow-hidden">
-        <VendorSidebar />
+        <VendorSidebar vendor={vendor} />
         <div className="flex-1 flex items-center justify-center bg-background-dark">
           <div className="text-white">Loading...</div>
         </div>
@@ -215,7 +215,7 @@ export default function FinancialSetup() {
   return (
     <div className="flex h-screen w-full overflow-hidden">
       {/* Sidebar */}
-      <VendorSidebar />
+      <VendorSidebar vendor={vendor} />
 
       {/* Main Content */}
       <main className="flex flex-1 flex-col h-full overflow-hidden relative bg-background-light dark:bg-background-dark">

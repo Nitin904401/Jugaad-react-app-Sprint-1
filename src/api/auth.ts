@@ -1,6 +1,3 @@
-const API = "/api/auth";
-
-
 export const loginUser = async (data: {
   email: string;
   password: string;
@@ -28,8 +25,8 @@ export const registerUser = async (data: any) => {
   return res.json();
 };
 
-export const getMe = async () => {
-  const res = await fetch("/api/auth/me", {
+export const getCurrentUser = async () => {
+  const res = await fetch("/api/auth/current-user", {
     credentials: "include",
   });
 

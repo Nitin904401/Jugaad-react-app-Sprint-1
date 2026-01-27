@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import VendorSidebar from "./VendorSidebar";
-import { vendorGetMe, vendorUpdateProfile } from "../../api/vendor";
+import { getVendorProfile, vendorUpdateProfile } from "../../api/vendor";
 import Modal from "../../Components/common/Modal";
 
 interface VendorData {
@@ -49,7 +49,7 @@ export default function VendorSettingsFull() {
   useEffect(() => {
     const fetchVendorData = async () => {
       try {
-        const data = await vendorGetMe();
+        const data = await getVendorProfile();
         setVendor(data);
         
         // Prefill form fields
@@ -180,7 +180,7 @@ export default function VendorSettingsFull() {
         
         <div className="flex flex-1 overflow-hidden">
           {/* Side Navigation */}
-            <VendorSidebar />
+            <VendorSidebar vendor={vendor} />
 
           {/* Main Content Area */}
           <main className="flex-1 overflow-y-auto bg-[#111418] p-4 lg:p-10 scroll-smooth">

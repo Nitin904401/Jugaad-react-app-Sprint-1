@@ -1,13 +1,16 @@
-import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
-import { vendorGetMe, vendorLogout } from "../../api/vendor";
+import { vendorLogout } from "../../api/vendor";
 
 interface VendorData {
-  id: number;
+  id: string;
   name: string;
   email: string;
   company_name: string;
-  business_type: string;
+  business_type?: string;
+}
+
+interface VendorSidebarProps {
+  vendor?: VendorData | null;
 }
 
 const navItems = [
@@ -20,48 +23,9 @@ const navItems = [
   { label: 'Settings', icon: 'settings', path: '/vendor/settings' }
 ];
 
-export default function VendorSidebar() {
+export default function VendorSidebar({ vendor }: VendorSidebarProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const [vendor, setVendor] = useState<VendorData | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchVendorData = async () => {
-      try {
-        setLoading(true);
-        
-        const response = await fetch("/api/vendor/auth/profile", {
-          method: "GET",
-          credentials: "include",
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          if (data && data.name) {
-            setVendor(data);
-            localStorage.setItem("vendorData", JSON.stringify(data));
-          }
-        }
-      } catch (err) {
-        console.error("Error fetching vendor data:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    // Try to get from localStorage first as fallback
-    const cached = localStorage.getItem("vendorData");
-    if (cached) {
-      try {
-        setVendor(JSON.parse(cached));
-      } catch (e) {
-        console.error("Failed to parse cached vendor data");
-      }
-    }
-
-    fetchVendorData();
-  }, []);
 
   const handleLogout = async () => {
     try {
@@ -89,7 +53,7 @@ export default function VendorSidebar() {
         </div>
       </div>
       <nav className="flex-1 flex flex-col gap-1 px-3 py-4 overflow-y-auto">
-        {navItems.map((item, idx) => (
+        {navItems.map((item) => (
           <button
             key={item.label}
             onClick={() => item.path !== '#' && navigate(item.path)}
@@ -116,8 +80,8 @@ export default function VendorSidebar() {
             {vendorInitial}
           </div>
           <div className="flex flex-col overflow-hidden flex-1 text-left">
-            <p className="text-white text-sm font-semibold truncate">{loading ? "Loading..." : vendorName}</p>
-            <p className="text-slate-400 text-xs truncate">{loading ? "" : vendorCompany}</p>
+            <p className="text-white text-sm font-semibold truncate">{vendorName}</p>
+            <p className="text-slate-400 text-xs truncate">{vendorCompany}</p>
           </div>
           <span className="material-symbols-outlined text-slate-400 hover:text-white">logout</span>
         </button>
