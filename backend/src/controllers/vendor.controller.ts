@@ -146,6 +146,14 @@ export const vendorMe = (req: any, res: Response) => {
     company_name: req.user.company_name,
     business_type: req.user.business_type,
     phone_number: req.user.phone_number,
+    address: req.user.address,
+    city: req.user.city,
+    state: req.user.state,
+    country: req.user.country,
+    postal_code: req.user.postal_code,
+    website: req.user.website,
+    currency: req.user.currency,
+    tax_id: req.user.tax_id,
     status: req.user.status,
     role: "vendor",
     created_at: req.user.created_at,
@@ -153,7 +161,20 @@ export const vendorMe = (req: any, res: Response) => {
 };
 
 export const vendorUpdateProfile = async (req: any, res: Response) => {
-  const { name, phone_number, company_name, business_type } = req.body;
+  const { 
+    name, 
+    email,
+    phone_number, 
+    company_name, 
+    business_type,
+    address,
+    city,
+    state,
+    country,
+    postal_code,
+    website,
+    currency
+  } = req.body;
   const vendorId = req.user.id;
 
   if (!name || !company_name) {
@@ -162,10 +183,37 @@ export const vendorUpdateProfile = async (req: any, res: Response) => {
 
   try {
     const result = await pool.query(
-      `UPDATE vendors SET name = $1, phone_number = $2, company_name = $3, business_type = $4
-       WHERE id = $5
-       RETURNING id, name, email, company_name, business_type, phone_number, status`,
-      [name, phone_number || null, company_name, business_type || null, vendorId]
+      `UPDATE vendors SET 
+        name = $1, 
+        email = $2,
+        phone_number = $3, 
+        company_name = $4, 
+        business_type = $5,
+        address = $6,
+        city = $7,
+        state = $8,
+        country = $9,
+        postal_code = $10,
+        website = $11,
+        currency = $12,
+        updated_at = CURRENT_TIMESTAMP
+       WHERE id = $13
+       RETURNING id, name, email, company_name, business_type, phone_number, address, city, state, country, postal_code, website, currency, tax_id, status, created_at`,
+      [
+        name, 
+        email || null,
+        phone_number || null, 
+        company_name, 
+        business_type || null,
+        address || null,
+        city || null,
+        state || null,
+        country || null,
+        postal_code || null,
+        website || null,
+        currency || null,
+        vendorId
+      ]
     );
 
     if (result.rows.length === 0) {

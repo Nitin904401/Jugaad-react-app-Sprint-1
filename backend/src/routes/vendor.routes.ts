@@ -45,7 +45,7 @@ router.post("/register", upload.fields([
 ]), vendorRegister);
 router.post("/login", vendorLogin);
 router.post("/logout", vendorLogout);
-router.get("/me", requireAuth, vendorMe);
+router.get("/profile", requireAuth, vendorMe);
 router.put("/profile", requireAuth, vendorUpdateProfile);
 
 export default router;

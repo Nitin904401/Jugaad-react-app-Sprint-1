@@ -35,7 +35,7 @@ export const vendorRegister = async (data: FormData | any) => {
 };
 
 export const vendorGetMe = async () => {
-  const res = await fetch("/api/vendor/auth/me", {
+  const res = await fetch("/api/vendor/auth/profile", {
     credentials: "include",
   });
 
@@ -52,9 +52,17 @@ export const vendorLogout = async () => {
 
 export const vendorUpdateProfile = async (data: {
   name: string;
+  email: string;
   phone_number?: string;
   company_name: string;
   business_type?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  postal_code?: string;
+  website?: string;
+  currency?: string;
 }) => {
   const res = await fetch("/api/vendor/auth/profile", {
     method: "PUT",

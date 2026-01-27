@@ -14,18 +14,37 @@ export const requireAuth = async (req: any, res: Response, next: NextFunction) =
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as any;
     
-    // Fetch complete user data from database
-    const result = await pool.query(
-      "SELECT id, name, email, role, phone_number, created_at FROM users WHERE id = $1",
-      [decoded.id]
-    );
+    // Check if this is a vendor route
+    const isVendorRoute = req.path.includes('/vendor') || req.originalUrl.includes('/vendor');
+    
+    if (isVendorRoute || decoded.role === 'vendor') {
+      // Fetch vendor data from vendors table
+      const result = await pool.query(
+        "SELECT id, name, email, company_name, business_type, phone_number, address, city, state, country, postal_code, website, currency, tax_id, status, created_at FROM vendors WHERE id = $1",
+        [decoded.id]
+      );
 
-    const user = result.rows[0];
-    if (!user) {
-      return res.status(401).json({ message: "User not found" });
+      const vendor = result.rows[0];
+      if (!vendor) {
+        return res.status(401).json({ message: "Vendor not found" });
+      }
+
+      req.user = { ...vendor, role: 'vendor' };
+    } else {
+      // Fetch regular user data from users table
+      const result = await pool.query(
+        "SELECT id, name, email, role, phone_number, created_at FROM users WHERE id = $1",
+        [decoded.id]
+      );
+
+      const user = result.rows[0];
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+
+      req.user = user;
     }
-
-    req.user = user;
+    
     next();
   } catch {
     return res.status(401).json({ message: "Invalid token" });

@@ -1,8 +1,124 @@
 
-import React from "react";
+import { useState, useEffect } from "react";
 import VendorSidebar from "./VendorSidebar";
+import { vendorGetMe, vendorUpdateProfile } from "../../api/vendor";
+import Modal from "../../Components/common/Modal";
+
+interface VendorData {
+  id: string;
+  name: string;
+  email: string;
+  company_name: string;
+  business_type?: string;
+  phone_number?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  postal_code?: string;
+  website?: string;
+  tax_id?: string;
+  status?: string;
+  created_at?: string;
+  currency?: string;
+}
 
 export default function VendorSettingsFull() {
+  const [vendor, setVendor] = useState<VendorData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [modal, setModal] = useState<{
+    isOpen: boolean;
+    type: "success" | "error";
+    title: string;
+    message: string;
+  }>({ isOpen: false, type: "success", title: "", message: "" });
+  const [shopName, setShopName] = useState("");
+  const [supportEmail, setSupportEmail] = useState("");
+  const [shopDescription, setShopDescription] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [website, setWebsite] = useState("");
+  const [streetAddress, setStreetAddress] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
+  const [postalCode, setPostalCode] = useState("");
+  const [country, setCountry] = useState("India");
+  const [currency, setCurrency] = useState("INR (₹)");
+
+  useEffect(() => {
+    const fetchVendorData = async () => {
+      try {
+        const data = await vendorGetMe();
+        setVendor(data);
+        
+        // Prefill form fields
+        setShopName(data.company_name || "");
+        setSupportEmail(data.email || "");
+        setShopDescription(data.business_type ? `Premium auto parts supplier specializing in ${data.business_type}` : "");
+        setPhoneNumber(data.phone_number || "");
+        setWebsite(data.website || "");
+        setStreetAddress(data.address || "");
+        setCity(data.city || "");
+        setState(data.state || "");
+        setPostalCode(data.postal_code || "");
+        setCountry(data.country || "India");
+        setCurrency(data.currency || "INR (₹)");
+      } catch (err) {
+        console.error("Failed to fetch vendor data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchVendorData();
+  }, []);
+
+  const handleSaveChanges = async () => {
+    setSaving(true);
+
+    try {
+      const updateData = {
+        name: vendor?.name || "",
+        email: supportEmail,
+        phone_number: phoneNumber,
+        company_name: shopName,
+        business_type: vendor?.business_type || "",
+        address: streetAddress,
+        city: city,
+        state: state,
+        country: country,
+        postal_code: postalCode,
+        website: website,
+        currency: currency,
+      };
+
+      const updatedVendor = await vendorUpdateProfile(updateData);
+      setVendor(updatedVendor);
+      setModal({
+        isOpen: true,
+        type: "success",
+        title: "Success",
+        message: "Settings updated successfully!",
+      });
+    } catch (err: any) {
+      setModal({
+        isOpen: true,
+        type: "error",
+        title: "Update Failed",
+        message: err.message || "Failed to update settings. Please try again.",
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-[#111418]">
+        <div className="text-white">Loading...</div>
+      </div>
+    );
+  }
 
 
   return (
@@ -74,11 +190,25 @@ export default function VendorSettingsFull() {
                   <p className="text-slate-500 dark:text-slate-400">Manage your public shop profile and contact details.</p>
                 </div>
                 <div className="flex gap-3">
-                  <button className="px-4 py-2 rounded-lg text-slate-600 dark:text-slate-300 bg-slate-200 dark:bg-[#27303a] font-medium text-sm hover:bg-slate-300 dark:hover:bg-[#36414f] transition-colors">Discard</button>
-                  <button className="px-4 py-2 rounded-lg text-white bg-primary font-medium text-sm shadow-lg shadow-primary/30 hover:bg-primary/90 transition-all flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[18px]">save</span> Save Changes
-                  </button>
-                </div>
+                    <button className="px-4 py-2 rounded-lg text-slate-600 dark:text-slate-300 bg-slate-200 dark:bg-[#27303a] font-medium text-sm hover:bg-slate-300 dark:hover:bg-[#36414f] transition-colors">Discard</button>
+                    <button 
+                      onClick={handleSaveChanges}
+                      disabled={saving}
+                      className="px-4 py-2 rounded-lg text-white bg-primary font-medium text-sm shadow-lg shadow-primary/30 hover:bg-primary/90 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {saving ? (
+                        <>
+                          <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <span className="material-symbols-outlined text-[18px]">save</span>
+                          Save Changes
+                        </>
+                      )}
+                    </button>
+                  </div>
               </div>
 
               {/* Profile Avatar Header Section */}
@@ -86,22 +216,36 @@ export default function VendorSettingsFull() {
                 <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
                 <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start relative z-10">
                   <div className="relative">
-                    <div className="w-32 h-32 rounded-xl bg-center bg-cover border-4 border-slate-200 dark:border-[#27303a] shadow-xl"
-                         style={{
-                           backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDPOA8phzs9QG92ZeKCVVSxPQsVgRwv_zkEHxuqdQHPboRDeIRdSkdbkmS5SfHdMUl-ctab4yF1x6CpvaY5wwAMZlJg_VHvmeo0bnGVfPc0chfAp0HEY-JBnCYOABfoRrixK-SZg_Z3Hj8rPz4gESb7L_CobFo5ND2OcCwlYOjTnXswEir0wNGGDbXAnUYyU4UBr0MYGF3VbpeZihczhDQmTRaN4Y8kpSIUEiaFjBQ5K12gKe3p4zLQ8QQb5LyW6Atj20S0qKPzALw4')"
-                         }}>
-                    <button className="absolute -bottom-3 -right-3 h-10 w-10 bg-surface-dark dark:bg-[#27303a] text-white rounded-full flex items-center justify-center border-2 border-slate-50 dark:border-[#111418] hover:bg-primary transition-colors shadow-lg cursor-pointer">
-                      <span className="material-symbols-outlined text-lg">edit</span>
-                    </button>
-                  </div>
+                    <div className="w-32 h-32 rounded-xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center border-4 border-slate-200 dark:border-[#27303a] shadow-xl">
+                      <span className="text-5xl font-bold text-white">{vendor?.company_name?.charAt(0).toUpperCase() || "V"}</span>
+                      <button className="absolute -bottom-3 -right-3 h-10 w-10 bg-surface-dark dark:bg-[#27303a] text-white rounded-full flex items-center justify-center border-2 border-slate-50 dark:border-[#111418] hover:bg-primary transition-colors shadow-lg cursor-pointer">
+                        <span className="material-symbols-outlined text-lg">edit</span>
+                      </button>
+                    </div>
                   </div>
 
                   <div className="flex-1 text-center sm:text-left">
-                    <h3 className="text-xl font-bold text-slate-900 dark:text-white">Turbo Auto Parts Official Store</h3>
-                    <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Member since 2021 • ID: #VND-8392</p>
+                    <h3 className="text-xl font-bold text-slate-900 dark:text-white">{vendor?.company_name || "Vendor Name"}</h3>
+                    <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
+                      Member since {vendor?.created_at ? new Date(vendor.created_at).getFullYear() : "2024"} • ID: #{vendor?.id?.slice(0, 8) || "VND-0000"}
+                    </p>
                     <div className="flex flex-wrap gap-2 mt-4 justify-center sm:justify-start">
-                      <span className="px-3 py-1 rounded-full bg-green-500/10 text-green-500 text-xs font-semibold border border-green-500/20">Active</span>
-                      <span className="px-3 py-1 rounded-full bg-blue-500/10 text-blue-500 text-xs font-semibold border border-blue-500/20">Top Rated Seller</span>
+                      {vendor?.status && (
+                        <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${
+                          vendor.status === 'approved' || vendor.status === 'active' 
+                            ? 'bg-green-500/10 text-green-500 border-green-500/20'
+                            : vendor.status === 'pending'
+                            ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'
+                            : 'bg-red-500/10 text-red-500 border-red-500/20'
+                        }`}>
+                          {vendor.status.charAt(0).toUpperCase() + vendor.status.slice(1)}
+                        </span>
+                      )}
+                      {vendor?.business_type && (
+                        <span className="px-3 py-1 rounded-full bg-blue-500/10 text-blue-500 text-xs font-semibold border border-blue-500/20">
+                          {vendor.business_type}
+                        </span>
+                      )}
                     </div>
                   </div>
 
@@ -130,37 +274,66 @@ export default function VendorSettingsFull() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                           <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Shop Name</label>
-                          <input className="w-full rounded-lg bg-slate-50 dark:bg-[#0f151b] border-slate-200 dark:border-[#27303a] text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 focus:border-primary px-4 py-3 text-sm placeholder:text-slate-400 dark:placeholder:text-slate-600 transition-all shadow-sm" type="text" defaultValue="Turbo Auto Parts" />
+                          <input 
+                            className="w-full rounded-lg bg-slate-50 dark:bg-[#0f151b] border-slate-200 dark:border-[#27303a] text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 focus:border-primary px-4 py-3 text-sm placeholder:text-slate-400 dark:placeholder:text-slate-600 transition-all shadow-sm" 
+                            type="text" 
+                            value={shopName}
+                            onChange={(e) => setShopName(e.target.value)}
+                          />
                         </div>
                         <div className="space-y-2">
                           <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Support Email</label>
-                          <input className="w-full rounded-lg bg-slate-50 dark:bg-[#0f151b] border-slate-200 dark:border-[#27303a] text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 focus:border-primary px-4 py-3 text-sm placeholder:text-slate-400 dark:placeholder:text-slate-600 transition-all shadow-sm" type="email" defaultValue="support@turboautoparts.com" />
+                          <input 
+                            className="w-full rounded-lg bg-slate-50 dark:bg-[#0f151b] border-slate-200 dark:border-[#27303a] text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 focus:border-primary px-4 py-3 text-sm placeholder:text-slate-400 dark:placeholder:text-slate-600 transition-all shadow-sm" 
+                            type="email" 
+                            value={supportEmail}
+                            onChange={(e) => setSupportEmail(e.target.value)}
+                          />
                         </div>
                       </div>
 
                       <div className="space-y-2">
                         <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Shop Description</label>
-                        <textarea className="w-full rounded-lg bg-slate-50 dark:bg-[#0f151b] border-slate-200 dark:border-[#27303a] text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 focus:border-primary px-4 py-3 text-sm placeholder:text-slate-400 dark:placeholder:text-slate-600 transition-all resize-none shadow-sm" rows={4} defaultValue={"Premium aftermarket turbochargers and performance parts for European and Japanese vehicles. We specialize in fast shipping and expert technical support."} />
+                        <textarea 
+                          className="w-full rounded-lg bg-slate-50 dark:bg-[#0f151b] border-slate-200 dark:border-[#27303a] text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 focus:border-primary px-4 py-3 text-sm placeholder:text-slate-400 dark:placeholder:text-slate-600 transition-all resize-none shadow-sm" 
+                          rows={4}
+                          value={shopDescription}
+                          onChange={(e) => setShopDescription(e.target.value)}
+                        />
                         <div className="flex justify-end">
-                          <span className="text-xs text-slate-400">142/500 characters</span>
+                          <span className="text-xs text-slate-400">{shopDescription.length}/500 characters</span>
                         </div>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div className="space-y-2">
                           <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Phone Number</label>
-                          <input className="w-full rounded-lg bg-slate-50 dark:bg-[#0f151b] border-slate-200 dark:border-[#27303a] text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 focus:border-primary px-4 py-3 text-sm placeholder:text-slate-400 dark:placeholder:text-slate-600 transition-all shadow-sm" type="tel" defaultValue="+1 (555) 012-3456" />
+                          <input 
+                            className="w-full rounded-lg bg-slate-50 dark:bg-[#0f151b] border-slate-200 dark:border-[#27303a] text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 focus:border-primary px-4 py-3 text-sm placeholder:text-slate-400 dark:placeholder:text-slate-600 transition-all shadow-sm" 
+                            type="tel" 
+                            value={phoneNumber}
+                            onChange={(e) => setPhoneNumber(e.target.value)}
+                          />
                         </div>
                         <div className="space-y-2">
                           <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Website</label>
-                          <input className="w-full rounded-lg bg-slate-50 dark:bg-[#0f151b] border-slate-200 dark:border-[#27303a] text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 focus:border-primary px-4 py-3 text-sm placeholder:text-slate-400 dark:placeholder:text-slate-600 transition-all shadow-sm" placeholder="https://" type="url" />
+                          <input 
+                            className="w-full rounded-lg bg-slate-50 dark:bg-[#0f151b] border-slate-200 dark:border-[#27303a] text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 focus:border-primary px-4 py-3 text-sm placeholder:text-slate-400 dark:placeholder:text-slate-600 transition-all shadow-sm" 
+                            placeholder="https://" 
+                            type="url"
+                            value={website}
+                            onChange={(e) => setWebsite(e.target.value)}
+                          />
                         </div>
                         <div className="space-y-2">
                           <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Default Currency</label>
-                          <select className="w-full rounded-lg bg-slate-50 dark:bg-[#0f151b] border-slate-200 dark:border-[#27303a] text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 focus:border-primary px-4 py-3 text-sm transition-all shadow-sm">
+                          <select 
+                            className="w-full rounded-lg bg-slate-50 dark:bg-[#0f151b] border-slate-200 dark:border-[#27303a] text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 focus:border-primary px-4 py-3 text-sm transition-all shadow-sm"
+                            value={currency}
+                            onChange={(e) => setCurrency(e.target.value)}
+                          >
                             <option>USD ($)</option>
-                            <option>EUR (€)</option>
-                            <option>GBP (£)</option>
+                            <option>INR (₹)</option>
                           </select>
                         </div>
                       </div>
@@ -175,27 +348,51 @@ export default function VendorSettingsFull() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-2 md:col-span-2">
                         <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Street Address</label>
-                        <input className="w-full rounded-lg bg-slate-50 dark:bg-[#0f151b] border-slate-200 dark:border-[#27303a] text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 focus:border-primary px-4 py-3 text-sm placeholder:text-slate-400 dark:placeholder:text-slate-600 transition-all shadow-sm" type="text" defaultValue="123 Performance Way, Suite 400" />
+                        <input 
+                          className="w-full rounded-lg bg-slate-50 dark:bg-[#0f151b] border-slate-200 dark:border-[#27303a] text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 focus:border-primary px-4 py-3 text-sm placeholder:text-slate-400 dark:placeholder:text-slate-600 transition-all shadow-sm" 
+                          type="text"
+                          value={streetAddress}
+                          onChange={(e) => setStreetAddress(e.target.value)}
+                        />
                       </div>
                       <div className="space-y-2">
                         <label className="text-sm font-medium text-slate-700 dark:text-slate-300">City</label>
-                        <input className="w-full rounded-lg bg-slate-50 dark:bg-[#0f151b] border-slate-200 dark:border-[#27303a] text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 focus:border-primary px-4 py-3 text-sm placeholder:text-slate-400 dark:placeholder:text-slate-600 transition-all shadow-sm" type="text" defaultValue="Detroit" />
+                        <input 
+                          className="w-full rounded-lg bg-slate-50 dark:bg-[#0f151b] border-slate-200 dark:border-[#27303a] text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 focus:border-primary px-4 py-3 text-sm placeholder:text-slate-400 dark:placeholder:text-slate-600 transition-all shadow-sm" 
+                          type="text"
+                          value={city}
+                          onChange={(e) => setCity(e.target.value)}
+                        />
                       </div>
                       <div className="space-y-2">
                         <label className="text-sm font-medium text-slate-700 dark:text-slate-300">State / Province</label>
-                        <input className="w-full rounded-lg bg-slate-50 dark:bg-[#0f151b] border-slate-200 dark:border-[#27303a] text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 focus:border-primary px-4 py-3 text-sm placeholder:text-slate-400 dark:placeholder:text-slate-600 transition-all shadow-sm" type="text" defaultValue="Michigan" />
+                        <input 
+                          className="w-full rounded-lg bg-slate-50 dark:bg-[#0f151b] border-slate-200 dark:border-[#27303a] text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 focus:border-primary px-4 py-3 text-sm placeholder:text-slate-400 dark:placeholder:text-slate-600 transition-all shadow-sm" 
+                          type="text"
+                          value={state}
+                          onChange={(e) => setState(e.target.value)}
+                        />
                       </div>
                       <div className="space-y-2">
                         <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Zip / Postal Code</label>
-                        <input className="w-full rounded-lg bg-slate-50 dark:bg-[#0f151b] border-slate-200 dark:border-[#27303a] text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 focus:border-primary px-4 py-3 text-sm placeholder:text-slate-400 dark:placeholder:text-slate-600 transition-all shadow-sm" type="text" defaultValue="48201" />
+                        <input 
+                          className="w-full rounded-lg bg-slate-50 dark:bg-[#0f151b] border-slate-200 dark:border-[#27303a] text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 focus:border-primary px-4 py-3 text-sm placeholder:text-slate-400 dark:placeholder:text-slate-600 transition-all shadow-sm" 
+                          type="text"
+                          value={postalCode}
+                          onChange={(e) => setPostalCode(e.target.value)}
+                        />
                       </div>
                       <div className="space-y-2">
                         <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Country</label>
-                        <select className="w-full rounded-lg bg-slate-50 dark:bg-[#0f151b] border-slate-200 dark:border-[#27303a] text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 focus:border-primary px-4 py-3 text-sm transition-all shadow-sm">
-                          <option>United States</option>
-                          <option>Canada</option>
-                          <option>Germany</option>
-                          <option>Japan</option>
+                        <select 
+                          className="w-full rounded-lg bg-slate-50 dark:bg-[#0f151b] border-slate-200 dark:border-[#27303a] text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 focus:border-primary px-4 py-3 text-sm transition-all shadow-sm"
+                          value={country}
+                          onChange={(e) => setCountry(e.target.value)}
+                        >
+                          <option value="India">India</option>
+                          <option value="United States">United States</option>
+                          <option value="UAE">UAE</option>
+                          <option value="Europe">Europe</option>
                         </select>
                       </div>
                     </div>
@@ -298,6 +495,14 @@ export default function VendorSettingsFull() {
           </main>
         </div>
       </div>
+      
+      <Modal
+        isOpen={modal.isOpen}
+        onClose={() => setModal({ ...modal, isOpen: false })}
+        type={modal.type}
+        title={modal.title}
+        message={modal.message}
+      />
     </div>
   );
 }
