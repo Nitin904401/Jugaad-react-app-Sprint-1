@@ -29,10 +29,9 @@ export const AdminLayout: React.FC = () => {
   const isActive = (path: string) => location.pathname.startsWith(path);
 
   return (
-    <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white min-h-screen flex flex-col">
-      <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar */}
-        <aside className="hidden w-64 h-screen flex-col border-r border-white/10 bg-[#111418] lg:flex z-20">
+    <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white h-screen flex">
+      {/* Sidebar */}
+      <aside className="hidden w-64 flex-col border-r border-white/10 bg-[#111418] lg:flex z-20">
           <div className="flex h-16 items-center gap-3 px-6 border-b border-white/5 flex-shrink-0">
             <div className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-8 bg-primary flex items-center justify-center text-white">
               <span className="material-symbols-outlined text-[20px]">directions_car</span>
@@ -87,6 +86,5 @@ export const AdminLayout: React.FC = () => {
           </div>
         </main>
       </div>
-    </div>
   );
 };

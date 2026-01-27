@@ -6,12 +6,63 @@ export const AdminSettingsPage: React.FC = () => {
     vendorRegistration: true,
     stockAlerts: false,
   });
+  
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState(0);
+
+  const handlePasswordChange = (value: string) => {
+    setNewPassword(value);
+    // Calculate password strength
+    let strength = 0;
+    if (value.length >= 8) strength++;
+    if (/[a-z]/.test(value) && /[A-Z]/.test(value)) strength++;
+    if (/\d/.test(value)) strength++;
+    if (/[!@#$%^&*]/.test(value)) strength++;
+    setPasswordStrength(strength);
+  };
+
+  const getPasswordStrengthColor = () => {
+    switch (passwordStrength) {
+      case 0:
+      case 1:
+        return 'bg-red-500';
+      case 2:
+        return 'bg-yellow-500';
+      case 3:
+        return 'bg-blue-500';
+      case 4:
+        return 'bg-green-500';
+      default:
+        return 'bg-slate-600';
+    }
+  };
+
+  const getPasswordStrengthText = () => {
+    switch (passwordStrength) {
+      case 0:
+      case 1:
+        return 'Weak';
+      case 2:
+        return 'Fair';
+      case 3:
+        return 'Good';
+      case 4:
+        return 'Strong';
+      default:
+        return '';
+    }
+  };
 
   return (
     <div className="w-full">
       {/* Header */}
       <div className="flex justify-between items-center mb-8 pb-6 border-b border-white/10">
-        <h1 className="text-3xl font-bold text-white">System Settings</h1>
+        <h1 className="text-3xl font-bold text-white">Admin Profile Settings</h1>
 
         <div className="flex items-center gap-3">
           <button className="text-slate-400 hover:text-white text-sm font-medium transition">
@@ -23,147 +74,164 @@ export const AdminSettingsPage: React.FC = () => {
         </div>
       </div>
 
+      {/* System Update Status */}
+      <p className="text-center text-slate-500 text-sm mb-8">
+        Last system update: Today at 10:45 AM
+      </p>
+
       {/* Settings Content */}
-      <div className="space-y-8 max-w-6xl">
-        {/* General Settings */}
-        <Section title="General Settings" icon="ℹ️">
-          <div className="grid md:grid-cols-2 gap-12">
+      <div className="space-y-8">
+        {/* General Settings & Security - 2 Grid */}
+        <div className="grid md:grid-cols-2 gap-8">
+          {/* General Settings */}
+          <Section title="General Settings" icon="ℹ️">
             <div className="space-y-6">
-              <Input label="Platform Name" defaultValue="AutoParts Marketplace" />
-              <Input label="Support Contact Email" defaultValue="support@autoparts.com" />
-            </div>
-            <div>
+              <Input label="Admin Name" defaultValue="Admin User" />
+              <Input label="Admin Email" defaultValue="admin@test.com" />
               <label className="block space-y-2">
-                <span className="text-slate-400 text-sm font-medium">Platform Logo</span>
+                <span className="text-slate-400 text-sm font-medium">Profile Picture</span>
                 <div className="flex items-start gap-4">
-                  <div className="w-24 h-24 rounded-xl bg-slate-800/50 border border-slate-700 flex items-center justify-center text-3xl flex-shrink-0">
-                    🚗
+                  <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-primary to-blue-600 border border-slate-700 flex items-center justify-center text-2xl flex-shrink-0 text-white font-bold">
+                    A
                   </div>
-                  <div className="flex flex-col justify-start gap-4 pt-5">
+                  <div className="flex flex-col justify-start gap-3 pt-3">
                     <button
                       type="button"
                       className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm font-medium rounded-lg transition w-fit"
                     >
-                      Change Logo
+                      Change Picture
                     </button>
                     <p className="text-xs text-slate-500">
-                      Recommended size: 512×512px (PNG, SVG)
+                      512×512px (PNG, JPG)
                     </p>
                   </div>
                 </div>
               </label>
             </div>
-          </div>
-        </Section>
+          </Section>
 
-        {/* System Config */}
-        <Section title="System Configuration" icon="🌐">
-          <div className="grid md:grid-cols-2 gap-8">
-            <Select
-              label="Default Currency"
-              options={['USD ($)', 'EUR (€)', 'INR (₹)']}
-              defaultValue="USD ($)"
-            />
-            <Select
-              label="System Timezone"
-              options={['(GMT-08:00) Pacific Time', '(GMT+00:00) UTC', '(GMT+05:30) IST']}
-              defaultValue="(GMT+00:00) UTC"
-            />
-          </div>
-        </Section>
-
-        {/* Payment Gateway Integration */}
-        <Section title="Payment Gateway Integration" icon="💳">
-          <div className="space-y-6">
-            {/* Razorpay */}
-            <div className="flex justify-between items-start bg-slate-800/50 border border-white/10 p-6 rounded-xl">
-              <div className="flex items-start gap-4 flex-1">
-                <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                  💙
-                </div>
-                <div>
-                  <p className="font-medium text-white">Razorpay</p>
-                  <p className="text-xs text-slate-400 mt-1">Accept payments via Razorpay</p>
-                </div>
+          {/* Security */}
+          <Section title="Security" icon="🔒">
+            <div className="space-y-4">
+              <div className="bg-blue-600/20 border border-blue-500/30 p-5 rounded-xl">
+                <h4 className="font-bold text-base text-white mb-2">Two-factor Authentication</h4>
+                <p className="text-sm text-slate-400 mb-4">Add extra security to your admin account</p>
+                <button className="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg text-sm text-white font-bold transition w-full">
+                  Enable 2FA
+                </button>
               </div>
-              <Toggle checked={true} />
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-8 ml-14">
-              <Input label="Key ID" defaultValue="•••••••••••••••" />
-              <Input label="Key Secret" defaultValue="•••••••••••••••" />
-            </div>
-
-            {/* PayU */}
-            <div className="flex justify-between items-start bg-slate-800/50 border border-white/10 p-6 rounded-xl mt-6">
-              <div className="flex items-start gap-4 flex-1">
-                <div className="w-10 h-10 rounded-lg bg-green-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                  💚
-                </div>
-                <div>
-                  <p className="font-medium text-white">PayU</p>
-                  <p className="text-xs text-slate-400 mt-1">Accept payments via PayU</p>
-                </div>
+              <PasswordInput 
+                label="Current Password" 
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                showPassword={showCurrentPassword}
+                onToggle={() => setShowCurrentPassword(!showCurrentPassword)}
+              />
+              <div className="space-y-2">
+                <PasswordInput 
+                  label="New Password" 
+                  value={newPassword}
+                  onChange={(e) => handlePasswordChange(e.target.value)}
+                  showPassword={showNewPassword}
+                  onToggle={() => setShowNewPassword(!showNewPassword)}
+                />
+                {newPassword && (
+                  <div className="space-y-2">
+                    <div className="flex gap-1 h-1.5">
+                      {[...Array(4)].map((_, i) => (
+                        <div
+                          key={i}
+                          className={`flex-1 rounded-full transition-colors ${
+                            i < passwordStrength ? getPasswordStrengthColor() : 'bg-slate-700'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <p className="text-xs text-slate-400">
+                      Password strength: <span className="font-semibold text-white">{getPasswordStrengthText()}</span>
+                    </p>
+                  </div>
+                )}
               </div>
-              <Toggle checked={false} />
+              <div className="space-y-2">
+                <PasswordInput 
+                  label="Confirm New Password" 
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  showPassword={showConfirmPassword}
+                  onToggle={() => setShowConfirmPassword(!showConfirmPassword)}
+                />
+                {newPassword && confirmPassword && (
+                  <p className={`text-xs font-medium ${
+                    newPassword === confirmPassword ? 'text-green-400' : 'text-red-400'
+                  }`}>
+                    {newPassword === confirmPassword ? '✓ Passwords match' : '✗ Passwords do not match'}
+                  </p>
+                )}
+              </div>
             </div>
+          </Section>
+        </div>
 
-            <div className="grid md:grid-cols-2 gap-8 ml-14">
-              <Input label="Merchant Key" defaultValue="Enter PayU Key" />
-              <Input label="Salt" defaultValue="Enter Salt" />
+        {/* Payment Gateway & Notifications - 2 Grid */}
+        <div className="grid md:grid-cols-2 gap-8">
+          {/* Payment Gateway Integration */}
+          <Section title="Payment Gateway" icon="💳">
+            <div className="space-y-4">
+              {/* Razorpay */}
+              <div className="flex justify-between items-start bg-slate-800/50 border border-white/10 p-4 rounded-xl">
+                <div className="flex items-start gap-3 flex-1">
+                  <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white text-sm flex-shrink-0">
+                    💙
+                  </div>
+                  <div>
+                    <p className="font-medium text-white text-sm">Razorpay</p>
+                    <p className="text-xs text-slate-400 mt-0.5">Accept payments via Razorpay</p>
+                  </div>
+                </div>
+                <Toggle checked={true} />
+              </div>
+
+              <div className="space-y-3 pl-2">
+                <Input label="Key ID" defaultValue="•••••••••••••••" />
+                <Input label="Key Secret" defaultValue="•••••••••••••••" />
+              </div>
             </div>
-          </div>
-        </Section>
+          </Section>
 
-        {/* Notifications */}
-        <Section title="Notification Settings" icon="🔔">
-          <div className="space-y-4">
-            <NotificationToggle
-              title="New Order Alerts"
-              desc="Send email when a new order is placed"
-              checked={notifications.newOrders}
-              onChange={() =>
-                setNotifications({ ...notifications, newOrders: !notifications.newOrders })
-              }
-            />
-            <NotificationToggle
-              title="Vendor Registration"
-              desc="Notify on new vendor requests"
-              checked={notifications.vendorRegistration}
-              onChange={() =>
-                setNotifications({
-                  ...notifications,
-                  vendorRegistration: !notifications.vendorRegistration,
-                })
-              }
-            />
-            <NotificationToggle
-              title="Stock Threshold Alerts"
-              desc="Notify when stock goes low"
-              checked={notifications.stockAlerts}
-              onChange={() =>
-                setNotifications({ ...notifications, stockAlerts: !notifications.stockAlerts })
-              }
-            />
-          </div>
-        </Section>
-
-        {/* Security */}
-        <Section title="Security" icon="🔒">
-          <div className="flex justify-between items-center bg-blue-600/20 border border-blue-500/30 p-6 rounded-xl">
-            <div>
-              <h4 className="font-bold text-lg text-white">Two-factor Authentication</h4>
-              <p className="text-sm text-slate-400">Add extra security to your admin account</p>
+          {/* Notifications */}
+          <Section title="Notifications" icon="🔔">
+            <div className="space-y-3">
+              <NotificationToggle
+                title="New Order Alerts"
+                desc="Email on new orders"
+                checked={notifications.newOrders}
+                onChange={() =>
+                  setNotifications({ ...notifications, newOrders: !notifications.newOrders })
+                }
+              />
+              <NotificationToggle
+                title="Vendor Registration"
+                desc="New vendor requests"
+                checked={notifications.vendorRegistration}
+                onChange={() =>
+                  setNotifications({
+                    ...notifications,
+                    vendorRegistration: !notifications.vendorRegistration,
+                  })
+                }
+              />
+              <NotificationToggle
+                title="Stock Alerts"
+                desc="Low stock notifications"
+                checked={notifications.stockAlerts}
+                onChange={() =>
+                  setNotifications({ ...notifications, stockAlerts: !notifications.stockAlerts })
+                }
+              />
             </div>
-            <button className="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg text-sm text-white font-bold transition">
-              Enable 2FA
-            </button>
-          </div>
-        </Section>
-
-        <p className="text-center text-slate-500 text-sm pt-6">
-          Last system update: Today at 10:45 AM
-        </p>
+          </Section>
+        </div>
       </div>
     </div>
   );
@@ -230,13 +298,45 @@ interface ToggleItemProps {
 }
 
 const NotificationToggle: React.FC<ToggleItemProps> = ({ title, desc, checked, onChange }) => (
-  <div className="flex justify-between items-center bg-slate-800/50 border border-white/10 p-6 rounded-xl hover:border-white/20 transition">
+  <div className="flex justify-between items-center bg-slate-800/50 border border-white/10 p-4 rounded-xl hover:border-white/20 transition">
     <div>
-      <p className="font-medium text-white">{title}</p>
-      <p className="text-xs text-slate-400 mt-1">{desc}</p>
+      <p className="font-medium text-white text-sm">{title}</p>
+      <p className="text-xs text-slate-400 mt-0.5">{desc}</p>
     </div>
     <Toggle checked={checked} onChange={onChange} />
   </div>
+);
+
+interface PasswordInputProps {
+  label: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  showPassword: boolean;
+  onToggle: () => void;
+}
+
+const PasswordInput: React.FC<PasswordInputProps> = ({ label, value, onChange, showPassword, onToggle }) => (
+  <label className="block space-y-2">
+    <span className="text-slate-400 text-sm font-medium">{label}</span>
+    <div className="relative">
+      <input
+        type={showPassword ? 'text' : 'password'}
+        value={value}
+        onChange={onChange}
+        placeholder="••••••••"
+        className="w-full bg-slate-800/50 border border-white/10 rounded-lg px-4 py-2 pr-12 text-white placeholder:text-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:outline-none transition"
+      />
+      <button
+        type="button"
+        onClick={onToggle}
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition"
+      >
+        <span className="material-symbols-outlined text-xl">
+          {showPassword ? 'visibility_off' : 'visibility'}
+        </span>
+      </button>
+    </div>
+  </label>
 );
 
 interface ToggleProps {
