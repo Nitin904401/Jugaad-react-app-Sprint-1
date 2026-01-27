@@ -31,7 +31,7 @@ export default function VendorSidebar() {
       try {
         setLoading(true);
         
-        const response = await fetch("/api/vendor/auth/me", {
+        const response = await fetch("/api/vendor/auth/profile", {
           method: "GET",
           credentials: "include",
         });
