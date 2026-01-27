@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { getAdminProfile } from '../../api/admin';
+import { getAdminProfile, adminUpdateProfile, adminUpdateProfileWithPicture } from '../../api/admin';
+import Modal from '../../Components/common/Modal';
 
 interface AdminData {
   id: string;
@@ -12,9 +13,18 @@ interface AdminData {
 export const AdminSettingsPage: React.FC = () => {
   const [admin, setAdmin] = useState<AdminData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [adminName, setAdminName] = useState('');
   const [adminEmail, setAdminEmail] = useState('');
   const [profilePictureUrl, setProfilePictureUrl] = useState<string>('');
+  const [profilePicture, setProfilePicture] = useState<File | null>(null);
+  const [deleteProfilePicture, setDeleteProfilePicture] = useState(false);
+  const [modal, setModal] = useState<{
+    isOpen: boolean;
+    type: 'success' | 'error';
+    title: string;
+    message: string;
+  }>({ isOpen: false, type: 'success', title: '', message: '' });
   
   const [notifications, setNotifications] = useState({
     newOrders: true,
@@ -73,6 +83,86 @@ export const AdminSettingsPage: React.FC = () => {
     }
   };
 
+  const handleProfilePicClick = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = (e: any) => {
+      const file = e.target?.files?.[0];
+      if (file) {
+        setProfilePicture(file);
+        // Don't update profilePictureUrl here - keep the old one until save
+        setDeleteProfilePicture(false);
+      }
+    };
+    input.click();
+  };
+
+  const handleDeletePhoto = () => {
+    setProfilePicture(null);
+    setProfilePictureUrl('');
+    setDeleteProfilePicture(true);
+  };
+
+  const handleSaveChanges = async () => {
+    setSaving(true);
+    try {
+      let updatedAdmin;
+
+      if (profilePicture) {
+        const formData = new FormData();
+        formData.append('name', adminName);
+        formData.append('email', adminEmail);
+        formData.append('profile_picture', profilePicture);
+        updatedAdmin = await adminUpdateProfileWithPicture(formData);
+      } else if (deleteProfilePicture) {
+        const formData = new FormData();
+        formData.append('name', adminName);
+        formData.append('email', adminEmail);
+        formData.append('delete_profile_picture', 'true');
+        updatedAdmin = await adminUpdateProfileWithPicture(formData);
+        setDeleteProfilePicture(false);
+      } else {
+        updatedAdmin = await adminUpdateProfile({
+          name: adminName,
+          email: adminEmail,
+        });
+      }
+
+      setAdmin(updatedAdmin);
+      setAdminName(updatedAdmin.name);
+      setAdminEmail(updatedAdmin.email);
+      setProfilePictureUrl(updatedAdmin.profile_picture || '');
+      setProfilePicture(null);
+
+      setModal({
+        isOpen: true,
+        type: 'success',
+        title: 'Success',
+        message: 'Profile updated successfully!',
+      });
+    } catch (err: any) {
+      setModal({
+        isOpen: true,
+        type: 'error',
+        title: 'Error',
+        message: err.message || 'Failed to update profile',
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDiscard = () => {
+    if (admin) {
+      setAdminName(admin.name);
+      setAdminEmail(admin.email);
+      setProfilePictureUrl(admin.profile_picture || '');
+      setProfilePicture(null);
+      setDeleteProfilePicture(false);
+    }
+  };
+
   useEffect(() => {
     const fetchAdminData = async () => {
       try {
@@ -108,11 +198,19 @@ export const AdminSettingsPage: React.FC = () => {
         <h1 className="text-3xl font-bold text-white">Admin Profile Settings</h1>
 
         <div className="flex items-center gap-3">
-          <button className="text-slate-400 hover:text-white text-sm font-medium transition">
+          <button 
+            onClick={handleDiscard}
+            disabled={saving}
+            className="text-slate-400 hover:text-white text-sm font-medium transition disabled:opacity-50"
+          >
             Discard
           </button>
-          <button className="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg text-sm text-white font-bold transition">
-            Save Changes
+          <button 
+            onClick={handleSaveChanges}
+            disabled={saving}
+            className="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg text-sm text-white font-bold transition disabled:opacity-50"
+          >
+            {saving ? 'Saving...' : 'Save Changes'}
           </button>
         </div>
       </div>
@@ -148,7 +246,7 @@ export const AdminSettingsPage: React.FC = () => {
               <label className="block space-y-2">
                 <span className="text-slate-400 text-sm font-medium">Profile Picture</span>
                 <div className="flex items-start gap-4">
-                  {profilePictureUrl ? (
+                  {profilePictureUrl && !profilePicture && !deleteProfilePicture ? (
                     <div className="w-20 h-20 rounded-xl border border-slate-700 flex-shrink-0 overflow-hidden">
                       <img src={profilePictureUrl} alt="Profile" className="w-full h-full object-cover" />
                     </div>
@@ -160,12 +258,22 @@ export const AdminSettingsPage: React.FC = () => {
                   <div className="flex flex-col justify-start gap-3 pt-3">
                     <button
                       type="button"
+                      onClick={handleProfilePicClick}
                       className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm font-medium rounded-lg transition w-fit"
                     >
-                      Change Picture
+                      {profilePicture ? 'Change Selected' : 'Change Picture'}
                     </button>
+                    {profilePictureUrl && (
+                      <button
+                        type="button"
+                        onClick={handleDeletePhoto}
+                        className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition w-fit"
+                      >
+                        Delete Picture
+                      </button>
+                    )}
                     <p className="text-xs text-slate-500">
-                      512×512px (PNG, JPG)
+                      {profilePicture ? `Selected: ${profilePicture.name}` : '512×512px (PNG, JPG)'}
                     </p>
                   </div>
                 </div>
@@ -296,6 +404,15 @@ export const AdminSettingsPage: React.FC = () => {
           </Section>
         </div>
       </div>
+
+      {/* Modal */}
+      <Modal
+        isOpen={modal.isOpen}
+        onClose={() => setModal({ ...modal, isOpen: false })}
+        type={modal.type}
+        title={modal.title}
+        message={modal.message}
+      />
     </div>
   );
 };

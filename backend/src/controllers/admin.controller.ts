@@ -61,11 +61,78 @@ export const adminLogout = (_req: Request, res: Response) => {
   res.json({ message: "Logged out" });
 };
 
-export const adminProfile = (req: any, res: Response) => {
-  res.json({
-    id: req.user.id,
-    name: req.user.name,
-    email: req.user.email,
-    role: req.user.role,
-  });
+export const adminProfile = async (req: any, res: Response) => {
+  try {
+    const result = await pool.query(
+      "SELECT id, name, email, role, profile_picture FROM users WHERE id = $1",
+      [req.user.id]
+    );
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Admin not found" });
+    }
+    
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to fetch profile" });
+  }
+};
+
+export const adminUpdateProfile = async (req: any, res: Response) => {
+  const { name, email, delete_profile_picture } = req.body;
+  const adminId = req.user.id;
+
+  try {
+    let profilePictureValue: string | null = undefined as any;
+    let shouldUpdateProfilePicture = false;
+
+    // Handle profile picture deletion
+    if (delete_profile_picture === "true") {
+      profilePictureValue = null;
+      shouldUpdateProfilePicture = true;
+    } else if (req.file) {
+      // New profile picture uploaded
+      profilePictureValue = `/uploads/${req.file.filename}`;
+      shouldUpdateProfilePicture = true;
+    }
+
+    // Build update query dynamically
+    const updateFields: string[] = [];
+    const values: any[] = [];
+    let paramIndex = 1;
+
+    if (name !== undefined) {
+      updateFields.push(`name = $${paramIndex++}`);
+      values.push(name);
+    }
+
+    if (email !== undefined) {
+      updateFields.push(`email = $${paramIndex++}`);
+      values.push(email);
+    }
+
+    if (shouldUpdateProfilePicture) {
+      updateFields.push(`profile_picture = $${paramIndex++}`);
+      values.push(profilePictureValue);
+    }
+
+    if (updateFields.length === 0) {
+      return res.status(400).json({ message: "No fields to update" });
+    }
+
+    values.push(adminId);
+    const query = `UPDATE users SET ${updateFields.join(", ")} WHERE id = $${paramIndex} RETURNING id, name, email, role, profile_picture`;
+
+    const result = await pool.query(query, values);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Admin not found" });
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to update profile" });
+  }
 };

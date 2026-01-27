@@ -1,11 +1,32 @@
 // AdminLayout - Admin dashboard layout wrapper
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { adminLogout } from '../../api/admin';
+import { adminLogout, getAdminProfile } from '../../api/admin';
+
+interface AdminData {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  profile_picture?: string;
+}
 
 export const AdminLayout: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const [admin, setAdmin] = useState<AdminData | null>(null);
+
+  useEffect(() => {
+    const fetchAdmin = async () => {
+      try {
+        const data = await getAdminProfile();
+        setAdmin(data);
+      } catch (err) {
+        console.error('Failed to fetch admin profile:', err);
+      }
+    };
+    fetchAdmin();
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -61,12 +82,18 @@ export const AdminLayout: React.FC = () => {
           
           <div className="p-4 border-t border-white/5 flex-shrink-0">
             <div className="flex items-center gap-3 rounded-xl bg-white/5 p-3 border border-white/5">
-              <div className="size-9 rounded-full bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center overflow-hidden">
-                <span className="text-white text-sm font-bold">A</span>
+              <div className="size-9 rounded-full bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center overflow-hidden flex-shrink-0">
+                {admin?.profile_picture ? (
+                  <img src={admin.profile_picture} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-white text-sm font-bold">
+                    {admin?.name ? admin.name.charAt(0).toUpperCase() : 'A'}
+                  </span>
+                )}
               </div>
               <div className="flex flex-col overflow-hidden flex-1">
-                <p className="text-white text-sm font-semibold truncate">Admin User</p>
-                <p className="text-slate-400 text-xs truncate">Administrator</p>
+                <p className="text-white text-sm font-semibold truncate">{admin?.name || 'Admin User'}</p>
+                <p className="text-slate-400 text-xs truncate">{admin?.role === 'admin' ? 'Administrator' : admin?.role}</p>
               </div>
               <button
                 onClick={handleLogout}

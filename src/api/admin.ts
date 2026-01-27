@@ -31,3 +31,35 @@ export const getAdminProfile = async () => {
   if (!res.ok) throw new Error("Not authenticated");
   return res.json();
 };
+
+export const adminUpdateProfile = async (data: {
+  name: string;
+  email: string;
+}) => {
+  const res = await fetch("/api/admin/profile", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.message || "Update failed");
+  }
+  return res.json();
+};
+
+export const adminUpdateProfileWithPicture = async (data: FormData) => {
+  const res = await fetch("/api/admin/profile", {
+    method: "PUT",
+    credentials: "include",
+    body: data,
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.message || "Update failed");
+  }
+  return res.json();
+};
