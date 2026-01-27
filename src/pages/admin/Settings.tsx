@@ -1,6 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { getAdminProfile } from '../../api/admin';
+
+interface AdminData {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  profile_picture?: string;
+}
 
 export const AdminSettingsPage: React.FC = () => {
+  const [admin, setAdmin] = useState<AdminData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [adminName, setAdminName] = useState('');
+  const [adminEmail, setAdminEmail] = useState('');
+  const [profilePictureUrl, setProfilePictureUrl] = useState<string>('');
+  
   const [notifications, setNotifications] = useState({
     newOrders: true,
     vendorRegistration: true,
@@ -58,6 +73,34 @@ export const AdminSettingsPage: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    const fetchAdminData = async () => {
+      try {
+        const data = await getAdminProfile();
+        setAdmin(data);
+        setAdminName(data.name || '');
+        setAdminEmail(data.email || '');
+        if (data.profile_picture) {
+          setProfilePictureUrl(data.profile_picture);
+        }
+      } catch (err) {
+        console.error('Failed to fetch admin data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAdminData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="w-full flex items-center justify-center py-20">
+        <div className="text-white text-lg">Loading...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full">
       {/* Header */}
@@ -86,14 +129,34 @@ export const AdminSettingsPage: React.FC = () => {
           {/* General Settings */}
           <Section title="General Settings" icon="ℹ️">
             <div className="space-y-6">
-              <Input label="Admin Name" defaultValue="Admin User" />
-              <Input label="Admin Email" defaultValue="admin@test.com" />
+              <label className="block space-y-2">
+                <span className="text-slate-400 text-sm font-medium">Admin Name</span>
+                <input
+                  value={adminName}
+                  onChange={(e) => setAdminName(e.target.value)}
+                  className="w-full bg-slate-800/50 border border-white/10 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:outline-none transition"
+                />
+              </label>
+              <label className="block space-y-2">
+                <span className="text-slate-400 text-sm font-medium">Admin Email</span>
+                <input
+                  value={adminEmail}
+                  onChange={(e) => setAdminEmail(e.target.value)}
+                  className="w-full bg-slate-800/50 border border-white/10 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:outline-none transition"
+                />
+              </label>
               <label className="block space-y-2">
                 <span className="text-slate-400 text-sm font-medium">Profile Picture</span>
                 <div className="flex items-start gap-4">
-                  <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-primary to-blue-600 border border-slate-700 flex items-center justify-center text-2xl flex-shrink-0 text-white font-bold">
-                    A
-                  </div>
+                  {profilePictureUrl ? (
+                    <div className="w-20 h-20 rounded-xl border border-slate-700 flex-shrink-0 overflow-hidden">
+                      <img src={profilePictureUrl} alt="Profile" className="w-full h-full object-cover" />
+                    </div>
+                  ) : (
+                    <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-primary to-blue-600 border border-slate-700 flex items-center justify-center text-2xl flex-shrink-0 text-white font-bold">
+                      {adminName ? adminName.charAt(0).toUpperCase() : 'A'}
+                    </div>
+                  )}
                   <div className="flex flex-col justify-start gap-3 pt-3">
                     <button
                       type="button"
