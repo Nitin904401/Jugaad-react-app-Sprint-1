@@ -96,14 +96,7 @@ export const AppRouter: React.FC = () => {
             <Route path="/vendor/inventory" element={<InventoryDashboard />} />
             <Route path="/vendor/analytics" element={<VendorAnalyticsPage />} />
             <Route path="/vendor/settings" element={<VendorSettings />} />
-            <Route
-              path="/vendor/payments"
-              element={
-                <ProtectedRoute requiredRole="vendor">
-                  <VendorPayments />
-                </ProtectedRoute>
-              }
-            />
+            <Route path="/vendor/payments" element={<VendorPayments />} />
             <Route
               path="/vendor/dashboard"
               element={

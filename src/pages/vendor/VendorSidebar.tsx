@@ -1,8 +1,17 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
+import { vendorGetMe, vendorLogout } from "../../api/vendor";
+
+interface VendorData {
+  id: number;
+  name: string;
+  email: string;
+  company_name: string;
+  business_type: string;
+}
 
 const navItems = [
-  { label: 'Overview', icon: 'dashboard', path: '/vendor/dashboard', fill: true },
+  { label: 'Overview', icon: 'dashboard', path: '/vendor/inventory', fill: true },
   { label: 'Orders', icon: 'shopping_cart', path: '/vendor/orders' },
   { label: 'Inventory', icon: 'inventory_2', path: '/vendor/inventory' },
   { label: 'Payouts', icon: 'payments', path: '/vendor/payments' },
@@ -13,6 +22,59 @@ const navItems = [
 export default function VendorSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
+  const [vendor, setVendor] = useState<VendorData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchVendorData = async () => {
+      try {
+        setLoading(true);
+        
+        const response = await fetch("/api/vendor/auth/me", {
+          method: "GET",
+          credentials: "include",
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data && data.name) {
+            setVendor(data);
+            localStorage.setItem("vendorData", JSON.stringify(data));
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching vendor data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    // Try to get from localStorage first as fallback
+    const cached = localStorage.getItem("vendorData");
+    if (cached) {
+      try {
+        setVendor(JSON.parse(cached));
+      } catch (e) {
+        console.error("Failed to parse cached vendor data");
+      }
+    }
+
+    fetchVendorData();
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await vendorLogout();
+      navigate("/vendor/login", { replace: true });
+    } catch (err) {
+      console.error("Logout failed:", err);
+      navigate("/vendor/login", { replace: true });
+    }
+  };
+
+  const vendorName = vendor?.name || "Vendor";
+  const vendorCompany = vendor?.company_name || "Business";
+  const vendorInitial = (vendor?.name?.charAt(0) || vendor?.company_name?.charAt(0) || "V").toUpperCase();
 
   return (
     <aside className="hidden w-64 flex-col border-r border-white/10 bg-[#111418] lg:flex z-20">
@@ -45,19 +107,19 @@ export default function VendorSidebar() {
         ))}
       </nav>
       <div className="p-4 border-t border-white/5">
-        <div className="flex items-center gap-3 rounded-xl bg-white/5 p-3 hover:bg-white/10 cursor-pointer transition-colors border border-white/5">
-          <div
-            className="size-9 rounded-full bg-cover bg-center"
-            style={{
-              backgroundImage:
-                "url('https://lh3.googleusercontent.com/aida-public/AB6AXuA9dk5nKwdBV4cuAYFQf6JqkQeLaEgCTjedMAM_u4mlkJPGwx1IMA8ioBw90oNNjLaxFqj0a4q9Ga9Gd4ivccenA5l5RAG6ap7cbd0bi-_DLL25hRgc9sODVttSFA6dXa-5ihuNv0x60E3tu6WMiU853huvkDjhPmEEGndYFZKVicXPv07BBQPjbhpkulSYO1HnpNG0GnkdXT-DveoSnF7PEwugupL6UEDy2yfakwxQJEUYl_hjxOvB3xD3BDihFw5NKknJfqT1K8X5')",
-            }}
-          />
-          <div className="flex flex-col overflow-hidden">
-            <p className="text-white text-sm font-semibold truncate">Alex Johnson</p>
-            <p className="text-slate-400 text-xs truncate">TurboSupplies Inc.</p>
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-3 rounded-xl bg-white/5 p-3 hover:bg-white/10 cursor-pointer transition-colors border border-white/5"
+        >
+          <div className="size-9 rounded-full bg-gradient-to-br from-[#067ff9] to-[#0557d4] flex items-center justify-center text-white font-bold text-sm">
+            {vendorInitial}
           </div>
-        </div>
+          <div className="flex flex-col overflow-hidden flex-1 text-left">
+            <p className="text-white text-sm font-semibold truncate">{loading ? "Loading..." : vendorName}</p>
+            <p className="text-slate-400 text-xs truncate">{loading ? "" : vendorCompany}</p>
+          </div>
+          <span className="material-symbols-outlined text-slate-400 hover:text-white">logout</span>
+        </button>
       </div>
     </aside>
   );

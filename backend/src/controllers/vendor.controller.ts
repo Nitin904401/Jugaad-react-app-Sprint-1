@@ -1,0 +1,183 @@
+import { Request, Response } from "express";
+import bcrypt from "bcrypt";
+import pool from "../config/db";
+import { signToken } from "../utils/jwt";
+
+type VendorRequest = Request & { files?: any };
+
+const isDevelopment = process.env.NODE_ENV !== "production";
+
+const cookieOptions = {
+  httpOnly: true,
+  sameSite: isDevelopment ? ("lax" as const) : ("none" as const),
+  secure: !isDevelopment,
+  path: "/",
+};
+
+export const vendorRegister = async (req: VendorRequest, res: Response) => {
+  const {
+    name,
+    email,
+    password,
+    company_name,
+    business_type,
+    phone_number,
+    legal_business_name,
+    tax_id,
+    address,
+    city,
+    postal_code,
+    bank_account_holder,
+    bank_name,
+    bank_routing_number,
+    bank_account_number,
+  } = req.body;
+
+  // Validate required fields
+  if (!name || !email || !password || !company_name) {
+    return res.status(400).json({ message: "Missing required fields" });
+  }
+
+  const hashed = await bcrypt.hash(password, 10);
+
+  // Get file paths if files were uploaded
+  const pan_document = req.files?.pan_document?.[0]?.path || null;
+  const cheque_document = req.files?.cheque_document?.[0]?.path || null;
+
+  try {
+    const result = await pool.query(
+      `INSERT INTO vendors (
+        name, email, password, company_name, business_type, phone_number,
+        legal_business_name, tax_id, address, city, postal_code,
+        bank_account_holder, bank_name, bank_routing_number, bank_account_number,
+        pan_document, cheque_document, status
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+       RETURNING id, name, email, company_name, business_type, phone_number, status, legal_business_name`,
+      [
+        name,
+        email,
+        hashed,
+        company_name,
+        business_type || null,
+        phone_number || null,
+        legal_business_name || null,
+        tax_id || null,
+        address || null,
+        city || null,
+        postal_code || null,
+        bank_account_holder || null,
+        bank_name || null,
+        bank_routing_number || null,
+        bank_account_number || null,
+        pan_document,
+        cheque_document,
+        "pending",
+      ]
+    );
+
+    const vendor = result.rows[0];
+    const token = signToken({ id: vendor.id, role: "vendor" });
+
+    res.cookie("token", token, cookieOptions).json({
+      ...vendor,
+      role: "vendor",
+      message: "Registration submitted successfully. Awaiting verification.",
+    });
+  } catch (err: any) {
+    if (err.code === "23505") {
+      return res.status(409).json({ message: "Email already registered" });
+    }
+    console.error(err);
+    res.status(500).json({ message: "Registration failed" });
+  }
+};
+
+export const vendorLogin = async (req: Request, res: Response) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ message: "Email and password required" });
+  }
+
+  try {
+    const result = await pool.query(
+      "SELECT * FROM vendors WHERE email = $1",
+      [email]
+    );
+
+    const vendor = result.rows[0];
+    if (!vendor) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    const match = await bcrypt.compare(password, vendor.password);
+    if (!match) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    const token = signToken({ id: vendor.id, role: "vendor" });
+
+    res.cookie("token", token, cookieOptions).json({
+      id: vendor.id,
+      name: vendor.name,
+      email: vendor.email,
+      company_name: vendor.company_name,
+      business_type: vendor.business_type,
+      phone_number: vendor.phone_number,
+      role: "vendor",
+      status: vendor.status,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Login failed" });
+  }
+};
+
+export const vendorLogout = (_req: Request, res: Response) => {
+  res.clearCookie("token", cookieOptions);
+  res.json({ message: "Logged out" });
+};
+
+export const vendorMe = (req: any, res: Response) => {
+  res.json({
+    id: req.user.id,
+    name: req.user.name,
+    email: req.user.email,
+    company_name: req.user.company_name,
+    business_type: req.user.business_type,
+    phone_number: req.user.phone_number,
+    status: req.user.status,
+    role: "vendor",
+    created_at: req.user.created_at,
+  });
+};
+
+export const vendorUpdateProfile = async (req: any, res: Response) => {
+  const { name, phone_number, company_name, business_type } = req.body;
+  const vendorId = req.user.id;
+
+  if (!name || !company_name) {
+    return res.status(400).json({ message: "Name and company name are required" });
+  }
+
+  try {
+    const result = await pool.query(
+      `UPDATE vendors SET name = $1, phone_number = $2, company_name = $3, business_type = $4
+       WHERE id = $5
+       RETURNING id, name, email, company_name, business_type, phone_number, status`,
+      [name, phone_number || null, company_name, business_type || null, vendorId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Vendor not found" });
+    }
+
+    res.json({
+      ...result.rows[0],
+      role: "vendor",
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to update profile" });
+  }
+};

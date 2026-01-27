@@ -1,9 +1,11 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import path from "path";
 
 import productRoutes from "./routes/product.routes";
 import authRoutes from "./routes/auth.routes";
+import vendorRoutes from "./routes/vendor.routes";
 
 const app = express();
 
@@ -17,8 +19,12 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
+// Serve uploaded files
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+
 app.use("/api/products", productRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/vendor/auth", vendorRoutes);
 
 app.get("/api/health", (_req, res) => {
   res.json({ status: "OK" });

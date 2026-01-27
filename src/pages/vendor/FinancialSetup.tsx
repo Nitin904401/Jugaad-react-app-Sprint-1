@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { vendorGetMe, vendorLogout } from "../../api/vendor";
 
 /**
  * FinancialSetup.jsx
@@ -10,8 +11,19 @@ import { useNavigate } from "react-router-dom";
  * - Keep Tailwind and fonts loaded in your app as noted above.
  */
 
+interface VendorData {
+  id: number;
+  name: string;
+  email: string;
+  company_name: string;
+  business_type: string;
+}
+
 export default function FinancialSetup() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [vendor, setVendor] = useState<VendorData | null>(null);
+  const [loading, setLoading] = useState(true);
   const [accountHolder, setAccountHolder] = useState("AutoParts Ltd");
   const [ifsc, setIfsc] = useState("");
   const [accountNumber, setAccountNumber] = useState("123456789012");
@@ -21,6 +33,45 @@ export default function FinancialSetup() {
   const [panFileSize, setPanFileSize] = useState("2.4 MB");
   const [chequeFile, setChequeFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  const menuItems = [
+    { label: "Overview", icon: "dashboard", path: "/vendor/inventory" },
+    { label: "Orders", icon: "shopping_cart", path: "/vendor/orders" },
+    { label: "Inventory", icon: "inventory_2", path: "/vendor/inventory" },
+    { label: "Payouts", icon: "account_balance_wallet", path: "/vendor/payments" },
+    { label: "Analytics", icon: "analytics", path: "/vendor/analytics" },
+    { label: "Settings", icon: "settings", path: "/vendor/settings" },
+  ];
+
+  const isActive = (path: string) => location.pathname === path;
+
+  // Fetch vendor data on mount
+  useEffect(() => {
+    const fetchVendorData = async () => {
+      try {
+        const data = await vendorGetMe();
+        setVendor(data);
+      } catch (err) {
+        console.error("Failed to fetch vendor data:", err);
+        navigate("/vendor/login");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchVendorData();
+  }, [navigate]);
+
+  const handleLogout = async () => {
+    try {
+      await vendorLogout();
+      navigate("/vendor/login", { replace: true });
+    } catch (err) {
+      console.error("Logout failed:", err);
+    }
+  };
 
   function onChequeChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -40,7 +91,61 @@ export default function FinancialSetup() {
   return (
     <div className="flex h-screen w-full bg-background-light dark:bg-background-dark">
       {/* Side Navigation */}
-      
+      <aside className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-[#0f1418] border-r border-[#27303a] transition-all duration-300 overflow-y-auto flex flex-col`}>
+        {/* Logo Section */}
+        <div className="p-4 border-b border-[#27303a] flex items-center justify-between">
+          <div className={`flex items-center gap-3 ${!sidebarOpen && 'justify-center w-full'}`}>
+            <div className="w-10 h-10 bg-gradient-to-br from-[#067ff9] to-[#0557d4] rounded-lg flex items-center justify-center">
+              <span className="material-symbols-outlined text-white text-5xl" style={{ fontSize: 20 }}>local_shipping</span>
+            </div>
+            {sidebarOpen && (
+              <div>
+                <p className="text-sm font-bold text-white">SJAUOTOPART</p>
+                <p className="text-xs text-[#9babbb]">Vendor</p>
+              </div>
+            )}
+          </div>
+          {sidebarOpen && (
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="p-1 hover:bg-[#27303a] rounded text-[#9babbb] hover:text-white"
+            >
+              <span className="material-symbols-outlined text-[20px]">chevron_left</span>
+            </button>
+          )}
+        </div>
+
+        {/* Navigation Menu */}
+        <nav className="flex-1 p-4 space-y-2">
+          {menuItems.map((item) => (
+            <button
+              key={item.path}
+              onClick={() => navigate(item.path)}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                isActive(item.path)
+                  ? 'bg-[#067ff9] text-white'
+                  : 'text-[#9babbb] hover:bg-[#27303a] hover:text-white'
+              }`}
+              title={!sidebarOpen ? item.label : ''}
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
+                {item.icon}
+              </span>
+              {sidebarOpen && <span className="text-sm font-medium">{item.label}</span>}
+            </button>
+          ))}
+        </nav>
+
+        {/* Collapse Button - Bottom */}
+        {!sidebarOpen && (
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="p-4 text-center hover:bg-[#27303a] text-[#9babbb] hover:text-white transition-colors border-t border-[#27303a]"
+          >
+            <span className="material-symbols-outlined">chevron_right</span>
+          </button>
+        )}
+      </aside>
 
       {/* Main Content */}
       <main className="flex flex-1 flex-col h-full overflow-hidden relative">
@@ -77,15 +182,39 @@ export default function FinancialSetup() {
 
               <div className="h-8 w-[1px] bg-[#27303a]" />
 
-              <div className="flex items-center gap-3 cursor-pointer">
+              <div className="relative flex items-center gap-3 cursor-pointer">
                 <div className="text-right hidden md:block">
-                  <p className="text-sm font-medium text-white">Alex Morgan</p>
-                  <p className="text-xs text-[#9babbb]">Pro Vendor</p>
+                  <p className="text-sm font-medium text-white">
+                    {loading ? "Loading..." : vendor?.name || "Vendor"}
+                  </p>
+                  <p className="text-xs text-[#9babbb]">
+                    {loading ? "" : vendor?.company_name || "Business"}
+                  </p>
                 </div>
-                <div className="bg-center bg-no-repeat bg-cover rounded-full size-10 ring-2 ring-[#27303a]" style={{
-                  backgroundImage:
-                    "url('https://lh3.googleusercontent.com/aida-public/AB6AXuA4EhOb-dQP3xq3mR4Fu-vtDSzpdKWZw1pC_101itFDYOlB2WR_GHF3ceDzGqMPAoJI0EMSpZlBPW5Kjy2Poydnzq752v-BDJn8ztqNzHHlbLBApNH4weDasr7uTkeKvauYeajNWHnKS91dxdZ5sYHY7hh5iXBM5yB9Z5J7m_kBeg0vft5wf-039LRU851pjvHt3Zv5jlXCXiZINKKzK-Ke88Hm6qNkHK5bMnaG-L4oPLDAyLrnc2vmvQl4MUlOrXr1-nZu2oII63Lr')"
-                }} />
+                <button
+                  onClick={() => setShowProfile(!showProfile)}
+                  className="bg-center bg-no-repeat bg-cover rounded-full size-10 ring-2 ring-[#27303a] hover:ring-[#067ff9] transition-all flex items-center justify-center bg-gradient-to-br from-[#067ff9] to-[#0557d4] text-white font-bold text-sm"
+                >
+                  {vendor?.name?.charAt(0).toUpperCase() || "V"}
+                </button>
+
+                {/* Profile Dropdown */}
+                {showProfile && (
+                  <div className="absolute top-full right-0 mt-2 w-48 bg-[#1e2329] rounded-lg border border-[#27303a] shadow-lg z-50">
+                    <div className="p-4 border-b border-[#27303a]">
+                      <p className="text-sm font-medium text-white">{vendor?.name}</p>
+                      <p className="text-xs text-[#9babbb]">{vendor?.company_name}</p>
+                      <p className="text-xs text-[#5a6b7c] mt-1">{vendor?.email}</p>
+                    </div>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-[#27303a] flex items-center gap-2 transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">logout</span>
+                      Logout
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>

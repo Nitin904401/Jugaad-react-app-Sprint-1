@@ -1,6 +1,37 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import VendorSidebar from "./VendorSidebar";
+import { vendorGetMe } from "../../api/vendor";
+
+interface VendorData {
+  id: number;
+  name: string;
+  email: string;
+  company_name: string;
+  business_type: string;
+}
 
 export default function VendorPayments() {
+  const navigate = useNavigate();
+  const [vendor, setVendor] = useState<VendorData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchVendorData = async () => {
+      try {
+        const data = await vendorGetMe();
+        setVendor(data);
+      } catch (err) {
+        console.error("Failed to fetch vendor data:", err);
+        navigate("/vendor/login");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchVendorData();
+  }, [navigate]);
+
   const stats = [
     { label: "Available Balance", amount: "$12,450.00", icon: "account_balance_wallet", trend: "+12.5%" },
     { label: "Pending Clearance", amount: "$450.00", icon: "pending" },
@@ -21,60 +52,7 @@ export default function VendorPayments() {
   return (
     <div className="flex h-screen w-full bg-background-dark text-white font-display overflow-hidden">
       {/* Sidebar */}
-      <aside className="w-64 flex-shrink-0 flex flex-col border-r border-[#27303a] bg-[#111418] h-full">
-        <div className="p-6 pb-2">
-          <div className="flex flex-col gap-1">
-            <h1 className="text-white text-lg font-bold flex items-center gap-2">
-              <span className="material-symbols-outlined text-primary">build_circle</span>
-              AutoParts Hub
-            </h1>
-            <p className="text-[#9babbb] text-xs font-medium uppercase pl-8">Vendor Portal</p>
-          </div>
-        </div>
-
-        <nav className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-2">
-          {["Dashboard", "Orders", "Inventory", "Payouts", "Messages", "Settings"].map(
-            (item, index) => (
-              <a
-                key={index}
-                href="#"
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all group text-sm font-medium
-                  ${item === "Payouts"
-                    ? "bg-primary/10 text-primary border border-primary/20 shadow-[0_0_15px_rgba(6,127,249,0.1)]"
-                    : "text-[#9babbb] hover:text-white hover:bg-[#27303a]"}
-                `}
-              >
-                <span className="material-symbols-outlined">
-                  {item === "Dashboard"
-                    ? "grid_view"
-                    : item === "Orders"
-                    ? "shopping_bag"
-                    : item === "Inventory"
-                    ? "inventory_2"
-                    : item === "Payouts"
-                    ? "payments"
-                    : item === "Messages"
-                    ? "chat"
-                    : "settings"}
-                </span>
-                {item}
-              </a>
-            )
-          )}
-        </nav>
-
-        <div className="p-4 border-t border-[#27303a]">
-          <div className="flex items-center gap-3 px-3 py-2">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-primary to-blue-400 flex items-center justify-center text-xs font-bold">
-              AP
-            </div>
-            <div className="flex flex-col">
-              <span className="text-white text-sm font-medium">Apex Parts Ltd.</span>
-              <span className="text-[#9babbb] text-xs">Vendor ID: #8821</span>
-            </div>
-          </div>
-        </div>
-      </aside>
+      <VendorSidebar />
 
       {/* Main Body */}
       <main className="flex-1 flex flex-col h-full overflow-hidden bg-[radial-gradient(ellipse_at_top_right,var(--tw-gradient-stops))] from-[#1a2332] via-[#0f1923] to-[#0f1923]">

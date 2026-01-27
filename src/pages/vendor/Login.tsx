@@ -2,32 +2,51 @@
 import React, { useState } from "react";
 import { Header } from "../../Components/layout";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
-
-/*
-  Notes:
-  1) Ensure Tailwind CSS is set up in your project.
-  2) Include these in your index.html (or equivalent) so Material Symbols & Inter font work:
-     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
-  3) This component is self-contained and uses the same image URLs & Material Symbols names from your HTML.
-*/
+import { vendorLogin } from "../../api/vendor";
+import Modal from "../../Components/common/Modal";
 
 const VendorLogin = () => {
-  const [email, setEmail] = useState('vendor@test.com');
-  const [password, setPassword] = useState('123456');
-  const [error, setError] = useState('');
-  const { login, isLoading } = useAuth();
+  const [email, setEmail] = useState("vendor@test.com");
+  const [password, setPassword] = useState("123456");
+  const [isLoading, setIsLoading] = useState(false);
+  const [modal, setModal] = useState<{
+    isOpen: boolean;
+    type: "success" | "error";
+    title: string;
+    message: string;
+  }>({ isOpen: false, type: "success", title: "", message: "" });
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setIsLoading(true);
+
     try {
-      await login(email, password);
-      navigate('/vendor/dashboard');
-    } catch (err) {
-      setError((err as Error).message);
+      const response = await vendorLogin({ email, password });
+      // Save vendor data to localStorage
+      if (response && response.name) {
+        localStorage.setItem("vendorData", JSON.stringify(response));
+      }
+      
+      setModal({
+        isOpen: true,
+        type: "success",
+        title: "Login Successful!",
+        message: "Welcome back! Redirecting to inventory...",
+      });
+
+      setTimeout(() => {
+        navigate("/vendor/inventory", { replace: true });
+      }, 1500);
+    } catch (err: any) {
+      setModal({
+        isOpen: true,
+        type: "error",
+        title: "Login Failed",
+        message: err.message || "Invalid email or password",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -68,13 +87,6 @@ const VendorLogin = () => {
               <p className="text-slate-400 text-sm font-medium pt-2">Access your dashboard to manage inventory and orders.</p>
             </div>
           </div>
-
-          {/* Error Message */}
-          {error && (
-            <div className="rounded-lg p-3 border border-red-500/50 bg-red-500/10">
-              <p className="text-sm text-red-400">{error}</p>
-            </div>
-          )}
 
           {/* Form */}
           <form className="flex flex-col gap-5 w-full mt-2" onSubmit={handleSubmit}>
@@ -190,6 +202,14 @@ const VendorLogin = () => {
         </div>
         </div>
       </main>
+
+      <Modal
+        isOpen={modal.isOpen}
+        onClose={() => setModal({ ...modal, isOpen: false })}
+        type={modal.type}
+        title={modal.title}
+        message={modal.message}
+      />
     </div>
   );
 };
