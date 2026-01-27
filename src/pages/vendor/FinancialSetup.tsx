@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { vendorGetMe, vendorLogout } from "../../api/vendor";
+import { useNavigate } from "react-router-dom";
+import { vendorGetMe } from "../../api/vendor";
+import VendorSidebar from './VendorSidebar';
 
 /**
  * FinancialSetup.jsx
@@ -21,7 +22,6 @@ interface VendorData {
 
 export default function FinancialSetup() {
   const navigate = useNavigate();
-  const location = useLocation();
   const [vendor, setVendor] = useState<VendorData | null>(null);
   const [loading, setLoading] = useState(true);
   const [accountHolder, setAccountHolder] = useState("AutoParts Ltd");
@@ -33,19 +33,6 @@ export default function FinancialSetup() {
   const [panFileSize, setPanFileSize] = useState("2.4 MB");
   const [chequeFile, setChequeFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [showProfile, setShowProfile] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-
-  const menuItems = [
-    { label: "Overview", icon: "dashboard", path: "/vendor/inventory" },
-    { label: "Orders", icon: "shopping_cart", path: "/vendor/orders" },
-    { label: "Inventory", icon: "inventory_2", path: "/vendor/inventory" },
-    { label: "Payouts", icon: "account_balance_wallet", path: "/vendor/payments" },
-    { label: "Analytics", icon: "analytics", path: "/vendor/analytics" },
-    { label: "Settings", icon: "settings", path: "/vendor/settings" },
-  ];
-
-  const isActive = (path: string) => location.pathname === path;
 
   // Fetch vendor data on mount
   useEffect(() => {
@@ -55,23 +42,13 @@ export default function FinancialSetup() {
         setVendor(data);
       } catch (err) {
         console.error("Failed to fetch vendor data:", err);
-        navigate("/vendor/login");
       } finally {
         setLoading(false);
       }
     };
 
     fetchVendorData();
-  }, [navigate]);
-
-  const handleLogout = async () => {
-    try {
-      await vendorLogout();
-      navigate("/vendor/login", { replace: true });
-    } catch (err) {
-      console.error("Logout failed:", err);
-    }
-  };
+  }, []);
 
   function onChequeChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -89,136 +66,15 @@ export default function FinancialSetup() {
   }
 
   return (
-    <div className="flex h-screen w-full bg-background-light dark:bg-background-dark">
-      {/* Side Navigation */}
-      <aside className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-[#0f1418] border-r border-[#27303a] transition-all duration-300 overflow-y-auto flex flex-col`}>
-        {/* Logo Section */}
-        <div className="p-4 border-b border-[#27303a] flex items-center justify-between">
-          <div className={`flex items-center gap-3 ${!sidebarOpen && 'justify-center w-full'}`}>
-            <div className="w-10 h-10 bg-gradient-to-br from-[#067ff9] to-[#0557d4] rounded-lg flex items-center justify-center">
-              <span className="material-symbols-outlined text-white text-5xl" style={{ fontSize: 20 }}>local_shipping</span>
-            </div>
-            {sidebarOpen && (
-              <div>
-                <p className="text-sm font-bold text-white">SJAUOTOPART</p>
-                <p className="text-xs text-[#9babbb]">Vendor</p>
-              </div>
-            )}
-          </div>
-          {sidebarOpen && (
-            <button
-              onClick={() => setSidebarOpen(false)}
-              className="p-1 hover:bg-[#27303a] rounded text-[#9babbb] hover:text-white"
-            >
-              <span className="material-symbols-outlined text-[20px]">chevron_left</span>
-            </button>
-          )}
-        </div>
-
-        {/* Navigation Menu */}
-        <nav className="flex-1 p-4 space-y-2">
-          {menuItems.map((item) => (
-            <button
-              key={item.path}
-              onClick={() => navigate(item.path)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-                isActive(item.path)
-                  ? 'bg-[#067ff9] text-white'
-                  : 'text-[#9babbb] hover:bg-[#27303a] hover:text-white'
-              }`}
-              title={!sidebarOpen ? item.label : ''}
-            >
-              <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
-                {item.icon}
-              </span>
-              {sidebarOpen && <span className="text-sm font-medium">{item.label}</span>}
-            </button>
-          ))}
-        </nav>
-
-        {/* Collapse Button - Bottom */}
-        {!sidebarOpen && (
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="p-4 text-center hover:bg-[#27303a] text-[#9babbb] hover:text-white transition-colors border-t border-[#27303a]"
-          >
-            <span className="material-symbols-outlined">chevron_right</span>
-          </button>
-        )}
-      </aside>
+    <div className="flex h-screen w-full overflow-hidden">
+      {/* Sidebar */}
+      <VendorSidebar />
 
       {/* Main Content */}
-      <main className="flex flex-1 flex-col h-full overflow-hidden relative">
+      <main className="flex flex-1 flex-col h-full overflow-hidden relative bg-background-light dark:bg-background-dark">
         {/* Decorations */}
         <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-primary/5 rounded-full blur-3xl pointer-events-none z-0" />
         <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-blue-900/10 rounded-full blur-3xl pointer-events-none z-0" />
-
-        {/* Header */}
-        <header className="flex items-center justify-between border-b border-[#27303a] bg-[#111418]/90 backdrop-blur-md px-6 py-4 z-10 sticky top-0">
-          <div className="flex items-center gap-4 lg:hidden">
-            <button className="text-white">
-              <span className="material-symbols-outlined">menu</span>
-            </button>
-            <span className="text-lg font-bold text-white">Vendor Portal</span>
-          </div>
-
-          <div className="hidden lg:flex flex-col">
-            <h2 className="text-white text-lg font-bold leading-tight">Financial Setup</h2>
-          </div>
-
-          <div className="flex flex-1 justify-end items-center gap-6">
-            <label className="hidden md:flex relative w-full max-w-sm h-10 group">
-              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9babbb] group-focus-within:text-primary transition-colors">
-                <span className="material-symbols-outlined" style={{ fontSize: 20 }}>search</span>
-              </div>
-              <input className="w-full h-full bg-[#1e2329] rounded-lg border border-[#27303a] pl-10 pr-4 text-sm text-white placeholder-[#5a6b7c] focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all" placeholder="Search orders, invoices..." />
-            </label>
-
-            <div className="flex items-center gap-3">
-              <button className="relative p-2 rounded-full hover:bg-[#27303a] text-[#9babbb] hover:text-white transition-colors">
-                <span className="material-symbols-outlined" style={{ fontSize: 24 }}>notifications</span>
-                <span className="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-[#111418]" />
-              </button>
-
-              <div className="h-8 w-[1px] bg-[#27303a]" />
-
-              <div className="relative flex items-center gap-3 cursor-pointer">
-                <div className="text-right hidden md:block">
-                  <p className="text-sm font-medium text-white">
-                    {loading ? "Loading..." : vendor?.name || "Vendor"}
-                  </p>
-                  <p className="text-xs text-[#9babbb]">
-                    {loading ? "" : vendor?.company_name || "Business"}
-                  </p>
-                </div>
-                <button
-                  onClick={() => setShowProfile(!showProfile)}
-                  className="bg-center bg-no-repeat bg-cover rounded-full size-10 ring-2 ring-[#27303a] hover:ring-[#067ff9] transition-all flex items-center justify-center bg-gradient-to-br from-[#067ff9] to-[#0557d4] text-white font-bold text-sm"
-                >
-                  {vendor?.name?.charAt(0).toUpperCase() || "V"}
-                </button>
-
-                {/* Profile Dropdown */}
-                {showProfile && (
-                  <div className="absolute top-full right-0 mt-2 w-48 bg-[#1e2329] rounded-lg border border-[#27303a] shadow-lg z-50">
-                    <div className="p-4 border-b border-[#27303a]">
-                      <p className="text-sm font-medium text-white">{vendor?.name}</p>
-                      <p className="text-xs text-[#9babbb]">{vendor?.company_name}</p>
-                      <p className="text-xs text-[#5a6b7c] mt-1">{vendor?.email}</p>
-                    </div>
-                    <button
-                      onClick={handleLogout}
-                      className="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-[#27303a] flex items-center gap-2 transition-colors"
-                    >
-                      <span className="material-symbols-outlined text-[18px]">logout</span>
-                      Logout
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </header>
 
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto z-10 p-4 md:p-8 lg:px-12">
