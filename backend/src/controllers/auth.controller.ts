@@ -1,0 +1,77 @@
+import { Request, Response } from "express";
+import bcrypt from "bcrypt";
+import pool from "../config/db";
+import { signToken } from "../utils/jwt";
+
+const cookieOptions = {
+  httpOnly: true,
+  sameSite: "none" as const, // 🔥 REQUIRED
+  secure: false,             // localhost
+};
+
+export const register = async (req: Request, res: Response) => {
+  const { name, email, password, role } = req.body;
+
+  if (!name || !email || !password || !role) {
+    return res.status(400).json({ message: "Missing fields" });
+  }
+
+  const hashed = await bcrypt.hash(password, 10);
+
+  try {
+    const result = await pool.query(
+      `INSERT INTO users (name, email, password, role)
+       VALUES ($1, $2, $3, $4)
+       RETURNING id, name, email, role`,
+      [name, email, hashed, role]
+    );
+
+    const user = result.rows[0];
+    const token = signToken({ id: user.id, role: user.role });
+
+    res.cookie("token", token, cookieOptions).json(user);
+  } catch (err: any) {
+    if (err.code === "23505") {
+      return res.status(409).json({ message: "Email already exists" });
+    }
+    console.error(err);
+    res.status(500).json({ message: "Registration failed" });
+  }
+};
+
+export const login = async (req: Request, res: Response) => {
+  const { email, password } = req.body;
+
+  const result = await pool.query(
+    "SELECT * FROM users WHERE email = $1",
+    [email]
+  );
+
+  const user = result.rows[0];
+  if (!user) {
+    return res.status(401).json({ message: "Invalid credentials" });
+  }
+
+  const match = await bcrypt.compare(password, user.password);
+  if (!match) {
+    return res.status(401).json({ message: "Invalid credentials" });
+  }
+
+  const token = signToken({ id: user.id, role: user.role });
+
+  res.cookie("token", token, cookieOptions).json({
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+  });
+};
+
+export const logout = (_req: Request, res: Response) => {
+  res.clearCookie("token", cookieOptions);
+  res.json({ message: "Logged out" });
+};
+
+export const me = (req: any, res: Response) => {
+  res.json(req.user);
+};

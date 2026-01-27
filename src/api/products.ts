@@ -31,7 +31,6 @@ export const fetchFeaturedProducts = async (): Promise<Product[]> => {
   return res.json();
 };
 
-
 export const fetchProducts = async (): Promise<Product[]> => {
   const res = await fetch(`${API_BASE_URL}/api/products`);
 
