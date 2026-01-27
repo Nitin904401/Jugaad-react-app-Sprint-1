@@ -3,7 +3,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from '../context/AuthContext';
 import { CartProvider } from '../context/CartContext';
-import { ProtectedRoute, AdminRoute } from '../components/common/ProtectedRoute';
+import { ProtectedRoute } from '../components/common/ProtectedRoute';
 import { MainLayout } from '../Components/layout/MainLayout';
 import { VendorLayout } from '../Components/layout/VendorLayout';
 import { AdminLayout } from '../Components/layout/AdminLayout';
@@ -108,62 +108,13 @@ export const AppRouter: React.FC = () => {
             {/* Admin Routes - Separate isolated URL path */}
             <Route path="/admin-panel/login" element={<AdminLoginPage />} />
             <Route element={<AdminLayout />}>
-              <Route
-                path="/admin-panel/dashboard"
-                element={
-                  <AdminRoute>
-                    <AdminDashboardPage />
-                  </AdminRoute>
-                }
-              />
-              <Route
-                path="/admin-panel/vendors"
-                element={
-                  <AdminRoute>
-                    <AdminVendorsPage />
-                  </AdminRoute>
-                }
-              />
-              <Route
-                path="/admin-panel/vendors/:vendorId"
-                element={
-                  <AdminRoute>
-                    <AdminVendorDetailsPage />
-                  </AdminRoute>
-                }
-              />
-              <Route
-                path="/admin-panel/products"
-                element={
-                  <AdminRoute>
-                    <AdminProductsPage />
-                  </AdminRoute>
-                }
-              />
-              <Route
-                path="/admin-panel/published-products"
-                element={
-                  <AdminRoute>
-                    <AdminPublishedProductsPage />
-                  </AdminRoute>
-                }
-              />
-              <Route
-                path="/admin-panel/users"
-                element={
-                  <AdminRoute>
-                    <AdminUsersPage />
-                  </AdminRoute>
-                }
-              />
-              <Route
-                path="/admin-panel/settings"
-                element={
-                  <AdminRoute>
-                    <AdminSettingsPage />
-                  </AdminRoute>
-                }
-              />
+              <Route path="/admin-panel/dashboard" element={<AdminDashboardPage />} />
+              <Route path="/admin-panel/vendors" element={<AdminVendorsPage />} />
+              <Route path="/admin-panel/vendors/:vendorId" element={<AdminVendorDetailsPage />} />
+              <Route path="/admin-panel/products" element={<AdminProductsPage />} />
+              <Route path="/admin-panel/published-products" element={<AdminPublishedProductsPage />} />
+              <Route path="/admin-panel/users" element={<AdminUsersPage />} />
+              <Route path="/admin-panel/settings" element={<AdminSettingsPage />} />
               <Route
                 path="/admin-panel/catalog"
                
