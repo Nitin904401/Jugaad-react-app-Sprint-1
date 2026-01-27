@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getAdminProfile, adminUpdateProfile, adminUpdateProfileWithPicture } from '../../api/admin';
+import { getAdminProfile, adminUpdateProfile, adminUpdateProfileWithPicture, adminUpdatePassword } from '../../api/admin';
 import Modal from '../../Components/common/Modal';
 
 interface AdminData {
@@ -160,6 +160,85 @@ export const AdminSettingsPage: React.FC = () => {
       setProfilePictureUrl(admin.profile_picture || '');
       setProfilePicture(null);
       setDeleteProfilePicture(false);
+      
+      // Clear password fields
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setPasswordStrength(0);
+    }
+  };
+
+  const handleSavePassword = async () => {
+    // Validation
+    if (!currentPassword) {
+      setModal({
+        isOpen: true,
+        type: 'error',
+        title: 'Validation Error',
+        message: 'Please enter your current password',
+      });
+      return;
+    }
+
+    if (!newPassword || !confirmPassword) {
+      setModal({
+        isOpen: true,
+        type: 'error',
+        title: 'Validation Error',
+        message: 'Please enter and confirm your new password',
+      });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setModal({
+        isOpen: true,
+        type: 'error',
+        title: 'Validation Error',
+        message: 'New passwords do not match',
+      });
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      setModal({
+        isOpen: true,
+        type: 'error',
+        title: 'Validation Error',
+        message: 'New password must be at least 8 characters long',
+      });
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await adminUpdatePassword({
+        currentPassword,
+        newPassword,
+      });
+
+      // Clear password fields
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setPasswordStrength(0);
+
+      setModal({
+        isOpen: true,
+        type: 'success',
+        title: 'Success',
+        message: 'Password updated successfully!',
+      });
+    } catch (err: any) {
+      setModal({
+        isOpen: true,
+        type: 'error',
+        title: 'Error',
+        message: err.message || 'Failed to update password',
+      });
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -340,6 +419,13 @@ export const AdminSettingsPage: React.FC = () => {
                   </p>
                 )}
               </div>
+              <button
+                onClick={handleSavePassword}
+                disabled={saving || !currentPassword || !newPassword || !confirmPassword || newPassword !== confirmPassword}
+                className="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg text-sm text-white font-bold transition disabled:opacity-50 disabled:cursor-not-allowed w-full"
+              >
+                {saving ? 'Updating...' : 'Update Password'}
+              </button>
             </div>
           </Section>
         </div>

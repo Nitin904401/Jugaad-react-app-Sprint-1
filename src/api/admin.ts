@@ -63,3 +63,20 @@ export const adminUpdateProfileWithPicture = async (data: FormData) => {
   }
   return res.json();
 };
+export const adminUpdatePassword = async (data: {
+  currentPassword: string;
+  newPassword: string;
+}) => {
+  const res = await fetch("/api/admin/update-password", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.message || "Failed to update password");
+  }
+  return res.json();
+};
