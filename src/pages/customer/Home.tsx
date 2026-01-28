@@ -167,21 +167,20 @@ const [query, setQuery] = useState("");
                         Make
                       </label>
                       <div className="relative">
-                        <div className="relative">
-                          <select
-                            defaultValue=""
-                            className="w-full appearance-none rounded-xl border border-slate-700 bg-slate-800/50 text-white h-14 pl-4 pr-10 focus:border-primary focus:ring-2 focus:ring-primary/20 text-base font-medium transition-shadow hover:bg-slate-800 cursor-pointer"
-                          >
-                            <option disabled value="">
-                              Select Make
-                            </option>
-                            <option>Toyota</option>
-                            <option>Honda</option>
-                            <option>Ford</option>
-                            <option>BMW</option>
-                          </select>
-                          <img src={arrowDown} alt="Dropdown Arrow" className="pointer-events-none absolute right-3 top-1/2 transform -translate-y-1/2 w-6 h-6" />
-                        </div>
+                        <select
+                          defaultValue=""
+                          className="w-full appearance-none rounded-xl border border-slate-700 bg-slate-800/50 text-white h-14 pl-4 pr-10 focus:border-primary focus:ring-2 focus:ring-primary/20 text-base font-medium transition-shadow hover:bg-slate-800 cursor-pointer [&::-webkit-appearance]:none [&::-moz-appearance]:none"
+                          style={{ backgroundImage: 'none' }}
+                        >
+                          <option disabled value="">
+                            Select Make
+                          </option>
+                          <option>Toyota</option>
+                          <option>Honda</option>
+                          <option>Ford</option>
+                          <option>BMW</option>
+                        </select>
+                        <img src={arrowDown} alt="Dropdown Arrow" className="pointer-events-none absolute right-3 top-1/2 transform -translate-y-1/2 w-6 h-6" />
                       </div>
                     </div>
 
@@ -191,20 +190,19 @@ const [query, setQuery] = useState("");
                         Model
                       </label>
                       <div className="relative">
-                        <div className="relative">
-                          <select
-                            defaultValue=""
-                            className="w-full appearance-none rounded-xl border border-slate-700 bg-slate-800/50 text-white h-14 pl-4 pr-10 focus:border-primary focus:ring-2 focus:ring-primary/20 text-base font-medium transition-shadow hover:bg-slate-800 cursor-pointer"
-                          >
-                            <option disabled value="">
-                              Select Model
-                            </option>
-                            <option>Camry</option>
-                            <option>Corolla</option>
-                            <option>RAV4</option>
-                          </select>
-                          <img src={arrowDown} alt="Dropdown Arrow" className="pointer-events-none absolute right-3 top-1/2 transform -translate-y-1/2 w-6 h-6" />
-                        </div>
+                        <select
+                          defaultValue=""
+                          className="w-full appearance-none rounded-xl border border-slate-700 bg-slate-800/50 text-white h-14 pl-4 pr-10 focus:border-primary focus:ring-2 focus:ring-primary/20 text-base font-medium transition-shadow hover:bg-slate-800 cursor-pointer [&::-webkit-appearance]:none [&::-moz-appearance]:none"
+                          style={{ backgroundImage: 'none' }}
+                        >
+                          <option disabled value="">
+                            Select Model
+                          </option>
+                          <option>Camry</option>
+                          <option>Corolla</option>
+                          <option>RAV4</option>
+                        </select>
+                        <img src={arrowDown} alt="Dropdown Arrow" className="pointer-events-none absolute right-3 top-1/2 transform -translate-y-1/2 w-6 h-6" />
                       </div>
                     </div>
 
@@ -214,20 +212,19 @@ const [query, setQuery] = useState("");
                         Year
                       </label>
                       <div className="relative">
-                        <div className="relative">
-                          <select
-                            defaultValue=""
-                            className="w-full appearance-none rounded-xl border border-slate-700 bg-slate-800/50 text-white h-14 pl-4 pr-10 focus:border-primary focus:ring-2 focus:ring-primary/20 text-base font-medium transition-shadow hover:bg-slate-800 cursor-pointer"
-                          >
-                            <option disabled value="">
-                              Select Year
-                            </option>
-                            <option>2023</option>
-                            <option>2022</option>
-                            <option>2021</option>
-                          </select>
-                          <img src={arrowDown} alt="Dropdown Arrow" className="pointer-events-none absolute right-3 top-1/2 transform -translate-y-1/2 w-6 h-6" />
-                        </div>
+                        <select
+                          defaultValue=""
+                          className="w-full appearance-none rounded-xl border border-slate-700 bg-slate-800/50 text-white h-14 pl-4 pr-10 focus:border-primary focus:ring-2 focus:ring-primary/20 text-base font-medium transition-shadow hover:bg-slate-800 cursor-pointer [&::-webkit-appearance]:none [&::-moz-appearance]:none"
+                          style={{ backgroundImage: 'none' }}
+                        >
+                          <option disabled value="">
+                            Select Year
+                          </option>
+                          <option>2023</option>
+                          <option>2022</option>
+                          <option>2021</option>
+                        </select>
+                        <img src={arrowDown} alt="Dropdown Arrow" className="pointer-events-none absolute right-3 top-1/2 transform -translate-y-1/2 w-6 h-6" />
                       </div>
                     </div>
 
