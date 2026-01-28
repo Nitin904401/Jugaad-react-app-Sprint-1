@@ -48,6 +48,10 @@ export default function VendorDashboard() {
     }
   };
 
+  const handleDismissNotification = (productId: number) => {
+    setLowStockProducts(prev => prev.filter(p => p.id !== productId));
+  };
+
   const getSeverity = (quantity: number) => {
     if (quantity <= 2) return "red";
     if (quantity <= 5) return "orange";
@@ -171,7 +175,7 @@ export default function VendorDashboard() {
               </div>
               <div>
                 <p className="text-slate-400 text-sm font-medium mb-1">Low Stock Items</p>
-                <h3 className="text-2xl font-bold text-white">3</h3>
+                <h3 className="text-2xl font-bold text-white">{lowStockProducts.length}</h3>
               </div>
             </div>
           </div>
@@ -388,27 +392,32 @@ export default function VendorDashboard() {
                     return (
                       <div 
                         key={product.id} 
-                        className="bg-white/5 rounded-xl p-4 border border-white/5 hover:border-red-500/30 transition-all cursor-pointer group"
-                        onClick={() => {
-                          setShowNotificationPanel(false);
-                          navigate(`/vendor/edit-product/${product.id}`);
-                        }}
+                        className="bg-white/5 rounded-xl p-4 border border-white/5 hover:border-red-500/30 transition-all group relative"
                       >
                         <div className="flex items-start justify-between gap-3 mb-3">
-                          <div className="flex-1">
+                          <div 
+                            className="flex-1 cursor-pointer"
+                            onClick={() => {
+                              setShowNotificationPanel(false);
+                              navigate(`/vendor/edit-product/${product.id}`);
+                            }}
+                          >
                             <h4 className="text-white font-semibold text-sm mb-1 group-hover:text-primary transition-colors">
                               {product.name}
                             </h4>
                             <p className="text-slate-500 text-xs">SKU: {product.sku}</p>
                           </div>
-                          <div className={`p-1.5 rounded-lg ${
-                            severity === "red" ? "bg-red-500/10" : "bg-orange-500/10"
-                          }`}>
-                            <span className={`material-symbols-outlined text-sm ${
-                              severity === "red" ? "text-red-400" : "text-orange-400"
-                            }`}>
-                              inventory_2
-                            </span>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDismissNotification(product.id);
+                              }}
+                              className="p-1.5 rounded-lg hover:bg-red-500/20 text-red-400 transition-colors"
+                              title="Dismiss notification"
+                            >
+                              <span className="material-symbols-outlined text-sm">delete</span>
+                            </button>
                           </div>
                         </div>
                         
@@ -418,9 +427,17 @@ export default function VendorDashboard() {
                           }`}>
                             {getQuantityText(product.quantity_in_stock)}
                           </p>
-                          <span className="material-symbols-outlined text-slate-600 group-hover:text-primary transition-colors text-sm">
-                            arrow_forward
-                          </span>
+                          <button
+                            onClick={() => {
+                              setShowNotificationPanel(false);
+                              navigate(`/vendor/edit-product/${product.id}`);
+                            }}
+                            className="p-1 rounded hover:bg-white/10 transition-colors"
+                          >
+                            <span className="material-symbols-outlined text-slate-600 group-hover:text-primary transition-colors text-sm">
+                              arrow_forward
+                            </span>
+                          </button>
                         </div>
                       </div>
                     );
