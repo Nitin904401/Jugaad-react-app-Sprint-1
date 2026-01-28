@@ -23,6 +23,7 @@ interface Product {
   status: string;
   images?: string[];
   rejection_reason?: string;
+  featured?: boolean;
 }
 
 function InventoryDashboard() {
@@ -159,6 +160,28 @@ function InventoryDashboard() {
     return { qty, color, percent };
   };
 
+  const handleToggleFeatured = async (productId: number, currentFeatured: boolean) => {
+    try {
+      const res = await fetch(`/api/products/vendor/${productId}/featured`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ featured: !currentFeatured }),
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to update featured status');
+      }
+
+      // Update local state
+      setProducts(products.map(p => 
+        p.id === productId ? { ...p, featured: !currentFeatured } : p
+      ));
+    } catch (err: any) {
+      setError(err.message || 'Failed to update featured status');
+    }
+  };
+
   const stats = {
     total: products.length,
     lowStock: products.filter(p => (p.quantity_in_stock || 0) < 10).length,
@@ -247,13 +270,14 @@ function InventoryDashboard() {
                       <th className="px-6 py-4 text-xs font-semibold text-[#9babbb] uppercase tracking-wider">Price</th>
                       <th className="px-6 py-4 text-xs font-semibold text-[#9babbb] uppercase tracking-wider">Stock</th>
                       <th className="px-6 py-4 text-xs font-semibold text-[#9babbb] uppercase tracking-wider">Status</th>
+                      <th className="px-6 py-4 text-xs font-semibold text-[#9babbb] uppercase tracking-wider text-center">Featured</th>
                       <th className="px-6 py-4 text-xs font-semibold text-[#9babbb] uppercase tracking-wider text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#27303a]">
                     {loading ? (
                       <tr>
-                        <td colSpan={6} className="px-6 py-12 text-center">
+                        <td colSpan={7} className="px-6 py-12 text-center">
                           <div className="flex flex-col items-center gap-3">
                             <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
                             <p className="text-[#9babbb]">Loading products...</p>
@@ -262,7 +286,7 @@ function InventoryDashboard() {
                       </tr>
                     ) : products.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="px-6 py-12 text-center">
+                        <td colSpan={7} className="px-6 py-12 text-center">
                           <div className="flex flex-col items-center gap-3">
                             <span className="material-symbols-outlined text-[48px] text-[#9babbb]">inventory_2</span>
                             <p className="text-[#9babbb]">No products found. Add your first product to get started.</p>
@@ -357,6 +381,32 @@ function InventoryDashboard() {
                                   getStatusBadge(product.status)
                                 )}
                               </td>
+                              <td className="px-6 py-4">
+                                <div className="flex items-center justify-center">
+                                  <label className="relative inline-flex items-center cursor-pointer group">
+                                    <input
+                                      type="checkbox"
+                                      checked={product.featured || false}
+                                      onChange={() => handleToggleFeatured(product.id, product.featured || false)}
+                                      className="sr-only peer"
+                                      disabled={product.status !== 'approved'}
+                                    />
+                                    <div className={`w-11 h-6 rounded-full transition-all ${
+                                      product.status !== 'approved'
+                                        ? 'bg-gray-600/30 cursor-not-allowed'
+                                        : 'bg-[#27303a] peer-checked:bg-primary peer-checked:shadow-[0_0_10px_rgba(6,127,249,0.5)]'
+                                    } peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/50`}>
+                                      <div className={`absolute top-0.5 left-0.5 bg-white rounded-full h-5 w-5 transition-transform ${
+                                        product.featured ? 'translate-x-5' : 'translate-x-0'
+                                      }`}>
+                                        {product.featured && (
+                                          <span className="material-symbols-outlined text-primary text-[16px] leading-5">star</span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </label>
+                                </div>
+                              </td>
                               <td className="px-6 py-4 text-right">
                                 <div className={`flex items-center justify-end gap-2 transition-opacity ${product.status === 'rejected' ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
                                   <button 
@@ -379,7 +429,7 @@ function InventoryDashboard() {
                             {/* Rejection Reason Row */}
                             {product.status === 'rejected' && product.rejection_reason && (
                               <tr key={`${product.id}-rejection`} className="rejected-footer-glow">
-                                <td colSpan={6} className="px-6 py-2.5">
+                                <td colSpan={7} className="px-6 py-2.5">
                                   <div className="flex items-center justify-between gap-4">
                                     <div className="flex items-center gap-3">
                                       <span className="text-[10px] uppercase tracking-widest font-black text-red-500/80 bg-red-500/10 px-2 py-0.5 rounded border border-red-500/20">Rejection Reason</span>

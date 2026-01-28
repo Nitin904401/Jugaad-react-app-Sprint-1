@@ -383,7 +383,7 @@ export const getVendorProducts = async (req: any, res: Response) => {
         quantity_in_stock, brand_type, condition, images, 
         compatible_vehicles, description, status, vendor_id,
         material, weight, position, low_stock_threshold, upc_barcode, supplier,
-        rejection_reason,
+        rejection_reason, featured,
         created_at, updated_at
       FROM products 
       WHERE vendor_id = $1 
@@ -417,6 +417,7 @@ export const getVendorProducts = async (req: any, res: Response) => {
       upc_barcode: row.upc_barcode,
       supplier: row.supplier,
       rejection_reason: row.rejection_reason,
+      featured: row.featured,
       created_at: row.created_at,
       updated_at: row.updated_at
     }));
@@ -428,3 +429,50 @@ export const getVendorProducts = async (req: any, res: Response) => {
   }
 };
 
+// PUT /api/products/vendor/:id/featured
+export const toggleFeaturedStatus = async (req: any, res: Response) => {
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+
+    const productId = parseInt(req.params.id);
+    const { featured } = req.body;
+
+    if (typeof featured !== 'boolean') {
+      return res.status(400).json({ message: "Featured status must be a boolean" });
+    }
+
+    // Verify the product belongs to this vendor
+    const productCheck = await pool.query(
+      "SELECT id, vendor_id, status FROM products WHERE id = $1",
+      [productId]
+    );
+
+    if (productCheck.rows.length === 0) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    if (productCheck.rows[0].vendor_id !== req.user.id) {
+      return res.status(403).json({ message: "Not authorized to update this product" });
+    }
+
+    // Only approved products can be marked as featured
+    if (featured && productCheck.rows[0].status !== 'approved') {
+      return res.status(400).json({ message: "Only approved products can be marked as featured" });
+    }
+
+    // Update featured status
+    await pool.query(
+      "UPDATE products SET featured = $1, updated_at = NOW() WHERE id = $2",
+      [featured, productId]
+    );
+
+    console.log(`✅ Product ${productId} featured status updated to ${featured}`);
+
+    res.json({ message: "Featured status updated successfully", featured });
+  } catch (error) {
+    console.error('❌ Error updating featured status:', error);
+    res.status(500).json({ message: "Failed to update featured status" });
+  }
+};

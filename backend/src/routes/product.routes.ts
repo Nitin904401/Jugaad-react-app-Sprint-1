@@ -6,7 +6,8 @@ import {
   createProduct,
   updateProduct,
   deleteProduct,
-  getVendorProducts
+  getVendorProducts,
+  toggleFeaturedStatus
 } from "../controllers/product.controller";
 import { requireAuth } from "../middleware/auth.middleware";
 
@@ -18,6 +19,7 @@ router.get("/featured", getFeaturedProducts);
 
 // Protected vendor routes
 router.get("/vendor/my-products", requireAuth, getVendorProducts);
+router.put("/vendor/:id/featured", requireAuth, toggleFeaturedStatus);
 
 router.get("/:id", getProductById);
 
