@@ -11,7 +11,8 @@ export const getAllVendors = async (req: Request, res: Response) => {
         email, 
         company_name,
         phone_number,
-        status, 
+        status,
+        top_vendor,
         created_at 
       FROM vendors 
       ORDER BY created_at DESC
@@ -78,6 +79,37 @@ export const updateVendorStatus = async (req: Request, res: Response) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Failed to update vendor status" });
+  }
+};
+
+// Update vendor top_vendor status (admin only)
+export const updateVendorTopStatus = async (req: Request, res: Response) => {
+  const { vendorId } = req.params;
+  const { top_vendor } = req.body;
+
+  if (typeof top_vendor !== 'boolean') {
+    return res.status(400).json({ 
+      message: 'top_vendor must be a boolean value' 
+    });
+  }
+
+  try {
+    const result = await pool.query(
+      `UPDATE vendors 
+       SET top_vendor = $1, updated_at = CURRENT_TIMESTAMP
+       WHERE id = $2
+       RETURNING id, name, email, top_vendor`,
+      [top_vendor, vendorId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Vendor not found" });
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to update top vendor status" });
   }
 };
 

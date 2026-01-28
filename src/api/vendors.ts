@@ -23,6 +23,7 @@ export interface AdminVendor {
   company_name: string;
   phone_number: string;
   status: string;
+  top_vendor?: boolean;
   created_at: string;
 }
 
@@ -89,6 +90,21 @@ export const updateVendorStatus = async (vendorId: string, status: string) => {
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
     throw new Error(errorData.message || "Failed to update vendor status");
+  }
+  return res.json();
+};
+
+export const updateVendorTopStatus = async (vendorId: string, top_vendor: boolean) => {
+  const res = await fetch(`/api/admin/vendors/${vendorId}/top-vendor`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ top_vendor }),
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.message || "Failed to update top vendor status");
   }
   return res.json();
 };
