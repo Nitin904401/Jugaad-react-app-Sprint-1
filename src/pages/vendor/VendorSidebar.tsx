@@ -14,7 +14,7 @@ interface VendorSidebarProps {
 }
 
 const navItems = [
-  { label: 'Overview', icon: 'dashboard', path: '/vendor/inventory', fill: true },
+  { label: 'Overview', icon: 'dashboard', path: '/vendor/dashboard', fill: true },
   { label: 'Orders', icon: 'shopping_cart', path: '/vendor/orders' },
   { label: 'Inventory', icon: 'inventory_2', path: '/vendor/inventory' },
   { label: 'Financials', icon: 'account_balance', path: '/vendor/financial-setup' },

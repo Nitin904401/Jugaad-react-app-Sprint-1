@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
 import VendorSidebar from './VendorSidebar';
+import { getLowStockProducts } from '../../api/vendor';
 
 /**
  * VendorDashboard.jsx
@@ -10,15 +11,53 @@ import VendorSidebar from './VendorSidebar';
  * - Images kept as hotlinks in inline styles / <img>.
  */
 
+interface LowStockProduct {
+  id: number;
+  name: string;
+  sku: string;
+  quantity_in_stock: number;
+  status: string;
+}
+
 export default function VendorDashboard() {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
+  const [lowStockProducts, setLowStockProducts] = useState<LowStockProduct[]>([]);
+  const [loadingLowStock, setLoadingLowStock] = useState(true);
   const [orders] = useState([
     { id: "#ORD-001", name: "Brembo Brake Pads", customer: "John Doe", date: "Oct 24, 2023", status: "Shipped", total: "$120.00" },
     { id: "#ORD-002", name: "Oil Filter Premium", customer: "Jane Smith", date: "Oct 24, 2023", status: "Processing", total: "$15.50" },
     { id: "#ORD-003", name: "NGK Spark Plugs (x4)", customer: "Mike Ross", date: "Oct 23, 2023", status: "Pending", total: "$45.00" },
     { id: "#ORD-004", name: "Air Filter Box", customer: "Sarah Connor", date: "Oct 23, 2023", status: "Delivered", total: "$89.99" },
   ]);
+
+  useEffect(() => {
+    loadLowStockProducts();
+  }, []);
+
+  const loadLowStockProducts = async () => {
+    try {
+      setLoadingLowStock(true);
+      const products = await getLowStockProducts();
+      setLowStockProducts(products);
+    } catch (error) {
+      console.error("Failed to load low stock products:", error);
+    } finally {
+      setLoadingLowStock(false);
+    }
+  };
+
+  const getSeverity = (quantity: number) => {
+    if (quantity <= 2) return "red";
+    if (quantity <= 5) return "orange";
+    return "yellow";
+  };
+
+  const getQuantityText = (quantity: number) => {
+    if (quantity <= 2) return `Only ${quantity} left`;
+    if (quantity <= 5) return `Only ${quantity} left`;
+    return `${quantity} left (Threshold: 10)`;
+  };
 
   return (
     <div className="flex h-screen w-full overflow-hidden">
@@ -64,14 +103,7 @@ export default function VendorDashboard() {
               <span className="absolute top-2 right-2 size-2 bg-red-500 rounded-full ring-2 ring-[#0f1923]"></span>
             </button>
 
-            <button
-              type="button"
-              onClick={() => navigate('/vendor/add-new-part')}
-              className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all hover:scale-[1.02]"
-            >
-              <span className="material-symbols-outlined text-[20px]">add</span>
-              <span className="hidden sm:inline">Add Product</span>
-            </button>
+            
           </div>
         </header>
 
@@ -246,35 +278,46 @@ export default function VendorDashboard() {
               </div>
 
               <div className="p-4 flex flex-col gap-4">
-                {[{
-                  title: "Headlight Bulb H7",
-                  qty: "Only 2 left",
-                  id: "#PART-8832",
-                  severity: "red"
-                },{
-                  title: "Wiper Blades 24\"",
-                  qty: "Only 5 left",
-                  id: "#PART-1290",
-                  severity: "red"
-                },{
-                  title: "Synthetic Oil 5W-30",
-                  qty: "8 left (Threshold: 10)",
-                  id: "#PART-5511",
-                  severity: "orange"
-                }].map((item) => (
-                  <div key={item.id} className="bg-white/5 rounded-lg p-4 border border-white/5 flex items-center justify-between group hover:border-red-500/30 transition-all">
-                    <div className="flex flex-col gap-1">
-                      <h4 className="text-white font-medium text-sm">{item.title}</h4>
-                      <p className={`${item.severity === "red" ? "text-red-400" : "text-orange-400"} text-xs font-bold`}>{item.qty}</p>
-                      <p className="text-slate-500 text-xs">ID: {item.id}</p>
-                    </div>
-                    <button className="text-xs bg-white/10 hover:bg-white/20 text-white px-3 py-2 rounded-lg font-medium transition-colors">Restock</button>
+                {loadingLowStock ? (
+                  <div className="flex items-center justify-center py-8">
+                    <p className="text-slate-400 text-sm">Loading...</p>
                   </div>
-                ))}
+                ) : lowStockProducts.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-8">
+                    <span className="material-symbols-outlined text-green-400 text-4xl mb-2">check_circle</span>
+                    <p className="text-slate-400 text-sm">All products have sufficient stock</p>
+                  </div>
+                ) : (
+                  lowStockProducts.map((product) => {
+                    const severity = getSeverity(product.quantity_in_stock);
+                    return (
+                      <div key={product.id} className="bg-white/5 rounded-lg p-4 border border-white/5 flex items-center justify-between group hover:border-red-500/30 transition-all">
+                        <div className="flex flex-col gap-1">
+                          <h4 className="text-white font-medium text-sm">{product.name}</h4>
+                          <p className={`${severity === "red" ? "text-red-400" : "text-orange-400"} text-xs font-bold`}>
+                            {getQuantityText(product.quantity_in_stock)}
+                          </p>
+                          <p className="text-slate-500 text-xs">SKU: {product.sku}</p>
+                        </div>
+                        <button 
+                          onClick={() => navigate(`/vendor/edit-product/${product.id}`)}
+                          className="text-xs bg-white/10 hover:bg-white/20 text-white px-3 py-2 rounded-lg font-medium transition-colors"
+                        >
+                          Restock
+                        </button>
+                      </div>
+                    );
+                  })
+                )}
               </div>
 
               <div className="mt-auto p-4 border-t border-white/5 text-center">
-                <a className="text-sm text-slate-400 hover:text-white transition-colors" href="#">Go to Inventory Management →</a>
+                <button 
+                  onClick={() => navigate('/vendor/inventory')}
+                  className="text-sm text-slate-400 hover:text-white transition-colors"
+                >
+                  Go to Inventory Management →
+                </button>
               </div>
             </div>
           </div>

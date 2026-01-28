@@ -470,3 +470,39 @@ export const vendorSubmitFinancial = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Failed to submit financial information" });
   }
 };
+
+export const getLowStockProducts = async (req: Request, res: Response) => {
+  try {
+    const vendorId = (req as any).user?.id;
+    
+    if (!vendorId) {
+      return res.status(401).json({ message: "Vendor not authenticated" });
+    }
+
+    console.log('🔍 Getting low stock products for vendor ID:', vendorId);
+
+    // Get products with low stock (threshold of 10 or less)
+    const result = await pool.query(
+      `SELECT 
+        id,
+        name,
+        sku,
+        quantity_in_stock,
+        status
+       FROM products
+       WHERE vendor_id = $1 
+         AND quantity_in_stock <= 10
+         AND status IN ('approved', 'draft', 'pending_review')
+       ORDER BY quantity_in_stock ASC
+       LIMIT 10`,
+      [vendorId]
+    );
+
+    console.log(`✅ Found ${result.rows.length} low stock products`);
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error fetching low stock products:", err);
+    res.status(500).json({ message: "Failed to fetch low stock products" });
+  }
+};

@@ -124,3 +124,15 @@ export const vendorSubmitFinancial = async (data: FormData) => {
   return res.json();
 };
 
+export const getLowStockProducts = async () => {
+  const res = await fetch("/api/vendor/auth/low-stock", {
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.message || "Failed to fetch low stock products");
+  }
+  return res.json();
+};
+

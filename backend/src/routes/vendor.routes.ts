@@ -9,6 +9,7 @@ import {
   vendorUpdateProfile,
   vendorUpdateFinancial,
   vendorSubmitFinancial,
+  getLowStockProducts,
 } from "../controllers/vendor.controller";
 import { requireAuth } from "../middleware/auth.middleware";
 
@@ -64,5 +65,8 @@ router.post("/financial/submit", requireAuth, upload.fields([
   { name: "pan_document", maxCount: 1 },
   { name: "cheque_document", maxCount: 1 },
 ]), vendorSubmitFinancial);
+
+// Dashboard endpoints
+router.get("/low-stock", requireAuth, getLowStockProducts);
 
 export default router;

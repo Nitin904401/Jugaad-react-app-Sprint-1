@@ -32,11 +32,11 @@ const VendorLogin = () => {
         isOpen: true,
         type: "success",
         title: "Login Successful!",
-        message: "Welcome back! Redirecting to inventory...",
+        message: "Welcome back! Redirecting to dashboard...",
       });
 
       setTimeout(() => {
-        navigate("/vendor/inventory", { replace: true });
+        navigate("/vendor/dashboard", { replace: true });
       }, 1500);
     } catch (err: any) {
       setModal({
