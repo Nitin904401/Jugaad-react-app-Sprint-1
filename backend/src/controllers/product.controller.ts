@@ -11,7 +11,7 @@ export const getFeaturedProducts = async (_req: Request, res: Response) => {
         price,
         brand,
         category,
-        image
+        images[1] as image
       FROM products
       WHERE featured = true
       ORDER BY id ASC
@@ -30,7 +30,7 @@ export const getAllProducts = async (_req: Request, res: Response) => {
   try {
     // Only show approved products to public
     const result = await pool.query(
-      "SELECT * FROM products WHERE status = 'approved' ORDER BY id ASC"
+      "SELECT id, name, price, brand, category, images[1] as image, part_number FROM products WHERE status = 'approved' ORDER BY id ASC"
     );
 
     const products = result.rows.map(row => ({
@@ -72,7 +72,7 @@ res.json({
   price: row.price,
   brand: row.brand,
   category: row.category,
-  image: row.image,
+  image: row.images ? row.images[0] : null,
   partNumber: row.part_number,
   description: row.description,
   voltage: row.voltage,
