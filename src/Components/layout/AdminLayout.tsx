@@ -46,7 +46,6 @@ export const AdminLayout: React.FC = () => {
 
   const navItems = [
     { icon: 'dashboard', label: 'Overview', path: '/admin-panel/dashboard' },
-    { icon: 'shopping_cart', label: 'Orders', path: '/admin-panel/orders' },
     { icon: 'inventory_2', label: 'Inventory', path: '/admin-panel/products' },
     { icon: 'store', label: 'Vendors', path: '/admin-panel/vendors' },
     { icon: 'group', label: 'Users', path: '/admin-panel/users' },
