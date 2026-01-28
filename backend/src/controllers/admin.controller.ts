@@ -189,3 +189,63 @@ export const adminUpdatePassword = async (req: any, res: Response) => {
     res.status(500).json({ message: "Failed to update password" });
   }
 };
+
+export const getAdminStats = async (req: Request, res: Response) => {
+  try {
+    // Get total vendors count
+    const vendorsResult = await pool.query(
+      "SELECT COUNT(*) as count FROM vendors"
+    );
+
+    // Get total users count (all users from users table)
+    const usersResult = await pool.query(
+      "SELECT COUNT(*) as count FROM users"
+    );
+
+    // Get total products count
+    const productsResult = await pool.query(
+      "SELECT COUNT(*) as count FROM products"
+    );
+
+    // Get approved products count
+    const approvedProductsResult = await pool.query(
+      "SELECT COUNT(*) as count FROM products WHERE status = 'approved'"
+    );
+
+    // Get vendors count from 30 days ago for percentage calculation
+    const vendorsLastMonthResult = await pool.query(
+      "SELECT COUNT(*) as count FROM vendors WHERE created_at <= NOW() - INTERVAL '30 days'"
+    );
+
+    // Get users count from 30 days ago for percentage calculation
+    const usersLastMonthResult = await pool.query(
+      "SELECT COUNT(*) as count FROM users WHERE created_at <= NOW() - INTERVAL '30 days'"
+    );
+
+    const currentVendors = parseInt(vendorsResult.rows[0].count);
+    const currentUsers = parseInt(usersResult.rows[0].count);
+    const lastMonthVendors = parseInt(vendorsLastMonthResult.rows[0].count);
+    const lastMonthUsers = parseInt(usersLastMonthResult.rows[0].count);
+
+    // Calculate percentage changes
+    const vendorsChange = lastMonthVendors > 0 
+      ? ((currentVendors - lastMonthVendors) / lastMonthVendors * 100).toFixed(1)
+      : '0.0';
+    
+    const usersChange = lastMonthUsers > 0
+      ? ((currentUsers - lastMonthUsers) / lastMonthUsers * 100).toFixed(1)
+      : '0.0';
+
+    res.json({
+      totalVendors: currentVendors,
+      totalUsers: currentUsers,
+      totalProducts: parseInt(productsResult.rows[0].count),
+      approvedProducts: parseInt(approvedProductsResult.rows[0].count),
+      vendorsChange: parseFloat(vendorsChange),
+      usersChange: parseFloat(usersChange),
+    });
+  } catch (err) {
+    console.error("Error fetching admin stats:", err);
+    res.status(500).json({ message: "Failed to fetch admin stats" });
+  }
+};

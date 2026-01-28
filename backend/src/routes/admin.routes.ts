@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { adminLogin, adminLogout, adminProfile, adminUpdateProfile, adminUpdatePassword } from "../controllers/admin.controller";
+import { adminLogin, adminLogout, adminProfile, adminUpdateProfile, adminUpdatePassword, getAdminStats } from "../controllers/admin.controller";
 import { requireAuth } from "../middleware/auth.middleware";
 import multer from "multer";
 import path from "path";
@@ -37,5 +37,6 @@ router.post("/logout", requireAuth, adminLogout);
 router.get("/profile", requireAuth, adminProfile);
 router.put("/profile", requireAuth, upload.single("profile_picture"), adminUpdateProfile);
 router.put("/update-password", requireAuth, adminUpdatePassword);
+router.get("/stats", requireAuth, getAdminStats);
 
 export default router;

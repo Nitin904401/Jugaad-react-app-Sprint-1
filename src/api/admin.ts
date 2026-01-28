@@ -130,3 +130,14 @@ export const getApprovedProducts = async () => {
   }
   return res.json();
 };
+
+export const getAdminStats = async () => {
+  const res = await fetch("/api/admin/stats", {
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch admin stats");
+  }
+  return res.json();
+};

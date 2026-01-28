@@ -1,13 +1,58 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { getAdminStats } from '../../api/admin';
+
+interface AdminStats {
+  totalVendors: number;
+  totalUsers: number;
+  totalProducts: number;
+  approvedProducts: number;
+  vendorsChange: number;
+  usersChange: number;
+}
 
 export const AdminDashboardPage: React.FC = () => {
   const { user } = useAuth();
+  const [stats, setStats] = useState<AdminStats>({
+    totalVendors: 0,
+    totalUsers: 0,
+    totalProducts: 0,
+    approvedProducts: 0,
+    vendorsChange: 0,
+    usersChange: 0,
+  });
+  const [loading, setLoading] = useState(true);
 
-  const stats = [
+  useEffect(() => {
+    loadStats();
+  }, []);
+
+  const loadStats = async () => {
+    try {
+      setLoading(true);
+      const data = await getAdminStats();
+      setStats(data);
+    } catch (error) {
+      console.error('Failed to load admin stats:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const statsCards = [
     { label: 'Total Sales', value: '$1,250,430', change: '+5.2%', color: 'text-green-500' },
-    { label: 'Total Vendors', value: '2,345', change: '-0.5%', color: 'text-red-500' },
-    { label: 'Total Users', value: '15,890', change: '+2.1%', color: 'text-green-500' },
+    { 
+      label: 'Total Vendors', 
+      value: loading ? '...' : stats.totalVendors.toLocaleString(), 
+      change: loading ? '...' : `${stats.vendorsChange > 0 ? '+' : ''}${stats.vendorsChange}%`, 
+      color: stats.vendorsChange >= 0 ? 'text-green-500' : 'text-red-500' 
+    },
+    { 
+      label: 'Total Users', 
+      value: loading ? '...' : stats.totalUsers.toLocaleString(), 
+      change: loading ? '...' : `${stats.usersChange > 0 ? '+' : ''}${stats.usersChange}%`, 
+      color: stats.usersChange >= 0 ? 'text-green-500' : 'text-red-500' 
+    },
     { label: 'Orders Today', value: '452', change: '+10%', color: 'text-green-500' },
   ];
 
@@ -29,7 +74,7 @@ export const AdminDashboardPage: React.FC = () => {
     <div>
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {stats.map((stat) => (
+        {statsCards.map((stat) => (
           <div
             key={stat.label}
             className="backdrop-blur-xl rounded-xl p-6 border border-white/10 bg-white/5 text-white"
