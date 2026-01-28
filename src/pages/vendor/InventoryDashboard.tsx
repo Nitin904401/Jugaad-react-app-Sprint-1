@@ -274,7 +274,7 @@ function InventoryDashboard() {
                             </td>
                             <td className="px-6 py-4">
                               <span className="text-sm font-medium text-white">
-                                ${product.price ? Number(product.price).toFixed(2) : '0.00'}
+                                ₹{product.price ? Number(product.price).toFixed(2) : '0.00'}
                               </span>
                             </td>
                             <td className="px-6 py-4">
