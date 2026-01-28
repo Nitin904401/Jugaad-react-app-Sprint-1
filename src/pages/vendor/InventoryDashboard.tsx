@@ -400,7 +400,7 @@ function InventoryDashboard() {
                                         product.featured ? 'translate-x-5' : 'translate-x-0'
                                       }`}>
                                         {product.featured && (
-                                          <span className="material-symbols-outlined text-primary text-[16px] leading-5">star</span>
+                                          <span className="material-symbols-outlined text-primary text-[16px] leading-5"></span>
                                         )}
                                       </div>
                                     </div>
