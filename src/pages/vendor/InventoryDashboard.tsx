@@ -377,6 +377,11 @@ function InventoryDashboard() {
                                     <span className="material-symbols-outlined text-[14px] font-bold">priority_high</span>
                                     Rejected
                                   </span>
+                                ) : product.status === 'unpublished' ? (
+                                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-orange-500/10 text-orange-500 border border-orange-500/30 shadow-[0_0_15px_rgba(249,115,22,0.15)]">
+                                    <span className="material-symbols-outlined text-[14px] font-bold">visibility_off</span>
+                                    Unpublished
+                                  </span>
                                 ) : (
                                   getStatusBadge(product.status)
                                 )}
@@ -426,18 +431,28 @@ function InventoryDashboard() {
                                 </div>
                               </td>
                             </tr>
-                            {/* Rejection Reason Row */}
-                            {product.status === 'rejected' && product.rejection_reason && (
-                              <tr key={`${product.id}-rejection`} className="rejected-footer-glow">
+                            {/* Rejection/Unpublish Reason Row */}
+                            {(product.status === 'rejected' || product.status === 'unpublished') && product.rejection_reason && (
+                              <tr key={`${product.id}-reason`} className={product.status === 'rejected' ? 'rejected-footer-glow' : 'bg-orange-500/5 border-l-2 border-l-orange-500/50'}>
                                 <td colSpan={7} className="px-6 py-2.5">
                                   <div className="flex items-center justify-between gap-4">
                                     <div className="flex items-center gap-3">
-                                      <span className="text-[10px] uppercase tracking-widest font-black text-red-500/80 bg-red-500/10 px-2 py-0.5 rounded border border-red-500/20">Rejection Reason</span>
+                                      <span className={`text-[10px] uppercase tracking-widest font-black px-2 py-0.5 rounded border ${
+                                        product.status === 'rejected' 
+                                          ? 'text-red-500/80 bg-red-500/10 border-red-500/20' 
+                                          : 'text-orange-500/80 bg-orange-500/10 border-orange-500/20'
+                                      }`}>
+                                        {product.status === 'rejected' ? 'Rejection Reason' : 'Unpublish Reason'}
+                                      </span>
                                       <p className="text-sm text-[#9babbb] italic">"{product.rejection_reason}"</p>
                                     </div>
                                     <button
                                       onClick={() => handleResubmit(product.id)}
-                                      className="flex items-center gap-2 px-4 py-1.5 rounded-lg border border-red-500/40 text-red-400 hover:bg-red-500 hover:text-white text-xs font-bold transition-all"
+                                      className={`flex items-center gap-2 px-4 py-1.5 rounded-lg border text-xs font-bold transition-all ${
+                                        product.status === 'rejected'
+                                          ? 'border-red-500/40 text-red-400 hover:bg-red-500 hover:text-white'
+                                          : 'border-orange-500/40 text-orange-400 hover:bg-orange-500 hover:text-white'
+                                      }`}
                                       title="Resubmit for Review"
                                     >
                                       <span className="material-symbols-outlined text-[18px]">publish</span>

@@ -197,3 +197,49 @@ export const getApprovedProducts = async (_req: Request, res: Response) => {
     res.status(500).json({ message: "Failed to fetch approved products" });
   }
 };
+
+// PUT /api/admin/products/:id/unpublish - Unpublish a product
+export const unpublishProduct = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { reason } = req.body;
+  
+  try {
+    if (!reason) {
+      return res.status(400).json({ message: "Unpublish reason is required" });
+    }
+
+    // First check if product exists and is approved
+    const checkResult = await pool.query(
+      'SELECT status FROM products WHERE id = $1',
+      [id]
+    );
+
+    if (checkResult.rows.length === 0) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    if (checkResult.rows[0].status !== 'approved') {
+      return res.status(400).json({ message: "Only approved products can be unpublished" });
+    }
+
+    const result = await pool.query(
+      `UPDATE products 
+       SET status = 'unpublished', 
+           rejection_reason = $1,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = $2
+       RETURNING *`,
+      [reason, id]
+    );
+
+    console.log('🚫 Product unpublished:', id, 'Reason:', reason);
+    
+    res.json({
+      message: "Product unpublished successfully",
+      product: result.rows[0]
+    });
+  } catch (error) {
+    console.error('❌ Error unpublishing product:', error);
+    res.status(500).json({ message: "Failed to unpublish product" });
+  }
+};

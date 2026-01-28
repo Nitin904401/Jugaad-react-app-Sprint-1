@@ -31,6 +31,9 @@ export const AdminPublishedProductsPage: React.FC = () => {
   const [stockFilter, setStockFilter] = useState('Any Stock');
   const [showQuickView, setShowQuickView] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [showUnpublishModal, setShowUnpublishModal] = useState(false);
+  const [productToUnpublish, setProductToUnpublish] = useState<number | null>(null);
+  const [unpublishReason, setUnpublishReason] = useState('');
 
   useEffect(() => {
     loadApprovedProducts();
@@ -56,6 +59,46 @@ export const AdminPublishedProductsPage: React.FC = () => {
   const closeQuickView = () => {
     setShowQuickView(false);
     setSelectedProduct(null);
+  };
+
+  const handleUnpublish = (productId: number) => {
+    setProductToUnpublish(productId);
+    setUnpublishReason('');
+    setShowUnpublishModal(true);
+  };
+
+  const confirmUnpublish = async () => {
+    if (!productToUnpublish || !unpublishReason.trim()) {
+      alert('Please enter a reason for unpublishing');
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:5050/api/admin/products/${productToUnpublish}/unpublish`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ reason: unpublishReason }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to unpublish product');
+      }
+
+      // Remove product from list
+      setProducts(products.filter(p => p.id !== productToUnpublish));
+      setShowUnpublishModal(false);
+      setProductToUnpublish(null);
+      setUnpublishReason('');
+      
+      // Close quick view if it's the same product
+      if (selectedProduct?.id === productToUnpublish) {
+        closeQuickView();
+      }
+    } catch (error) {
+      console.error('Failed to unpublish product:', error);
+      alert('Failed to unpublish product');
+    }
   };
 
   // Get unique vendors and categories for filters
@@ -217,7 +260,10 @@ export const AdminPublishedProductsPage: React.FC = () => {
                   Quick View
                 </button>
 
-                <button className="h-10 px-4 rounded-lg bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-400 text-sm font-medium transition flex items-center gap-2">
+                <button 
+                  onClick={() => handleUnpublish(product.id)}
+                  className="h-10 px-4 rounded-lg bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-400 text-sm font-medium transition flex items-center gap-2"
+                >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                   </svg>
@@ -254,6 +300,49 @@ export const AdminPublishedProductsPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Unpublish Modal */}
+      {showUnpublishModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="relative w-full max-w-md bg-slate-900 rounded-2xl border border-white/10 shadow-2xl p-8">
+            <h3 className="text-2xl font-bold text-white mb-4">Unpublish Product</h3>
+            <p className="text-slate-400 mb-6">
+              This product will be removed from customer search and product pages. The vendor will be notified with the reason.
+            </p>
+            
+            <div className="mb-6">
+              <label className="block text-sm font-bold text-slate-300 mb-2">
+                Reason for Unpublishing *
+              </label>
+              <textarea
+                value={unpublishReason}
+                onChange={(e) => setUnpublishReason(e.target.value)}
+                placeholder="Enter reason for unpublishing this product..."
+                className="w-full h-32 px-4 py-3 rounded-lg bg-slate-800/50 text-white placeholder-slate-500 border border-white/10 focus:border-red-500 focus:outline-none resize-none"
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowUnpublishModal(false);
+                  setProductToUnpublish(null);
+                  setUnpublishReason('');
+                }}
+                className="flex-1 px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold border border-white/10 transition"
+              >
+                No
+              </button>
+              <button
+                onClick={confirmUnpublish}
+                className="flex-1 px-6 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold transition"
+              >
+                Yes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Quick View Modal */}
       {showQuickView && selectedProduct && (
@@ -436,7 +525,10 @@ export const AdminPublishedProductsPage: React.FC = () => {
                   </svg>
                   Open Full Page
                 </button>
-                <button className="px-8 bg-red-500/20 hover:bg-red-500/30 text-red-400 font-bold py-4 rounded-2xl border border-red-500/30 transition-all active:scale-95 flex items-center gap-2">
+                <button 
+                  onClick={() => handleUnpublish(selectedProduct.id)}
+                  className="px-8 bg-red-500/20 hover:bg-red-500/30 text-red-400 font-bold py-4 rounded-2xl border border-red-500/30 transition-all active:scale-95 flex items-center gap-2"
+                >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                   </svg>

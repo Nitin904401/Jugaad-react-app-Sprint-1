@@ -13,7 +13,7 @@ export const getFeaturedProducts = async (_req: Request, res: Response) => {
         category,
         images[1] as image
       FROM products
-      WHERE featured = true
+      WHERE featured = true AND status = 'approved'
       ORDER BY id ASC
       LIMIT 4;
     `);
@@ -56,7 +56,7 @@ export const getProductById = async (req: Request, res: Response) => {
 
   try {
     const result = await pool.query(
-      "SELECT * FROM products WHERE id = $1",
+      "SELECT * FROM products WHERE id = $1 AND status = 'approved'",
       [id]
     );
 

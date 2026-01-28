@@ -6,7 +6,8 @@ import {
   rejectProduct,
   resubmitProduct,
   getProductByIdAdmin,
-  getApprovedProducts
+  getApprovedProducts,
+  unpublishProduct
 } from "../controllers/admin-products.controller";
 import { requireAuth } from "../middleware/auth.middleware";
 
@@ -22,5 +23,6 @@ router.get("/:id", getProductByIdAdmin);
 router.put("/:id/approve", approveProduct);
 router.put("/:id/reject", rejectProduct);
 router.put("/:id/resubmit", resubmitProduct);
+router.put("/:id/unpublish", unpublishProduct);
 
 export default router;
