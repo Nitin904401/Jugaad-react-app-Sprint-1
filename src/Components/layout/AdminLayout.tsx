@@ -50,7 +50,6 @@ export const AdminLayout: React.FC = () => {
     { icon: 'inventory_2', label: 'Inventory', path: '/admin-panel/products' },
     { icon: 'store', label: 'Vendors', path: '/admin-panel/vendors' },
     { icon: 'group', label: 'Users', path: '/admin-panel/users' },
-    { icon: 'monitoring', label: 'Analytics', path: '/admin-panel/analytics' },
     { icon: 'settings', label: 'Settings', path: '/admin-panel/settings' },
   ];
 

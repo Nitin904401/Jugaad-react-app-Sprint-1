@@ -249,3 +249,31 @@ export const getAdminStats = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Failed to fetch admin stats" });
   }
 };
+
+// Get top vendors (ranked by approved products and total inventory value)
+export const getTopVendors = async (req: Request, res: Response) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        v.id,
+        v.name,
+        v.company_name,
+        v.email,
+        COUNT(p.id) FILTER (WHERE p.status = 'approved') as approved_products,
+        COUNT(p.id) as total_products,
+        COALESCE(SUM(p.price * p.quantity_in_stock) FILTER (WHERE p.status = 'approved'), 0) as inventory_value
+      FROM vendors v
+      LEFT JOIN products p ON v.id = p.vendor_id
+      WHERE v.status = 'approved'
+      GROUP BY v.id, v.name, v.company_name, v.email
+      HAVING COUNT(p.id) FILTER (WHERE p.status = 'approved') > 0
+      ORDER BY approved_products DESC, inventory_value DESC
+      LIMIT 10
+    `);
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching top vendors:', error);
+    res.status(500).json({ message: 'Failed to fetch top vendors' });
+  }
+};

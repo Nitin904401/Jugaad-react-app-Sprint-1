@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { getAdminStats } from '../../api/admin';
+import { getAdminStats, getTopVendors, type TopVendor } from '../../api/admin';
 
 interface AdminStats {
   totalVendors: number;
@@ -22,9 +22,12 @@ export const AdminDashboardPage: React.FC = () => {
     usersChange: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [topVendors, setTopVendors] = useState<TopVendor[]>([]);
+  const [loadingVendors, setLoadingVendors] = useState(true);
 
   useEffect(() => {
     loadStats();
+    loadTopVendors();
   }, []);
 
   const loadStats = async () => {
@@ -36,6 +39,18 @@ export const AdminDashboardPage: React.FC = () => {
       console.error('Failed to load admin stats:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadTopVendors = async () => {
+    try {
+      setLoadingVendors(true);
+      const data = await getTopVendors();
+      setTopVendors(data);
+    } catch (error) {
+      console.error('Failed to load top vendors:', error);
+    } finally {
+      setLoadingVendors(false);
     }
   };
 
@@ -61,13 +76,6 @@ export const AdminDashboardPage: React.FC = () => {
     { id: '#12547', vendor: 'GearHead Inc.', customer: 'Jane Smith', amount: '$120.50', status: 'Shipped', statusColor: 'bg-yellow-500/20 text-yellow-400' },
     { id: '#12546', vendor: 'Speedy Spares', customer: 'Mike Johnson', amount: '$45.99', status: 'Processing', statusColor: 'bg-blue-500/20 text-blue-400' },
     { id: '#12545', vendor: 'AutoPro Parts', customer: 'Sarah Lee', amount: '$89.00', status: 'Delivered', statusColor: 'bg-green-500/20 text-green-400' },
-  ];
-
-  const topVendors = [
-    { name: 'AutoPro Parts', orders: '1,234 orders', amount: '$150,450' },
-    { name: 'GearHead Inc.', orders: '987 orders', amount: '$123,890' },
-    { name: 'Speedy Spares', orders: '852 orders', amount: '$98,210' },
-    { name: 'RideSmooth', orders: '765 orders', amount: '$85,500' },
   ];
 
   return (
@@ -183,22 +191,35 @@ export const AdminDashboardPage: React.FC = () => {
         {/* Top Vendors */}
         <div className="backdrop-blur-xl rounded-xl p-6 border border-white/10 bg-white/5 text-white">
           <h3 className="text-lg font-bold mb-4">Top Vendors</h3>
-          <div className="space-y-4">
-            {topVendors.map((vendor, idx) => (
-              <div key={idx} className="flex items-center justify-between p-4 rounded-lg bg-slate-800/50 hover:bg-slate-800/70 transition">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-bold text-sm">
-                    {vendor.name.charAt(0)}
+          {loadingVendors ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          ) : topVendors.length === 0 ? (
+            <div className="text-center py-8 text-slate-400">
+              <p className="text-sm">No vendors with approved products yet.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {topVendors.map((vendor) => (
+                <div key={vendor.id} className="flex items-center justify-between p-4 rounded-lg bg-slate-800/50 hover:bg-slate-800/70 transition">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-bold text-sm">
+                      {vendor.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm">{vendor.name}</p>
+                      <p className="text-xs text-slate-400">{vendor.approved_products} approved products</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium text-sm">{vendor.name}</p>
-                    <p className="text-xs text-slate-400">{vendor.orders}</p>
+                  <div className="text-right">
+                    <p className="font-bold text-sm">₹{vendor.inventory_value.toLocaleString()}</p>
+                    <p className="text-xs text-slate-400">Inventory Value</p>
                   </div>
                 </div>
-                <p className="font-bold">{vendor.amount}</p>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

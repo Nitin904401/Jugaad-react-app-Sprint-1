@@ -141,3 +141,24 @@ export const getAdminStats = async () => {
   }
   return res.json();
 };
+
+export interface TopVendor {
+  id: string;
+  name: string;
+  company_name: string;
+  email: string;
+  approved_products: number;
+  total_products: number;
+  inventory_value: number;
+}
+
+export const getTopVendors = async (): Promise<TopVendor[]> => {
+  const res = await fetch("/api/admin/top-vendors", {
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch top vendors");
+  }
+  return res.json();
+};

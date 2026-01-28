@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getAllVendors, updateVendorStatus, updateVendorTopStatus, type AdminVendor } from '../../api/vendors';
+import { getAllVendors, updateVendorStatus, type AdminVendor } from '../../api/vendors';
 import Modal from '../../Components/common/Modal';
 
 export const AdminVendorsPage: React.FC = () => {
@@ -65,22 +65,7 @@ export const AdminVendorsPage: React.FC = () => {
     }
   };
 
-  const handleToggleTopVendor = async (vendorId: string, currentTopVendor: boolean) => {
-    try {
-      await updateVendorTopStatus(vendorId, !currentTopVendor);
-      // Update local state
-      setVendors(vendors.map(vendor => 
-        vendor.id === vendorId ? { ...vendor, top_vendor: !currentTopVendor } : vendor
-      ));
-    } catch (err: any) {
-      setModal({
-        isOpen: true,
-        type: 'error',
-        title: 'Error',
-        message: err.message || 'Failed to update top vendor status',
-      });
-    }
-  };
+
 
   const filteredVendors = vendors.filter((vendor) => {
     const matchesSearch =
@@ -154,7 +139,6 @@ export const AdminVendorsPage: React.FC = () => {
               <th className="px-6 py-4 text-left">Contact Email</th>
               <th className="px-6 py-4 text-left">Registration Date</th>
               <th className="px-6 py-4 text-left">Status</th>
-              <th className="px-6 py-4 text-center">Top Vendors</th>
               <th className="px-6 py-4 text-left">Actions</th>
             </tr>
           </thead>
@@ -176,29 +160,6 @@ export const AdminVendorsPage: React.FC = () => {
                     >
                       {vendor.status?.charAt(0).toUpperCase() + vendor.status?.slice(1)}
                     </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center justify-center">
-                      <label className="relative inline-flex items-center cursor-pointer group">
-                        <input
-                          type="checkbox"
-                          checked={vendor.top_vendor || false}
-                          onChange={() => handleToggleTopVendor(vendor.id, vendor.top_vendor || false)}
-                          className="sr-only peer"
-                          disabled={vendor.status !== 'approved'}
-                        />
-                        <div className={`w-11 h-6 rounded-full transition-all ${
-                          vendor.status !== 'approved'
-                            ? 'bg-gray-600/30 cursor-not-allowed'
-                            : 'bg-slate-700 peer-checked:bg-blue-600 peer-checked:shadow-[0_0_10px_rgba(59,130,246,0.5)]'
-                        } peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500/50`}>
-                          <div className={`absolute top-0.5 left-0.5 bg-white rounded-full h-5 w-5 transition-transform ${
-                            vendor.top_vendor ? 'translate-x-5' : 'translate-x-0'
-                          }`}>
-                          </div>
-                        </div>
-                      </label>
-                    </div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
@@ -252,7 +213,7 @@ export const AdminVendorsPage: React.FC = () => {
               ))
             ) : (
               <tr>
-                <td colSpan={6} className="px-6 py-8 text-center text-slate-400">
+                <td colSpan={5} className="px-6 py-8 text-center text-slate-400">
                   No vendors found matching your search criteria
                 </td>
               </tr>
