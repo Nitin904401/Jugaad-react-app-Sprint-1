@@ -24,6 +24,7 @@ export default function VendorDashboard() {
   const [query, setQuery] = useState("");
   const [lowStockProducts, setLowStockProducts] = useState<LowStockProduct[]>([]);
   const [loadingLowStock, setLoadingLowStock] = useState(true);
+  const [showNotificationPanel, setShowNotificationPanel] = useState(false);
   const [orders] = useState([
     { id: "#ORD-001", name: "Brembo Brake Pads", customer: "John Doe", date: "Oct 24, 2023", status: "Shipped", total: "$120.00" },
     { id: "#ORD-002", name: "Oil Filter Premium", customer: "Jane Smith", date: "Oct 24, 2023", status: "Processing", total: "$15.50" },
@@ -98,9 +99,16 @@ export default function VendorDashboard() {
               />
             </div>
 
-            <button className="relative rounded-lg p-2 text-slate-400 hover:bg-white/10 hover:text-white transition-colors">
+            <button 
+              onClick={() => setShowNotificationPanel(!showNotificationPanel)}
+              className="relative rounded-lg p-2 text-slate-400 hover:bg-white/10 hover:text-white transition-colors"
+            >
               <span className="material-symbols-outlined">notifications</span>
-              <span className="absolute top-2 right-2 size-2 bg-red-500 rounded-full ring-2 ring-[#0f1923]"></span>
+              {lowStockProducts.length > 0 && (
+                <span className="absolute top-1 right-1 min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1">
+                  {lowStockProducts.length}
+                </span>
+              )}
             </button>
 
             
@@ -323,6 +331,106 @@ export default function VendorDashboard() {
           </div>
         </div>
       </main>
+
+      {/* Notification Side Panel */}
+      {showNotificationPanel && (
+        <>
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity"
+            onClick={() => setShowNotificationPanel(false)}
+          />
+          
+          {/* Side Panel */}
+          <div className="fixed top-0 right-0 h-full w-full sm:w-96 bg-[#0f1923] border-l border-white/10 z-50 shadow-2xl flex flex-col">
+            {/* Panel Header */}
+            <div className="p-6 border-b border-white/5 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-red-500/10 rounded-lg">
+                  <span className="material-symbols-outlined text-red-400">warning</span>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white">Low Stock Alerts</h3>
+                  <p className="text-xs text-slate-400">
+                    {lowStockProducts.length} {lowStockProducts.length === 1 ? 'item needs' : 'items need'} attention
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowNotificationPanel(false)}
+                className="p-2 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white transition-colors"
+              >
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+
+            {/* Panel Content */}
+            <div className="flex-1 overflow-y-auto p-4">
+              {loadingLowStock ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="text-center">
+                    <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+                    <p className="text-slate-400 text-sm">Loading notifications...</p>
+                  </div>
+                </div>
+              ) : lowStockProducts.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mb-4">
+                    <span className="material-symbols-outlined text-green-400 text-4xl">check_circle</span>
+                  </div>
+                  <h4 className="text-white font-semibold mb-2">All Good!</h4>
+                  <p className="text-slate-400 text-sm text-center">All products have sufficient stock levels</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {lowStockProducts.map((product) => {
+                    const severity = getSeverity(product.quantity_in_stock);
+                    return (
+                      <div 
+                        key={product.id} 
+                        className="bg-white/5 rounded-xl p-4 border border-white/5 hover:border-red-500/30 transition-all cursor-pointer group"
+                        onClick={() => {
+                          setShowNotificationPanel(false);
+                          navigate(`/vendor/edit-product/${product.id}`);
+                        }}
+                      >
+                        <div className="flex items-start justify-between gap-3 mb-3">
+                          <div className="flex-1">
+                            <h4 className="text-white font-semibold text-sm mb-1 group-hover:text-primary transition-colors">
+                              {product.name}
+                            </h4>
+                            <p className="text-slate-500 text-xs">SKU: {product.sku}</p>
+                          </div>
+                          <div className={`p-1.5 rounded-lg ${
+                            severity === "red" ? "bg-red-500/10" : "bg-orange-500/10"
+                          }`}>
+                            <span className={`material-symbols-outlined text-sm ${
+                              severity === "red" ? "text-red-400" : "text-orange-400"
+                            }`}>
+                              inventory_2
+                            </span>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center justify-between">
+                          <p className={`text-xs font-bold ${
+                            severity === "red" ? "text-red-400" : "text-orange-400"
+                          }`}>
+                            {getQuantityText(product.quantity_in_stock)}
+                          </p>
+                          <span className="material-symbols-outlined text-slate-600 group-hover:text-primary transition-colors text-sm">
+                            arrow_forward
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
