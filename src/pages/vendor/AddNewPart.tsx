@@ -466,30 +466,36 @@ export default function AddNewPart() {
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <label className="block">
-                    <p className="text-[#9babbb] text-sm font-medium mb-2">MRP ($)</p>
-                    <input 
-                      value={mrp} 
-                      onChange={(e) => setMrp(e.target.value)} 
-                      className="w-full rounded-lg bg-[#111418] border border-[#3a4755] text-white px-4 py-3 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" 
-                      placeholder="0.00" 
-                      type="number" 
-                      step="0.01"
-                      min="0"
-                    />
+                    <p className="text-[#9babbb] text-sm font-medium mb-2">MRP (₹)</p>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#9babbb]">₹</span>
+                      <input 
+                        value={mrp} 
+                        onChange={(e) => setMrp(e.target.value)} 
+                        className="w-full rounded-lg bg-[#111418] border border-[#3a4755] text-white pl-8 pr-4 py-3 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" 
+                        placeholder="0.00" 
+                        type="number" 
+                        step="0.01"
+                        min="0"
+                      />
+                    </div>
                   </label>
 
                   <label className="block relative">
-                    <p className="text-[#9babbb] text-sm font-medium mb-2">Selling Price ($) <span className="text-red-500">*</span></p>
-                    <input 
-                      value={price} 
-                      onChange={(e) => setPrice(e.target.value)} 
-                      className="w-full rounded-lg bg-[#111418] border border-[#3a4755] text-white px-4 py-3 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" 
-                      placeholder="0.00" 
-                      type="number" 
-                      step="0.01"
-                      min="0"
-                      required
-                    />
+                    <p className="text-[#9babbb] text-sm font-medium mb-2">Selling Price (₹) <span className="text-red-500">*</span></p>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#9babbb]">₹</span>
+                      <input 
+                        value={price} 
+                        onChange={(e) => setPrice(e.target.value)} 
+                        className="w-full rounded-lg bg-[#111418] border border-[#3a4755] text-white pl-8 pr-4 py-3 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" 
+                        placeholder="0.00" 
+                        type="number" 
+                        step="0.01"
+                        min="0"
+                        required
+                      />
+                    </div>
                     {discountPercent > 0 && (
                       <div className="absolute top-0 right-0">
                         <span className="text-xs font-bold text-green-400 bg-green-400/10 px-2 py-0.5 rounded">
@@ -576,7 +582,7 @@ export default function AddNewPart() {
                         </button>
                       </div>
                     ))
-                  )}
+                  )}ß
                 </div>
               </section>
 
@@ -584,7 +590,7 @@ export default function AddNewPart() {
               <section className="glass-panel rounded-xl p-6">
                 <div className="flex items-center gap-2 mb-4 text-white border-b border-white/5 pb-2">
                   <span className="material-symbols-outlined text-primary">verified</span>
-                  <h3 className="text-lg font-bold">Specifics</h3>
+                  <h3 className="text-lg font-bold">Specificationsß</h3>
                 </div>
 
                 <div className="space-y-6">

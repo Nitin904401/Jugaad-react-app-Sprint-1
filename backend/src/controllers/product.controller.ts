@@ -205,51 +205,128 @@ export const updateProduct = async (req: Request, res: Response) => {
       condition,
       images,
       compatible_vehicles,
+      compatible_models,
       description,
-      status
+      status,
+      material,
+      weight,
+      position,
+      low_stock_threshold,
+      upc_barcode,
+      supplier
     } = req.body;
 
-    const result = await pool.query(
-      `UPDATE products SET 
-        name = COALESCE($1, name),
-        sku = COALESCE($2, sku),
-        oem_reference = COALESCE($3, oem_reference),
-        category = COALESCE($4, category),
-        brand = COALESCE($5, brand),
-        mrp = COALESCE($6, mrp),
-        price = COALESCE($7, price),
-        quantity_in_stock = COALESCE($8, quantity_in_stock),
-        brand_type = COALESCE($9, brand_type),
-        condition = COALESCE($10, condition),
-        images = COALESCE($11, images),
-        compatible_vehicles = COALESCE($12, compatible_vehicles),
-        description = COALESCE($13, description),
-        status = COALESCE($14, status),
-        updated_at = CURRENT_TIMESTAMP
-      WHERE id = $15
-      RETURNING *`,
-      [
-        name,
-        sku,
-        oem_reference,
-        category,
-        brand,
-        mrp,
-        price,
-        quantity_in_stock,
-        brand_type,
-        condition,
-        images,
-        compatible_vehicles ? JSON.stringify(compatible_vehicles) : null,
-        description,
-        status,
-        id
-      ]
-    );
+    console.log('📝 Updating product:', id, 'Compatible vehicles:', compatible_vehicles);
+
+    // Build dynamic query based on what fields are provided
+    const updates: string[] = [];
+    const values: any[] = [];
+    let paramIndex = 1;
+
+    if (name !== undefined) {
+      updates.push(`name = $${paramIndex++}`);
+      values.push(name);
+    }
+    if (sku !== undefined) {
+      updates.push(`sku = $${paramIndex++}`);
+      values.push(sku);
+    }
+    if (oem_reference !== undefined) {
+      updates.push(`oem_reference = $${paramIndex++}`);
+      values.push(oem_reference);
+    }
+    if (category !== undefined) {
+      updates.push(`category = $${paramIndex++}`);
+      values.push(category);
+    }
+    if (brand !== undefined) {
+      updates.push(`brand = $${paramIndex++}`);
+      values.push(brand);
+    }
+    if (mrp !== undefined) {
+      updates.push(`mrp = $${paramIndex++}`);
+      values.push(mrp);
+    }
+    if (price !== undefined) {
+      updates.push(`price = $${paramIndex++}`);
+      values.push(price);
+    }
+    if (quantity_in_stock !== undefined) {
+      updates.push(`quantity_in_stock = $${paramIndex++}`);
+      values.push(quantity_in_stock);
+    }
+    if (brand_type !== undefined) {
+      updates.push(`brand_type = $${paramIndex++}`);
+      values.push(brand_type);
+    }
+    if (condition !== undefined) {
+      updates.push(`condition = $${paramIndex++}`);
+      values.push(condition);
+    }
+    if (images !== undefined) {
+      updates.push(`images = $${paramIndex++}`);
+      values.push(images);
+    }
+    if (compatible_vehicles !== undefined) {
+      updates.push(`compatible_vehicles = $${paramIndex++}`);
+      values.push(JSON.stringify(compatible_vehicles));
+    } else if (compatible_models !== undefined) {
+      updates.push(`compatible_vehicles = $${paramIndex++}`);
+      values.push(JSON.stringify({ models: compatible_models }));
+    }
+    if (description !== undefined) {
+      updates.push(`description = $${paramIndex++}`);
+      values.push(description);
+    }
+    if (status !== undefined) {
+      updates.push(`status = $${paramIndex++}`);
+      values.push(status);
+    }
+    if (material !== undefined) {
+      updates.push(`material = $${paramIndex++}`);
+      values.push(material);
+    }
+    if (weight !== undefined) {
+      updates.push(`weight = $${paramIndex++}`);
+      values.push(weight);
+    }
+    if (position !== undefined) {
+      updates.push(`position = $${paramIndex++}`);
+      values.push(position);
+    }
+    if (low_stock_threshold !== undefined) {
+      updates.push(`low_stock_threshold = $${paramIndex++}`);
+      values.push(low_stock_threshold);
+    }
+    if (upc_barcode !== undefined) {
+      updates.push(`upc_barcode = $${paramIndex++}`);
+      values.push(upc_barcode);
+    }
+    if (supplier !== undefined) {
+      updates.push(`supplier = $${paramIndex++}`);
+      values.push(supplier);
+    }
+
+    // Always update the updated_at timestamp
+    updates.push(`updated_at = CURRENT_TIMESTAMP`);
+
+    if (updates.length === 1) { // Only updated_at
+      return res.status(400).json({ message: "No fields to update" });
+    }
+
+    values.push(id);
+    const query = `UPDATE products SET ${updates.join(', ')} WHERE id = $${paramIndex} RETURNING *`;
+
+    console.log('🔧 Update query:', query);
+    console.log('🔧 Update values:', values);
+
+    const result = await pool.query(query, values);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ message: "Product not found" });
     }
+
+    console.log('✅ Product updated:', result.rows[0].id);
 
     res.json({
       message: "Product updated successfully",
@@ -298,6 +375,7 @@ export const getVendorProducts = async (req: any, res: Response) => {
         id, name, sku, oem_reference, category, brand, mrp, price, 
         quantity_in_stock, brand_type, condition, images, 
         compatible_vehicles, description, status, vendor_id,
+        material, weight, position, low_stock_threshold, upc_barcode, supplier,
         created_at, updated_at
       FROM products 
       WHERE vendor_id = $1 
@@ -324,6 +402,12 @@ export const getVendorProducts = async (req: any, res: Response) => {
       description: row.description,
       status: row.status,
       vendor_id: row.vendor_id,
+      material: row.material,
+      weight: row.weight,
+      position: row.position,
+      low_stock_threshold: row.low_stock_threshold,
+      upc_barcode: row.upc_barcode,
+      supplier: row.supplier,
       created_at: row.created_at,
       updated_at: row.updated_at
     }));

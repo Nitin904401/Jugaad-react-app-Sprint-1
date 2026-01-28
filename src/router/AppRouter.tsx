@@ -24,6 +24,7 @@ import { VendorRegisterPage } from '../pages/vendor/Register';
 import FinancialSetup from '../pages/vendor/FinancialSetup';
 import { VendorDashboardPage } from '../pages/vendor/VendorDashboard';
 import AddNewPart from '../pages/vendor/AddNewPart';
+import EditProduct from '../pages/vendor/EditProduct';
 import { VendorOrdersPage } from '../pages/vendor/VendorOrders';
 import InventoryDashboard from '../pages/vendor/InventoryDashboard';
 import VendorPayments from '../pages/vendor/VendorPayments';
@@ -87,6 +88,7 @@ export const AppRouter: React.FC = () => {
             <Route path="/vendor/register" element={<VendorRegisterPage />} />
             <Route path="/vendor/financial-setup" element={<FinancialSetup />} />
             <Route path="/vendor/add-new-part" element={<AddNewPart />} />
+            <Route path="/vendor/edit-product/:id" element={<EditProduct />} />
             <Route path="/vendor/create-manual-order" element={<CreateManualOrder />} />
             <Route path="/vendor/orders" element={<VendorOrdersPage />} />
             <Route path="/vendor/inventory" element={<InventoryDashboard />} />
