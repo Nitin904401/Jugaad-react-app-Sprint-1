@@ -12,6 +12,7 @@ export default function EditProduct() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   
   // Product data
   const [partName, setPartName] = useState("");
@@ -205,12 +206,13 @@ export default function EditProduct() {
     }
   };
 
-  const handleDelete = async () => {
-    if (!window.confirm("Are you sure you want to delete this product? This action cannot be undone.")) {
-      return;
-    }
+  const handleDelete = () => {
+    setShowDeleteModal(true);
+  };
 
+  const confirmDelete = async () => {
     try {
+      setShowDeleteModal(false);
       await deleteProduct(parseInt(id || "0"));
       navigate("/vendor/inventory");
     } catch (err: any) {
@@ -271,6 +273,36 @@ export default function EditProduct() {
                     <div>
                       <h3 className="text-xl font-bold text-white mb-2">Success!</h3>
                       <p className="text-[#9babbb] text-sm">Product updated successfully. Redirecting to inventory...</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {showDeleteModal && (
+              <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+                <div className="glass-panel p-8 rounded-2xl max-w-md w-full mx-4 border-red-500/20 bg-red-500/5">
+                  <div className="flex flex-col items-center text-center gap-4">
+                    <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center">
+                      <span className="material-symbols-outlined text-red-400 text-[40px]">delete</span>
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-white mb-2">Delete Product?</h3>
+                      <p className="text-[#9babbb] text-sm">Are you sure you want to delete this product? This action cannot be undone.</p>
+                    </div>
+                    <div className="flex gap-3 w-full mt-2">
+                      <button
+                        onClick={() => setShowDeleteModal(false)}
+                        className="flex-1 px-4 py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors border border-white/10"
+                      >
+                        No, Cancel
+                      </button>
+                      <button
+                        onClick={confirmDelete}
+                        className="flex-1 px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors font-medium"
+                      >
+                        Yes, Delete
+                      </button>
                     </div>
                   </div>
                 </div>
