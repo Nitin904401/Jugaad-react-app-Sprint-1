@@ -101,6 +101,42 @@ export const AdminPublishedProductsPage: React.FC = () => {
     }
   };
 
+  const handleExportCSV = () => {
+    // Prepare CSV data
+    const headers = ['ID', 'Name', 'SKU', 'Category', 'Brand', 'Price (₹)', 'Stock', 'Vendor', 'Company', 'Status'];
+    
+    const csvData = filteredProducts.map(product => [
+      product.id,
+      `"${product.name.replace(/"/g, '""')}"`, // Escape quotes in name
+      product.sku || '',
+      product.category || '',
+      product.brand || '',
+      product.price || '0',
+      product.quantity_in_stock || '0',
+      product.vendor_name || '',
+      product.vendor_company || '',
+      product.status || 'approved'
+    ]);
+
+    // Create CSV string
+    const csvContent = [
+      headers.join(','),
+      ...csvData.map(row => row.join(','))
+    ].join('\n');
+
+    // Create blob and download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', `published-products-${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   // Get unique vendors and categories for filters
   const uniqueVendors = Array.from(new Set(products.map(p => p.vendor_company || p.vendor_name || p.brand || 'Unknown').filter(Boolean)));
   const uniqueCategories = Array.from(new Set(products.map(p => p.category).filter(Boolean)));
@@ -144,7 +180,11 @@ export const AdminPublishedProductsPage: React.FC = () => {
           </div>
 
           <div className="flex gap-3">
-            <button className="px-4 h-10 bg-white/10 hover:bg-white/20 rounded-lg text-sm text-white font-medium transition border border-white/10">
+            <button 
+              onClick={handleExportCSV}
+              className="px-4 h-10 bg-white/10 hover:bg-white/20 rounded-lg text-sm text-white font-medium transition border border-white/10 flex items-center gap-2"
+            >
+              <span className="material-symbols-outlined text-[18px]">download</span>
               Export CSV
             </button>
            
