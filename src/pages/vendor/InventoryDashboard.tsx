@@ -1,7 +1,16 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { fetchVendorProducts, deleteProduct } from '../../api/products';
+import { getVendorProfile } from '../../api/vendor';
 import VendorSidebar from './VendorSidebar';
+
+interface VendorData {
+  id: string;
+  name: string;
+  email: string;
+  company_name: string;
+  business_type?: string;
+}
 
 interface Product {
   id: number;
@@ -17,6 +26,7 @@ interface Product {
 
 function InventoryDashboard() {
   const navigate = useNavigate();
+  const [vendor, setVendor] = useState<VendorData | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -24,8 +34,18 @@ function InventoryDashboard() {
   const [productToDelete, setProductToDelete] = useState<number | null>(null);
 
   useEffect(() => {
+    loadVendorProfile();
     loadProducts();
   }, []);
+
+  const loadVendorProfile = async () => {
+    try {
+      const data = await getVendorProfile();
+      setVendor(data);
+    } catch (err) {
+      console.error('Failed to load vendor profile:', err);
+    }
+  };
 
   const loadProducts = async () => {
     try {
@@ -117,7 +137,7 @@ function InventoryDashboard() {
 
   return (
     <div className="flex h-screen w-full overflow-hidden">
-      <VendorSidebar />
+      <VendorSidebar vendor={vendor} />
       <main className="flex-1 flex flex-col h-full relative overflow-hidden bg-background-dark">
         <div className="flex-1 overflow-y-auto p-8">
           <div className="max-w-[1400px] mx-auto flex flex-col gap-8">

@@ -1,11 +1,23 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { fetchVendorProducts, updateProduct, deleteProduct } from "../../api/products";
+import { getVendorProfile } from "../../api/vendor";
 import VendorSidebar from "./VendorSidebar";
+
+interface VendorData {
+  id: string;
+  name: string;
+  email: string;
+  company_name: string;
+  business_type?: string;
+}
 
 export default function EditProduct() {
   const navigate = useNavigate();
   const { id } = useParams();
+  
+  // Vendor data
+  const [vendor, setVendor] = useState<VendorData | null>(null);
   
   // Form state
   const [loading, setLoading] = useState(true);
@@ -40,8 +52,18 @@ export default function EditProduct() {
   const [vehicles, setVehicles] = useState<any[]>([]);
 
   useEffect(() => {
+    loadVendorProfile();
     loadProduct();
   }, [id]);
+
+  const loadVendorProfile = async () => {
+    try {
+      const data = await getVendorProfile();
+      setVendor(data);
+    } catch (err) {
+      console.error('Failed to load vendor profile:', err);
+    }
+  };
 
   const loadProduct = async () => {
     try {
@@ -223,7 +245,7 @@ export default function EditProduct() {
   if (loading) {
     return (
       <div className="flex h-screen w-full overflow-hidden">
-        <VendorSidebar />
+        <VendorSidebar vendor={vendor} />
         <main className="flex-1 flex items-center justify-center bg-background-dark">
           <div className="flex flex-col items-center gap-3">
             <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
@@ -236,7 +258,7 @@ export default function EditProduct() {
 
   return (
     <div className="flex h-screen w-full overflow-hidden">
-      <VendorSidebar />
+      <VendorSidebar vendor={vendor} />
       <main className="flex-1 flex flex-col h-full relative overflow-hidden bg-background-dark">
         {/* Header */}
         <header className="h-16 flex items-center justify-between px-8 border-b border-[#27303a] bg-[#111418] z-10 shrink-0">
