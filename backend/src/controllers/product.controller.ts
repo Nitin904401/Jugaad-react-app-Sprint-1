@@ -383,6 +383,7 @@ export const getVendorProducts = async (req: any, res: Response) => {
         quantity_in_stock, brand_type, condition, images, 
         compatible_vehicles, description, status, vendor_id,
         material, weight, position, low_stock_threshold, upc_barcode, supplier,
+        rejection_reason,
         created_at, updated_at
       FROM products 
       WHERE vendor_id = $1 
@@ -415,6 +416,7 @@ export const getVendorProducts = async (req: any, res: Response) => {
       low_stock_threshold: row.low_stock_threshold,
       upc_barcode: row.upc_barcode,
       supplier: row.supplier,
+      rejection_reason: row.rejection_reason,
       created_at: row.created_at,
       updated_at: row.updated_at
     }));

@@ -22,6 +22,7 @@ interface Product {
   quantity_in_stock?: number;
   status: string;
   images?: string[];
+  rejection_reason?: string;
 }
 
 function InventoryDashboard() {
@@ -32,6 +33,8 @@ function InventoryDashboard() {
   const [error, setError] = useState('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [productToDelete, setProductToDelete] = useState<number | null>(null);
+  const [showResubmitModal, setShowResubmitModal] = useState(false);
+  const [productToResubmit, setProductToResubmit] = useState<number | null>(null);
 
   useEffect(() => {
     loadVendorProfile();
@@ -89,6 +92,33 @@ function InventoryDashboard() {
     } catch (err: any) {
       setError(err.message || 'Failed to delete product');
       setShowDeleteModal(false);
+    }
+  };
+
+  const handleResubmit = (productId: number) => {
+    setProductToResubmit(productId);
+    setShowResubmitModal(true);
+  };
+
+  const confirmResubmit = async () => {
+    if (!productToResubmit) return;
+
+    try {
+      const res = await fetch(`/api/admin/products/${productToResubmit}/resubmit`, {
+        method: 'PUT',
+        credentials: 'include',
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to resubmit product');
+      }
+
+      await loadProducts();
+      setShowResubmitModal(false);
+      setProductToResubmit(null);
+    } catch (err: any) {
+      setError(err.message || 'Failed to resubmit product');
+      setShowResubmitModal(false);
     }
   };
 
@@ -267,77 +297,107 @@ function InventoryDashboard() {
                         }
 
                         return (
-                          <tr key={product.id} className="table-row-hover group transition-colors">
-                            <td className="px-6 py-4">
-                              <div className="flex items-center gap-4">
-                                {isValidImage ? (
-                                  <img 
-                                    src={imageUrl}
-                                    alt={product.name}
-                                    className="h-12 w-12 rounded-lg object-cover border border-[#3f4a56]"
-                                    onError={(e) => {
-                                      console.error('Image failed to load:', imageUrl);
-                                      (e.target as HTMLImageElement).style.display = 'none';
-                                    }}
-                                  />
-                                ) : (
-                                  <div className="h-12 w-12 rounded-lg bg-[#27303a] border border-[#3f4a56] flex items-center justify-center">
-                                    <span className="material-symbols-outlined text-[#9babbb] text-[20px]">inventory_2</span>
-                                  </div>
-                                )}
-                                <div className="flex flex-col">
-                                  <span className="text-sm font-bold text-white group-hover:text-primary transition-colors">
-                                    {product.name}
-                                  </span>
-                                  {product.sku && (
-                                    <span className="text-xs text-[#9babbb]">SKU: {product.sku}</span>
+                          <>
+                            <tr key={product.id} className={`group transition-colors ${product.status === 'rejected' ? 'rejected-card-split border-l-2 border-l-red-500/80' : 'table-row-hover'}`}>
+                              <td className="px-6 py-4">
+                                <div className="flex items-center gap-4">
+                                  {isValidImage ? (
+                                    <img 
+                                      src={imageUrl}
+                                      alt={product.name}
+                                      className={`h-12 w-12 rounded-lg object-cover ${product.status === 'rejected' ? 'border border-red-500/40 shadow-[0_0_10px_rgba(239,68,68,0.1)]' : 'border border-[#3f4a56]'}`}
+                                      onError={(e) => {
+                                        console.error('Image failed to load:', imageUrl);
+                                        (e.target as HTMLImageElement).style.display = 'none';
+                                      }}
+                                    />
+                                  ) : (
+                                    <div className={`h-12 w-12 rounded-lg bg-[#27303a] flex items-center justify-center ${product.status === 'rejected' ? 'border border-red-500/40 shadow-[0_0_10px_rgba(239,68,68,0.1)]' : 'border border-[#3f4a56]'}`}>
+                                      <span className="material-symbols-outlined text-[#9babbb] text-[20px]">inventory_2</span>
+                                    </div>
                                   )}
+                                  <div className="flex flex-col">
+                                    <span className="text-sm font-bold text-white group-hover:text-primary transition-colors">
+                                      {product.name}
+                                    </span>
+                                    {product.sku && (
+                                      <span className={`text-xs ${product.status === 'rejected' ? 'text-red-400/60 font-medium' : 'text-[#9babbb]'}`}>SKU: {product.sku}</span>
+                                    )}
+                                  </div>
                                 </div>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4">
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-[#27303a] text-gray-300">
-                                {product.category}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4">
-                              <span className="text-sm font-medium text-white">
-                                ₹{product.price ? Number(product.price).toFixed(2) : '0.00'}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4">
-                              <div className="flex flex-col gap-1">
-                                <div className="flex items-center gap-2">
-                                  <span className={`text-sm font-medium ${stock.color}`}>{stock.qty}</span>
-                                  <span className="text-xs text-[#9babbb]">units</span>
+                              </td>
+                              <td className="px-6 py-4">
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium ${product.status === 'rejected' ? 'bg-red-950/20 text-red-300/80 border border-red-500/10' : 'bg-[#27303a] text-gray-300'}`}>
+                                  {product.category}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4">
+                                <span className="text-sm font-medium text-white">
+                                  ₹{product.price ? Number(product.price).toFixed(2) : '0.00'}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4">
+                                <div className="flex flex-col gap-1">
+                                  <div className="flex items-center gap-2">
+                                    <span className={`text-sm font-medium ${stock.color}`}>{stock.qty}</span>
+                                    <span className="text-xs text-[#9babbb]">units</span>
+                                  </div>
+                                  <div className={`w-24 h-1.5 rounded-full overflow-hidden ${product.status === 'rejected' ? 'bg-red-900/20' : 'bg-[#27303a]'}`}>
+                                    <div className={`h-full rounded-full ${product.status === 'rejected' ? 'bg-red-500/50' : stock.color.replace('text-', 'bg-')}`} style={{ width: stock.percent }} />
+                                  </div>
                                 </div>
-                                <div className="w-24 h-1.5 bg-[#27303a] rounded-full overflow-hidden">
-                                  <div className={`h-full ${stock.color.replace('text-', 'bg-')} rounded-full`} style={{ width: stock.percent }} />
+                              </td>
+                              <td className="px-6 py-4">
+                                {product.status === 'rejected' ? (
+                                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-red-500/10 text-red-500 border border-red-500/30 shadow-[0_0_15px_rgba(239,68,68,0.15)]">
+                                    <span className="material-symbols-outlined text-[14px] font-bold">priority_high</span>
+                                    Rejected
+                                  </span>
+                                ) : (
+                                  getStatusBadge(product.status)
+                                )}
+                              </td>
+                              <td className="px-6 py-4 text-right">
+                                <div className={`flex items-center justify-end gap-2 transition-opacity ${product.status === 'rejected' ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                                  <button 
+                                    onClick={() => navigate(`/vendor/edit-product/${product.id}`)}
+                                    className={`p-1.5 rounded-md transition-colors ${product.status === 'rejected' ? 'text-red-400/70 hover:text-white hover:bg-red-500/20' : 'text-[#9babbb] hover:text-white hover:bg-[#27303a]'}`}
+                                    title="Edit"
+                                  >
+                                    <span className="material-symbols-outlined text-[20px]">edit</span>
+                                  </button>
+                                  <button 
+                                    onClick={() => handleDelete(product.id)}
+                                    className={`p-1.5 rounded-md transition-colors ${product.status === 'rejected' ? 'text-red-400/70 hover:text-white hover:bg-red-500/20' : 'text-[#9babbb] hover:text-red-400 hover:bg-red-400/10'}`}
+                                    title="Delete"
+                                  >
+                                    <span className="material-symbols-outlined text-[20px]">delete</span>
+                                  </button>
                                 </div>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4">
-                              {getStatusBadge(product.status)}
-                            </td>
-                            <td className="px-6 py-4 text-right">
-                              <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button 
-                                  onClick={() => navigate(`/vendor/edit-product/${product.id}`)}
-                                  className="p-1.5 rounded-md text-[#9babbb] hover:text-white hover:bg-[#27303a] transition-colors" 
-                                  title="Edit"
-                                >
-                                  <span className="material-symbols-outlined text-[20px]">edit</span>
-                                </button>
-                                <button 
-                                  onClick={() => handleDelete(product.id)}
-                                  className="p-1.5 rounded-md text-[#9babbb] hover:text-red-400 hover:bg-red-400/10 transition-colors" 
-                                  title="Delete"
-                                >
-                                  <span className="material-symbols-outlined text-[20px]">delete</span>
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
+                              </td>
+                            </tr>
+                            {/* Rejection Reason Row */}
+                            {product.status === 'rejected' && product.rejection_reason && (
+                              <tr key={`${product.id}-rejection`} className="rejected-footer-glow">
+                                <td colSpan={6} className="px-6 py-2.5">
+                                  <div className="flex items-center justify-between gap-4">
+                                    <div className="flex items-center gap-3">
+                                      <span className="text-[10px] uppercase tracking-widest font-black text-red-500/80 bg-red-500/10 px-2 py-0.5 rounded border border-red-500/20">Rejection Reason</span>
+                                      <p className="text-sm text-[#9babbb] italic">"{product.rejection_reason}"</p>
+                                    </div>
+                                    <button
+                                      onClick={() => handleResubmit(product.id)}
+                                      className="flex items-center gap-2 px-4 py-1.5 rounded-lg border border-red-500/40 text-red-400 hover:bg-red-500 hover:text-white text-xs font-bold transition-all"
+                                      title="Resubmit for Review"
+                                    >
+                                      <span className="material-symbols-outlined text-[18px]">publish</span>
+                                      <span>Resubmit Part</span>
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            )}
+                          </>
                         );
                       })
                     )}
@@ -357,6 +417,40 @@ function InventoryDashboard() {
           </div>
         </div>
       </main>
+
+      {/* Resubmit Confirmation Modal */}
+      {showResubmitModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="glass-panel p-8 rounded-2xl max-w-md w-full mx-4 border-green-500/20 bg-green-500/5">
+            <div className="flex flex-col items-center text-center gap-4">
+              <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center">
+                <span className="material-symbols-outlined text-green-400 text-[40px]">publish</span>
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-white mb-2">Resubmit Product?</h3>
+                <p className="text-[#9babbb] text-sm">This will clear the rejection reason and set the product status to pending review for admin approval.</p>
+              </div>
+              <div className="flex gap-3 w-full mt-2">
+                <button
+                  onClick={() => {
+                    setShowResubmitModal(false);
+                    setProductToResubmit(null);
+                  }}
+                  className="flex-1 px-4 py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors border border-white/10 font-medium"
+                >
+                  No
+                </button>
+                <button
+                  onClick={confirmResubmit}
+                  className="flex-1 px-4 py-2.5 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors font-medium"
+                >
+                  Yes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
@@ -378,13 +472,13 @@ function InventoryDashboard() {
                   }}
                   className="flex-1 px-4 py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors border border-white/10 font-medium"
                 >
-                  No, Cancel
+                  No
                 </button>
                 <button
                   onClick={confirmDelete}
                   className="flex-1 px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors font-medium"
                 >
-                  Yes, Delete
+                  Yes
                 </button>
               </div>
             </div>

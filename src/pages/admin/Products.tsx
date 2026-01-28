@@ -13,6 +13,7 @@ interface Product {
   vendor_company?: string;
   images?: string[];
   brand?: string;
+  rejection_reason?: string;
 }
 
 export const AdminProductsPage: React.FC = () => {
@@ -83,6 +84,29 @@ export const AdminProductsPage: React.FC = () => {
     } catch (error) {
       console.error('Failed to reject product:', error);
       alert('Failed to reject product');
+    }
+  };
+
+  const handleResubmit = async (productId: number) => {
+    if (!confirm('Resubmit this product for review? This will clear the rejection reason and set status to pending review.')) {
+      return;
+    }
+
+    try {
+      // Update product status back to pending_review
+      const res = await fetch(`/api/admin/products/${productId}/resubmit`, {
+        method: 'PUT',
+        credentials: 'include',
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to resubmit product');
+      }
+
+      await loadProducts();
+    } catch (error) {
+      console.error('Failed to resubmit product:', error);
+      alert('Failed to resubmit product');
     }
   };
 
@@ -277,13 +301,13 @@ export const AdminProductsPage: React.FC = () => {
                 }}
                 className="flex-1 h-11 px-4 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-medium transition"
               >
-                No, Cancel
+                No
               </button>
               <button
                 onClick={confirmApprove}
                 className="flex-1 h-11 px-4 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition"
               >
-                Yes, Approve
+                Yes
               </button>
             </div>
           </div>
@@ -318,13 +342,13 @@ export const AdminProductsPage: React.FC = () => {
                 }}
                 className="flex-1 h-11 px-4 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-medium transition"
               >
-                No, Cancel
+                No
               </button>
               <button
                 onClick={confirmReject}
                 className="flex-1 h-11 px-4 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition"
               >
-                Yes, Reject
+                Yes
               </button>
             </div>
           </div>
