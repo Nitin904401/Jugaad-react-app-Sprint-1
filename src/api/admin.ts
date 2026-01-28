@@ -80,3 +80,42 @@ export const adminUpdatePassword = async (data: {
   }
   return res.json();
 };
+
+export const getAllAdminProducts = async () => {
+  const res = await fetch("/api/admin/products", {
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch products");
+  }
+  return res.json();
+};
+
+export const approveProduct = async (productId: number) => {
+  const res = await fetch(`/api/admin/products/${productId}/approve`, {
+    method: "PUT",
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.message || "Failed to approve product");
+  }
+  return res.json();
+};
+
+export const rejectProduct = async (productId: number, reason: string) => {
+  const res = await fetch(`/api/admin/products/${productId}/reject`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ reason }),
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.message || "Failed to reject product");
+  }
+  return res.json();
+};

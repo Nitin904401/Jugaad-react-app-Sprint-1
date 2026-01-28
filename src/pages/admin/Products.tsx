@@ -1,69 +1,135 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getAllAdminProducts, approveProduct, rejectProduct } from '../../api/admin';
 
-const products = [
-  {
-    id: 1,
-    name: 'Ceramic Brake Pads',
-    vendor: 'ProStop Auto',
-    sku: 'PS-1102',
-    category: 'Brakes',
-    price: '$89.99',
-    status: 'Pending Review',
-    image:
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuAIf3f4jUN2pq-E-4QsV-jrSD0DHYhCWXHWsqRghAZ3Y9XISVfnmR59Q-DV7biV-NnQ7wrCnxMOAZGACidA1Ja2UgRmo2EYIRu58gdOpLERBdGGHkFhZBOinAUBymk28lD8HiCU332FQCMFZaVVZmEK2blJfFBYQkWvZvSMpW6YW27Z4aohaarKXg8nhv996SeZeRmmQkbZQhyrD4A3hDbiqgLUq-TXUJ_HQeKpYAp0BwJgxufw8_leDOhWkYYOEWy6UI2R2O8aJl1P',
-  },
-  {
-    id: 2,
-    name: 'All-Season Tires',
-    vendor: 'GripMaster Tires',
-    sku: 'GM-AS-205',
-    category: 'Tires',
-    price: '$124.50',
-    status: 'Pending Review',
-    image:
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuA-EpxH44Kh_o1nWHHORP85nVh8u2TsmkEZydv1240iR2Vc9ndIJXAI96ZHht4YK0Mko7vuWNqBLTOlAeXq4_pOmaFkDpT_IbYdBdfCjtdpy1H_AbOJoIIR5SJ411gR4uVpQ1geypDrr_-Qj_MF02GfHphUOq71ApUyoA2OQGpHWlcsSMymzxJvlooBkGFdCmH-DSmOqPD-VzshYgJ_v6ED3rJVsFn-gzNn7KW9zUk9WtctrpG07D1amhpbdHuxXthVP82oUa_-Krzs',
-  },
-  {
-    id: 3,
-    name: 'LED Headlight Kit',
-    vendor: 'Lumina Auto',
-    sku: 'LA-H11-PRO',
-    category: 'Lighting',
-    price: '$149.99',
-    status: 'Pending Review',
-    image:
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuDfWVgAX7hydj0Kn0Sj4KQ-qcZJElyV9uZAkxlXV1KItlkGbCrExvdmv2vge4cZKvb_L-f7N55mdI2Xoxn2lZdvMSypGUK6uaxxZuwoAVqFigF7XOSCR5zdQryEzTv3lgvpOA5egWW3q98C5DUm3ei_sxraAlOxIFIxF5QCf1iNkJyBaks4iGyV0W36-Okzg7jBpNQAgaV7ETTmyyCnzVsx5T6bQl3foG_IXe7j2XyQIhBRuVPtQ33CzsK8BspmejzJEY81ZnXS6Fj6',
-  },
-];
+interface Product {
+  id: number;
+  name: string;
+  sku: string;
+  category: string;
+  price: string;
+  status: string;
+  vendor_name?: string;
+  vendor_company?: string;
+  images?: string[];
+  brand?: string;
+}
 
 export const AdminProductsPage: React.FC = () => {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [vendorFilter, setVendorFilter] = useState('All');
   const [categoryFilter, setCategoryFilter] = useState('All');
+  const [showApproveModal, setShowApproveModal] = useState(false);
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
+  const [rejectionReason, setRejectionReason] = useState('');
+
+  useEffect(() => {
+    loadProducts();
+  }, []);
+
+  const loadProducts = async () => {
+    try {
+      setLoading(true);
+      const data = await getAllAdminProducts();
+      setProducts(data);
+    } catch (error) {
+      console.error('Failed to load products:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleApprove = async (productId: number) => {
+    setSelectedProductId(productId);
+    setShowApproveModal(true);
+  };
+
+  const confirmApprove = async () => {
+    if (!selectedProductId) return;
+
+    try {
+      await approveProduct(selectedProductId);
+      await loadProducts();
+      setShowApproveModal(false);
+      setSelectedProductId(null);
+    } catch (error) {
+      console.error('Failed to approve product:', error);
+      alert('Failed to approve product');
+    }
+  };
+
+  const handleReject = async (productId: number) => {
+    setSelectedProductId(productId);
+    setRejectionReason('');
+    setShowRejectModal(true);
+  };
+
+  const confirmReject = async () => {
+    if (!selectedProductId || !rejectionReason.trim()) {
+      alert('Please enter a rejection reason');
+      return;
+    }
+
+    try {
+      await rejectProduct(selectedProductId, rejectionReason);
+      await loadProducts();
+      setShowRejectModal(false);
+      setSelectedProductId(null);
+      setRejectionReason('');
+    } catch (error) {
+      console.error('Failed to reject product:', error);
+      alert('Failed to reject product');
+    }
+  };
 
   const filteredProducts = products.filter((product) => {
     const matchSearch =
       product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.sku.toLowerCase().includes(searchQuery.toLowerCase());
+      product.sku?.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchStatus = statusFilter === 'All' || product.status.includes(statusFilter);
-    const matchVendor = vendorFilter === 'All' || product.vendor === vendorFilter;
+    const matchStatus = statusFilter === 'All' || product.status === statusFilter.toLowerCase().replace(' ', '_');
+    const matchVendor = vendorFilter === 'All' || product.vendor_name === vendorFilter || product.vendor_company === vendorFilter;
     const matchCategory = categoryFilter === 'All' || product.category === categoryFilter;
 
     return matchSearch && matchStatus && matchVendor && matchCategory;
   });
 
-  const vendors = ['All', ...new Set(products.map((p) => p.vendor))];
-  const categories = ['All', ...new Set(products.map((p) => p.category))];
-  const statuses = ['All', 'Pending Review', 'Approved', 'Rejected'];
+  const vendors = ['All', ...new Set(products.map((p) => p.vendor_company || p.vendor_name).filter(Boolean))];
+  const categories = ['All', ...new Set(products.map((p) => p.category).filter(Boolean))];
+  const statuses = ['All', 'Pending Review', 'Approved', 'Rejected', 'Draft'];
+
+  const getStatusDisplay = (status: string) => {
+    switch (status) {
+      case 'pending_review':
+        return { label: 'Pending Review', color: 'yellow' };
+      case 'approved':
+        return { label: 'Approved', color: 'green' };
+      case 'rejected':
+        return { label: 'Rejected', color: 'red' };
+      case 'draft':
+        return { label: 'Draft', color: 'gray' };
+      default:
+        return { label: status, color: 'gray' };
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="w-full flex items-center justify-center py-20">
+        <p className="text-slate-400 text-lg">Loading products...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full">
       {/* Header */}
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-white">Product Moderation</h1>
+        <h1 className="text-3xl font-bold text-white">Inventory ({products.length})</h1>
         <button className="px-4 h-10 bg-white/10 hover:bg-white/20 rounded-lg text-sm text-white font-medium transition border border-white/10">
           View Published Products
         </button>
@@ -116,47 +182,152 @@ export const AdminProductsPage: React.FC = () => {
 
       {/* Product Cards */}
       <div className="space-y-4">
-        {filteredProducts.map((product) => (
-          <div
-            key={product.id}
-            className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-xl p-6 hover:border-white/20 transition"
-          >
-            <div className="flex flex-col md:flex-row gap-6">
-              {/* Image & Details */}
-              <div className="flex gap-6 flex-1">
-                <div
-                  className="w-24 h-24 rounded-lg bg-cover bg-center flex-shrink-0 border border-white/10"
-                  style={{ backgroundImage: `url(${product.image})` }}
-                />
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-6 flex-1">
-                  <Info label="Product" value={product.name} />
-                  <Info label="Vendor" value={product.vendor} />
-                  <Info label="SKU" value={product.sku} />
-                  <Info label="Category" value={product.category} />
-                  <Info label="Price" value={product.price} />
+        {filteredProducts.map((product) => {
+          const statusInfo = getStatusDisplay(product.status);
+          return (
+            <div
+              key={product.id}
+              className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-xl p-6 hover:border-white/20 transition"
+            >
+              <div className="flex flex-col md:flex-row gap-6">
+                {/* Image & Details */}
+                <div className="flex gap-6 flex-1">
+                  <div
+                    className="w-24 h-24 rounded-lg bg-cover bg-center flex-shrink-0 border border-white/10 bg-slate-800"
+                    style={{
+                      backgroundImage: product.images?.[0]
+                        ? `url(${product.images[0]})`
+                        : 'none',
+                    }}
+                  />
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-6 flex-1">
+                    <Info label="Product" value={product.name} />
+                    <Info
+                      label="Vendor"
+                      value={product.vendor_company || product.vendor_name || product.brand || 'N/A'}
+                    />
+                    <Info label="SKU" value={product.sku || 'N/A'} />
+                    <Info label="Category" value={product.category || 'N/A'} />
+                    <Info label="Price" value={`$${product.price}`} />
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                  <span
+                    className={`px-3 py-1.5 text-xs rounded-full font-medium ${
+                      statusInfo.color === 'yellow'
+                        ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+                        : statusInfo.color === 'green'
+                        ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                        : statusInfo.color === 'red'
+                        ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                        : 'bg-slate-500/20 text-slate-400 border border-slate-500/30'
+                    }`}
+                  >
+                    {statusInfo.label}
+                  </span>
+                  {product.status === 'pending_review' && (
+                    <>
+                      <button
+                        onClick={() => handleReject(product.id)}
+                        className="h-10 px-4 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg font-medium transition border border-red-500/30"
+                      >
+                        Reject
+                      </button>
+                      <button
+                        onClick={() => handleApprove(product.id)}
+                        className="h-10 px-4 bg-green-500/20 hover:bg-green-500/30 text-green-400 rounded-lg font-medium transition border border-green-500/30"
+                      >
+                        Approve
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
-
-              {/* Actions */}
-              <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-                <span className="px-3 py-1.5 text-xs rounded-full bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 font-medium">
-                  Pending Review
-                </span>
-                <button className="h-10 px-4 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg font-medium transition border border-red-500/30">
-                  Reject
-                </button>
-                <button className="h-10 px-4 bg-green-500/20 hover:bg-green-500/30 text-green-400 rounded-lg font-medium transition border border-green-500/30">
-                  Approve
-                </button>
-              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {filteredProducts.length === 0 && (
         <div className="text-center py-12">
           <p className="text-slate-400 text-lg">No products found</p>
+        </div>
+      )}
+
+      {/* Approve Modal */}
+      {showApproveModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-slate-800 rounded-2xl border border-white/10 p-6 max-w-md w-full mx-4 shadow-2xl">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center">
+                <span className="material-symbols-outlined text-green-400 text-2xl">check_circle</span>
+              </div>
+              <h2 className="text-xl font-bold text-white">Approve Product</h2>
+            </div>
+            <p className="text-slate-300 mb-6">
+              Are you sure you want to approve this product? It will be published and visible to customers.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowApproveModal(false);
+                  setSelectedProductId(null);
+                }}
+                className="flex-1 h-11 px-4 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-medium transition"
+              >
+                No, Cancel
+              </button>
+              <button
+                onClick={confirmApprove}
+                className="flex-1 h-11 px-4 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition"
+              >
+                Yes, Approve
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reject Modal */}
+      {showRejectModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-slate-800 rounded-2xl border border-white/10 p-6 max-w-md w-full mx-4 shadow-2xl">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center">
+                <span className="material-symbols-outlined text-red-400 text-2xl">cancel</span>
+              </div>
+              <h2 className="text-xl font-bold text-white">Reject Product</h2>
+            </div>
+            <p className="text-slate-300 mb-4">
+              Please provide a reason for rejecting this product:
+            </p>
+            <textarea
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+              placeholder="Enter rejection reason..."
+              className="w-full h-24 px-4 py-3 rounded-lg bg-slate-700 text-white placeholder-slate-400 border border-white/10 focus:border-red-500 focus:outline-none transition resize-none mb-6"
+            />
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowRejectModal(false);
+                  setSelectedProductId(null);
+                  setRejectionReason('');
+                }}
+                className="flex-1 h-11 px-4 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-medium transition"
+              >
+                No, Cancel
+              </button>
+              <button
+                onClick={confirmReject}
+                className="flex-1 h-11 px-4 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition"
+              >
+                Yes, Reject
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
