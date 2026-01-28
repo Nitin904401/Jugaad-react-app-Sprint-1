@@ -1,7 +1,30 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import VendorSidebar from './VendorSidebar';
+import { getVendorProfile } from '../../api/vendor';
+
+interface VendorData {
+  id: number;
+  name: string;
+  email: string;
+  company_name: string;
+  business_type: string;
+}
 
 export default function VendorAnalytics() {
+  const [vendor, setVendor] = useState<VendorData | null>(null);
+
+  useEffect(() => {
+    const loadVendorProfile = async () => {
+      try {
+        const data = await getVendorProfile();
+        setVendor(data);
+      } catch (err) {
+        console.error('Failed to fetch vendor profile:', err);
+      }
+    };
+    loadVendorProfile();
+  }, []);
+
   return (
     <div className="flex h-screen w-full">
       {/* Inline critical CSS (scrollbar + small helpers). Keep Tailwind config & fonts in index.html */}
@@ -34,7 +57,7 @@ export default function VendorAnalytics() {
       `}</style>
 
       {/* Sidebar */}
-      <VendorSidebar />
+      <VendorSidebar vendor={vendor} />
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col h-full overflow-hidden relative">

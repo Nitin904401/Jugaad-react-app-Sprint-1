@@ -2,16 +2,39 @@
 // Single-file React component converted from your HTML.
 // NOTE: keep Google Fonts, Material Symbols and the Tailwind <script> in your app's index.html (or _document for Next.js).
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import VendorSidebar from './VendorSidebar';
+import { getVendorProfile } from '../../api/vendor';
+
+interface VendorData {
+  id: number;
+  name: string;
+  email: string;
+  company_name: string;
+  business_type: string;
+}
 
 export default function VendorOrders() {
   const navigate = useNavigate();
+  const [vendor, setVendor] = useState<VendorData | null>(null);
+
+  useEffect(() => {
+    const loadVendorProfile = async () => {
+      try {
+        const data = await getVendorProfile();
+        setVendor(data);
+      } catch (err) {
+        console.error('Failed to fetch vendor profile:', err);
+      }
+    };
+    loadVendorProfile();
+  }, []);
+
   return (
     <div className="flex h-screen w-full overflow-hidden">
       {/* Sidebar */}
-      <VendorSidebar />
+      <VendorSidebar vendor={vendor} />
 
       {/* Main */}
       <main className="flex-1 w-full max-w-[1400px] mx-auto px-4 md:px-6 py-8 flex flex-col gap-8">

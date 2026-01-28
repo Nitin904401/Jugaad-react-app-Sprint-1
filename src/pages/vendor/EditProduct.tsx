@@ -505,19 +505,23 @@ export default function EditProduct() {
                             </div>
                           </div>
 
-                          <div>
+                          <div className="relative z-0">
                             <p className="text-[#9babbb] text-sm font-medium mb-3">Condition</p>
                             <div className="flex gap-2">
                               {["New", "Used", "Refurb"].map((c) => (
-                                <label key={c} className="cursor-pointer flex-1">
+                                <label key={c} className="cursor-pointer flex-1 relative">
                                   <input 
                                     checked={condition === c} 
-                                    onChange={() => setCondition(c)} 
+                                    onChange={() => {
+                                      console.log('Condition changed to:', c);
+                                      setCondition(c);
+                                    }} 
                                     className="peer sr-only" 
                                     name="condition" 
                                     type="radio"
+                                    value={c}
                                   />
-                                  <div className={`px-4 py-2 rounded-md border text-sm transition-all text-center ${
+                                  <div className={`px-4 py-2 rounded-md border text-sm transition-all text-center relative z-0 ${
                                     condition === c 
                                       ? 'bg-primary/20 text-primary border-primary' 
                                       : 'bg-[#111418] border-[#3a4755] text-gray-400 hover:border-primary/30'

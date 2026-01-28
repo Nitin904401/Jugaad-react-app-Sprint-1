@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import VendorSidebar from "./VendorSidebar";
-import { vendorGetMe } from "../../api/vendor";
+import { getVendorProfile } from "../../api/vendor";
 
 interface VendorData {
   id: number;
