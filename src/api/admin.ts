@@ -119,3 +119,14 @@ export const rejectProduct = async (productId: number, reason: string) => {
   }
   return res.json();
 };
+
+export const getApprovedProducts = async () => {
+  const res = await fetch("/api/admin/products/approved", {
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch approved products");
+  }
+  return res.json();
+};

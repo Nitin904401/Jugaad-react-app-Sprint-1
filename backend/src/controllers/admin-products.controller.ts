@@ -176,3 +176,24 @@ export const getProductByIdAdmin = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Failed to fetch product" });
   }
 };
+
+// GET /api/admin/products/approved - Get all approved products
+export const getApprovedProducts = async (_req: Request, res: Response) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        p.*,
+        v.name as vendor_name,
+        v.company_name as vendor_company
+      FROM products p
+      LEFT JOIN vendors v ON p.vendor_id = v.id
+      WHERE p.status = 'approved'
+      ORDER BY p.created_at DESC
+    `);
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error('❌ Error fetching approved products:', error);
+    res.status(500).json({ message: "Failed to fetch approved products" });
+  }
+};

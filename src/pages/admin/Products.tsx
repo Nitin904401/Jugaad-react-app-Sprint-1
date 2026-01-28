@@ -17,6 +17,7 @@ interface Product {
 }
 
 export const AdminProductsPage: React.FC = () => {
+  const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -154,7 +155,10 @@ export const AdminProductsPage: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold text-white">Inventory </h1>
-        <button className="px-4 h-10 bg-white/10 hover:bg-white/20 rounded-lg text-sm text-white font-medium transition border border-white/10">
+        <button 
+          onClick={() => navigate('/admin-panel/published-products')}
+          className="px-4 h-10 bg-white/10 hover:bg-white/20 rounded-lg text-sm text-white font-medium transition border border-white/10"
+        >
           View Published Products
         </button>
       </div>

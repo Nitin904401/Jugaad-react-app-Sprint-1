@@ -5,7 +5,8 @@ import {
   approveProduct,
   rejectProduct,
   resubmitProduct,
-  getProductByIdAdmin
+  getProductByIdAdmin,
+  getApprovedProducts
 } from "../controllers/admin-products.controller";
 import { requireAuth } from "../middleware/auth.middleware";
 
@@ -16,6 +17,7 @@ router.use(requireAuth);
 
 router.get("/", getAllProductsAdmin);
 router.get("/pending", getPendingProducts);
+router.get("/approved", getApprovedProducts);
 router.get("/:id", getProductByIdAdmin);
 router.put("/:id/approve", approveProduct);
 router.put("/:id/reject", rejectProduct);
