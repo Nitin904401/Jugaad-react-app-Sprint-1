@@ -55,6 +55,7 @@ export default function AddNewPart() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [isDraftSave, setIsDraftSave] = useState(false);
 
   // Image handling
   function handleAddImage(e: React.ChangeEvent<HTMLInputElement>) {
@@ -142,7 +143,8 @@ export default function AddNewPart() {
 
   // Submit handlers
   async function handleSubmit(status: 'draft' | 'published') {
-    if (!validateForm()) return;
+    // For drafts, skip validation to allow saving incomplete forms
+    if (status === 'published' && !validateForm()) return;
     
     setIsSubmitting(true);
     setError(null);
@@ -169,6 +171,7 @@ export default function AddNewPart() {
       await createProduct(productData);
       
       // Show success modal
+      setIsDraftSave(status === 'draft');
       setShowSuccessModal(true);
       
       // Navigate after a short delay
@@ -227,7 +230,7 @@ export default function AddNewPart() {
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  navigate('/vendor/dashboard');
+                  navigate('/vendor/inventory');
                 }}
                 disabled={isSubmitting}
                 className="flex items-center gap-2 px-6 py-2.5 rounded-lg border border-white/20 hover:bg-white/5 text-white text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
@@ -582,7 +585,7 @@ export default function AddNewPart() {
                         </button>
                       </div>
                     ))
-                  )}ß
+                  )}
                 </div>
               </section>
 
@@ -590,7 +593,7 @@ export default function AddNewPart() {
               <section className="glass-panel rounded-xl p-6">
                 <div className="flex items-center gap-2 mb-4 text-white border-b border-white/5 pb-2">
                   <span className="material-symbols-outlined text-primary">verified</span>
-                  <h3 className="text-lg font-bold">Specificationsß</h3>
+                  <h3 className="text-lg font-bold">Specifications</h3>
                 </div>
 
                 <div className="space-y-6">
@@ -656,24 +659,32 @@ export default function AddNewPart() {
           <div className="bg-[#1a1f2e] border border-white/10 rounded-2xl p-8 max-w-md w-full shadow-2xl animate-in fade-in zoom-in duration-200">
             <div className="flex flex-col items-center text-center">
               {/* Success Icon */}
-              <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mb-4">
-                <span className="material-symbols-outlined text-green-500 text-5xl">check_circle</span>
+              <div className={`w-20 h-20 ${isDraftSave ? 'bg-gray-500/10' : 'bg-green-500/10'} rounded-full flex items-center justify-center mb-4`}>
+                <span className={`material-symbols-outlined ${isDraftSave ? 'text-gray-500' : 'text-green-500'} text-5xl`}>
+                  {isDraftSave ? 'save' : 'check_circle'}
+                </span>
               </div>
               
               {/* Title */}
               <h3 className="text-2xl font-bold text-white mb-2">
-                Product Submitted Successfully!
+                {isDraftSave ? 'Saved as Draft!' : 'Product Submitted Successfully!'}
               </h3>
               
               {/* Description */}
               <p className="text-gray-400 mb-6">
-                Your product has been submitted for admin review. You will be notified once it is approved and visible to customers.
+                {isDraftSave 
+                  ? 'Your product has been saved as a draft. You can continue editing it anytime from your inventory.' 
+                  : 'Your product has been submitted for admin review. You will be notified once it is approved and visible to customers.'}
               </p>
               
               {/* Status Badge */}
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-yellow-500/10 border border-yellow-500/20 rounded-full mb-6">
-                <span className="material-symbols-outlined text-yellow-500 text-sm">schedule</span>
-                <span className="text-yellow-500 text-sm font-medium">Pending Admin Review</span>
+              <div className={`inline-flex items-center gap-2 px-4 py-2 ${isDraftSave ? 'bg-gray-500/10 border-gray-500/20' : 'bg-yellow-500/10 border-yellow-500/20'} border rounded-full mb-6`}>
+                <span className={`material-symbols-outlined ${isDraftSave ? 'text-gray-500' : 'text-yellow-500'} text-sm`}>
+                  {isDraftSave ? 'draft' : 'schedule'}
+                </span>
+                <span className={`${isDraftSave ? 'text-gray-500' : 'text-yellow-500'} text-sm font-medium`}>
+                  {isDraftSave ? 'Draft' : 'Pending Admin Review'}
+                </span>
               </div>
               
               {/* Redirect Message */}

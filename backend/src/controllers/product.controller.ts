@@ -123,10 +123,17 @@ export const createProduct = async (req: any, res: Response) => {
     // Get vendor_id from authenticated user
     const vendor_id = req.user?.id || null;
     
-    // New products go to pending_review unless admin is creating them
-    const productStatus = req.user?.role === 'admin' ? (status || 'approved') : 'pending_review';
+    // Handle status: admin can set any status, vendors can save as draft or submit for review
+    let productStatus = 'pending_review'; // default
+    if (req.user?.role === 'admin') {
+      productStatus = status || 'approved';
+    } else if (status === 'draft') {
+      productStatus = 'draft';
+    } else {
+      productStatus = 'pending_review'; // when vendor submits for review
+    }
     
-    console.log('📦 Creating product:', { name, vendor_id, productStatus, userRole: req.user?.role });
+    console.log('📦 Creating product:', { name, vendor_id, productStatus, userRole: req.user?.role, requestedStatus: status });
 
     const result = await pool.query(
       `INSERT INTO products (
