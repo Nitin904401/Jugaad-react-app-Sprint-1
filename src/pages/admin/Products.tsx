@@ -153,7 +153,7 @@ export const AdminProductsPage: React.FC = () => {
     <div className="w-full">
       {/* Header */}
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-white">Inventory ({products.length})</h1>
+        <h1 className="text-3xl font-bold text-white">Inventory </h1>
         <button className="px-4 h-10 bg-white/10 hover:bg-white/20 rounded-lg text-sm text-white font-medium transition border border-white/10">
           View Published Products
         </button>
@@ -232,7 +232,7 @@ export const AdminProductsPage: React.FC = () => {
                     />
                     <Info label="SKU" value={product.sku || 'N/A'} />
                     <Info label="Category" value={product.category || 'N/A'} />
-                    <Info label="Price" value={`$${product.price}`} />
+                    <Info label="Price" value={`₹${product.price}`} />
                   </div>
                 </div>
 
