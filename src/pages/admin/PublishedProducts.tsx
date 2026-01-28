@@ -518,21 +518,12 @@ export const AdminPublishedProductsPage: React.FC = () => {
               <div className="flex gap-4">
                 <button 
                   onClick={() => window.open(`/product/${selectedProduct.id}`, '_blank')}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-blue-600/20 active:scale-95 flex items-center justify-center gap-2"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-blue-600/20 active:scale-95 flex items-center justify-center gap-2"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                   </svg>
                   Open Full Page
-                </button>
-                <button 
-                  onClick={() => handleUnpublish(selectedProduct.id)}
-                  className="px-8 bg-red-500/20 hover:bg-red-500/30 text-red-400 font-bold py-4 rounded-2xl border border-red-500/30 transition-all active:scale-95 flex items-center gap-2"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-                  </svg>
-                  Unpublish
                 </button>
               </div>
             </div>
@@ -552,7 +543,7 @@ interface InfoProps {
 const Info: React.FC<InfoProps> = ({ label, value, highlight }) => (
   <div>
     <p className="text-xs uppercase text-slate-400 font-medium mb-2">{label}</p>
-    <p className={`text-sm truncate font-medium ${highlight ? 'text-blue-400' : 'text-white'}`}>
+    <p className="text-sm truncate font-medium text-white">
       {value}
     </p>
   </div>
