@@ -178,6 +178,7 @@ const UserProfile: React.FC = () => {
           </div>
           <nav className="flex-1 flex flex-col gap-1 px-3 py-4 overflow-y-auto">
             {[
+              { name: "Home", icon: "home", active: false },
               { name: "Profile Settings", icon: "person", active: true },
               { name: "My Garage", icon: "garage", active: false },
               { name: "Orders", icon: "shopping_bag", active: false },
@@ -190,6 +191,8 @@ const UserProfile: React.FC = () => {
                 onClick={() => {
                   if (item.name === "My Garage") {
                     navigate('/my-garage');
+                  } else if (item.name === "Home") {
+                    navigate('/');
                   } else {
                     setActiveSection(item.name);
                   }
