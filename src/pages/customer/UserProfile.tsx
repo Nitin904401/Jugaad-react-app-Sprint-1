@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { updateProfile, updateProfileWithPicture } from "../../api/auth";
 import { getVehicles } from "../../api/vehicles";
+import { getUserAddresses, Address } from "../../api/address";
 import Modal from "../../Components/common/Modal";
 import CustomerSidebar from "../../Components/layout/CustomerSidebar";
 import { useNavigate } from "react-router-dom";
@@ -20,6 +21,8 @@ const UserProfile: React.FC = () => {
   const [deleteProfilePicture, setDeleteProfilePicture] = useState(false);
   const [vehicles, setVehicles] = useState<any[]>([]);
   const [isLoadingVehicles, setIsLoadingVehicles] = useState(true);
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [isLoadingAddress, setIsLoadingAddress] = useState(true);
   const [modal, setModal] = useState<{
     isOpen: boolean;
     type: "success" | "error";
@@ -58,6 +61,26 @@ const UserProfile: React.FC = () => {
 
     if (user) {
       fetchVehicles();
+    }
+  }, [user]);
+
+  // Fetch user address
+  useEffect(() => {
+    const fetchAddress = async () => {
+      try {
+        setIsLoadingAddress(true);
+        const data = await getUserAddresses();
+        setAddresses(data || []);
+      } catch (error) {
+        console.error("Failed to fetch addresses:", error);
+        setAddresses([]);
+      } finally {
+        setIsLoadingAddress(false);
+      }
+    };
+
+    if (user) {
+      fetchAddress();
     }
   }, [user]);
 
@@ -316,38 +339,66 @@ const UserProfile: React.FC = () => {
                       <span className="text-blue-500">📍</span>
                       Address Book
                     </h3>
-                    <button className="text-blue-500 text-sm hover:text-blue-400">
-                      Manage All
-                    </button>
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => navigate('/addresses')}
+                        className="text-blue-500 text-sm hover:text-blue-400 px-3 py-1 rounded border border-blue-500/30 hover:bg-blue-500/10 transition-colors"
+                      >
+                        Edit Address
+                      </button>
+                      <button 
+                        onClick={() => navigate('/addresses')}
+                        className="text-blue-500 text-sm hover:text-blue-400 px-3 py-1 rounded border border-blue-500/30 hover:bg-blue-500/10 transition-colors"
+                      >
+                        Add Address
+                      </button>
+                    </div>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="text-blue-500">🏠</span>
-                        <span className="text-blue-500 text-sm font-medium">PRIMARY HOME</span>
-                      </div>
-                      <h4 className="font-semibold text-slate-900 dark:text-white mb-1">John Doe</h4>
-                      <p className="text-slate-600 dark:text-slate-300 text-sm">
-                        1234 Motorsports Blvd, Apt 48<br />
-                        Los Angeles, CA 90012<br />
-                        United States
-                      </p>
+                  {isLoadingAddress ? (
+                    <div className="text-center py-8 text-slate-400">Loading addresses...</div>
+                  ) : addresses.length > 0 ? (
+                    <div className="space-y-3">
+                      {addresses.slice(0, 2).map((address) => (
+                        <div key={address.id} className={`p-4 rounded-lg ${address.is_primary ? 'bg-blue-500/10 border border-blue-500/20' : 'bg-slate-100 dark:bg-slate-700/30 border border-slate-200 dark:border-slate-600'}`}>
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className={address.is_primary ? 'text-blue-500' : 'text-slate-400'}>
+                              {address.address_type === 'Home' ? '🏠' : address.address_type === 'Work' ? '🏢' : '📍'}
+                            </span>
+                            <span className={`text-sm font-medium ${address.is_primary ? 'text-blue-500' : 'text-slate-400'}`}>
+                              {address.is_primary ? 'PRIMARY ' : ''}{address.address_type?.toUpperCase() || 'ADDRESS'}
+                            </span>
+                          </div>
+                          <h4 className="font-semibold text-slate-900 dark:text-white mb-1">
+                            {address.full_name}
+                          </h4>
+                          <p className="text-slate-600 dark:text-slate-300 text-sm">
+                            {address.street_address}<br />
+                            {address.city}, {address.state} {address.zip_code}<br />
+                            {address.country}
+                          </p>
+                        </div>
+                      ))}
+                      {addresses.length > 2 && (
+                        <button
+                          onClick={() => navigate('/addresses')}
+                          className="w-full text-center text-blue-500 text-sm hover:text-blue-400 py-2"
+                        >
+                          View all {addresses.length} addresses →
+                        </button>
+                      )}
                     </div>
-                    
-                    <div className="bg-slate-100 dark:bg-slate-700/30 border border-slate-200 dark:border-slate-600 rounded-lg p-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="text-slate-400">🏢</span>
-                        <span className="text-slate-400 text-sm font-medium">WORK</span>
-                      </div>
-                      <h4 className="font-semibold text-slate-900 dark:text-white mb-1">John Doe (Office)</h4>
-                      <p className="text-slate-600 dark:text-slate-300 text-sm">
-                        800 Auto Park Way, Suite 200<br />
-                        Irvine, CA 92618<br />
-                        United States
-                      </p>
+                  ) : (
+                    <div className="text-center py-8 border-2 border-dashed border-slate-600 rounded-lg">
+                      <p className="text-slate-400 mb-3">No address added yet</p>
+                      <button
+                        onClick={() => navigate('/addresses')}
+                        className="text-blue-500 text-sm hover:text-blue-400"
+                      >
+                        + Add your first address
+                      </button>
                     </div>
-                  </div>
+                  )}
                 </section>
               </div>
 

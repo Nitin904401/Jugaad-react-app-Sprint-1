@@ -11,6 +11,7 @@ import adminProductsRoutes from "./routes/admin-products.routes";
 import usersRoutes from "./routes/users.routes";
 import vendorsRoutes from "./routes/vendors.routes";
 import vehicleRoutes from "./routes/vehicle.routes";
+import addressRoutes from "./routes/address.routes";
 
 const app = express();
 
@@ -35,6 +36,7 @@ app.use("/api/admin/products", adminProductsRoutes);
 app.use("/api/admin/users", usersRoutes);
 app.use("/api/admin/vendors", vendorsRoutes);
 app.use("/api/vehicles", vehicleRoutes);
+app.use("/api/address", addressRoutes);
 
 app.get("/api/health", (_req, res) => {
   res.json({ status: "OK" });
