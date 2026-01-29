@@ -7,6 +7,7 @@ const EditVehicle: React.FC = () => {
   const { id } = useParams();
   const { user, logout } = useAuth();
   const [activeSection, setActiveSection] = useState("My Garage");
+  const [currentStep, setCurrentStep] = useState(1);
 
   // Pre-populate with existing vehicle data (in real app, fetch from API)
   const [year, setYear] = useState("2022");
@@ -14,6 +15,12 @@ const EditVehicle: React.FC = () => {
   const [model, setModel] = useState("Model S");
   const [variant, setVariant] = useState("Plaid");
   const [licensePlate, setLicensePlate] = useState("KNT-4521");
+  
+  // Step 2 fields
+  const [fuelType, setFuelType] = useState("Electric");
+  const [transmission, setTransmission] = useState("Automatic");
+  const [engineSize, setEngineSize] = useState("Tri-Motor (Electric)");
+  const [vehicleNickname, setVehicleNickname] = useState("Prachi's Tesla");
 
   const handleNavigate = (section: string) => {
     setActiveSection(section);
@@ -30,8 +37,31 @@ const EditVehicle: React.FC = () => {
 
   const handleSave = () => {
     // Add save logic here
-    console.log({ id, year, make, model, variant, licensePlate });
+    console.log({ 
+      id, 
+      year, 
+      make, 
+      model, 
+      variant, 
+      licensePlate,
+      fuelType,
+      transmission,
+      engineSize,
+      vehicleNickname
+    });
     navigate("/my-garage");
+  };
+
+  const handleNext = () => {
+    if (currentStep === 1) {
+      setCurrentStep(2);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentStep === 2) {
+      setCurrentStep(1);
+    }
   };
 
   return (
@@ -131,139 +161,269 @@ const EditVehicle: React.FC = () => {
               {/* Steps */}
               <div className="flex items-center mb-10">
                 <div className="flex items-center relative">
-                  <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold z-10">
+                  <div className={`w-8 h-8 rounded-full ${currentStep === 1 ? 'bg-blue-600 text-white' : 'bg-blue-600/20 text-blue-600'} flex items-center justify-center text-xs font-bold z-10`}>
                     1
                   </div>
-                  <span className="ml-3 text-sm font-medium">Identification</span>
+                  <span className={`ml-3 text-sm font-medium ${currentStep === 1 ? 'text-slate-900 dark:text-white' : 'text-slate-400'}`}>Identification</span>
                   <div className="w-48 h-px bg-slate-200 dark:bg-[#1f2937] mx-4"></div>
                 </div>
-                <div className="flex items-center opacity-40">
-                  <div className="w-8 h-8 rounded-full border-2 border-slate-300 dark:border-slate-700 flex items-center justify-center text-xs font-bold">
+                <div className={`flex items-center ${currentStep === 1 ? 'opacity-40' : ''}`}>
+                  <div className={`w-8 h-8 rounded-full ${currentStep === 2 ? 'bg-blue-600 text-white' : 'border-2 border-slate-300 dark:border-slate-700'} flex items-center justify-center text-xs font-bold`}>
                     2
                   </div>
-                  <span className="ml-3 text-sm font-medium">Details</span>
+                  <span className={`ml-3 text-sm font-medium ${currentStep === 2 ? 'text-slate-900 dark:text-white' : 'text-slate-400'}`}>Details</span>
                 </div>
               </div>
 
               {/* Form */}
               <form className="space-y-6">
-                <div className="grid grid-cols-2 gap-6">
-                  {/* Year */}
-                  <div className="space-y-2">
-                    <label className="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400">
-                      Manufacture Year
-                    </label>
-                    <div className="relative">
-                      <select
-                        value={year}
-                        onChange={(e) => setYear(e.target.value)}
-                        className="w-full bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-[#1f2937] rounded-lg px-4 py-3 text-sm appearance-none focus:ring-1 focus:ring-blue-600 outline-none transition-all text-slate-900 dark:text-white"
-                      >
-                        <option>2024</option>
-                        <option>2023</option>
-                        <option>2022</option>
-                        <option>2021</option>
-                        <option>2020</option>
-                        <option>2019</option>
-                        <option>2018</option>
-                      </select>
-                      <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-                        expand_more
-                      </span>
+                {currentStep === 1 && (
+                  <>
+                    <div className="grid grid-cols-2 gap-6">
+                      {/* Year */}
+                      <div className="space-y-2">
+                        <label className="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400">
+                          Manufacture Year
+                        </label>
+                        <div className="relative">
+                          <select
+                            value={year}
+                            onChange={(e) => setYear(e.target.value)}
+                            className="w-full bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-[#1f2937] rounded-lg px-4 py-3 text-sm appearance-none focus:ring-1 focus:ring-blue-600 outline-none transition-all text-slate-900 dark:text-white"
+                          >
+                            <option>2024</option>
+                            <option>2023</option>
+                            <option>2022</option>
+                            <option>2021</option>
+                            <option>2020</option>
+                            <option>2019</option>
+                            <option>2018</option>
+                          </select>
+                          <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                            expand_more
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Make */}
+                      <div className="space-y-2">
+                        <label className="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400">
+                          Make
+                        </label>
+                        <div className="relative">
+                          <select
+                            value={make}
+                            onChange={(e) => setMake(e.target.value)}
+                            className="w-full bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-[#1f2937] rounded-lg px-4 py-3 text-sm appearance-none focus:ring-1 focus:ring-blue-600 outline-none transition-all text-slate-900 dark:text-white"
+                          >
+                            <option>Tesla</option>
+                            <option>BMW</option>
+                            <option>Porsche</option>
+                            <option>Audi</option>
+                            <option>Mercedes-Benz</option>
+                            <option>Toyota</option>
+                          </select>
+                          <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                            expand_more
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Make */}
-                  <div className="space-y-2">
-                    <label className="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400">
-                      Make
-                    </label>
-                    <div className="relative">
-                      <select
-                        value={make}
-                        onChange={(e) => setMake(e.target.value)}
-                        className="w-full bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-[#1f2937] rounded-lg px-4 py-3 text-sm appearance-none focus:ring-1 focus:ring-blue-600 outline-none transition-all text-slate-900 dark:text-white"
-                      >
-                        <option>Tesla</option>
-                        <option>BMW</option>
-                        <option>Porsche</option>
-                        <option>Audi</option>
-                        <option>Mercedes-Benz</option>
-                        <option>Toyota</option>
-                      </select>
-                      <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-                        expand_more
-                      </span>
+                    <div className="grid grid-cols-2 gap-6">
+                      {/* Model */}
+                      <div className="space-y-2">
+                        <label className="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400">
+                          Model
+                        </label>
+                        <div className="relative">
+                          <select
+                            value={model}
+                            onChange={(e) => setModel(e.target.value)}
+                            className="w-full bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-[#1f2937] rounded-lg px-4 py-3 text-sm appearance-none focus:ring-1 focus:ring-blue-600 outline-none transition-all text-slate-900 dark:text-white"
+                          >
+                            <option>Model S</option>
+                            <option>Model 3</option>
+                            <option>Model X</option>
+                            <option>Model Y</option>
+                          </select>
+                          <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                            expand_more
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Variant */}
+                      <div className="space-y-2">
+                        <label className="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400">
+                          Variant / Trim
+                        </label>
+                        <div className="relative">
+                          <select
+                            value={variant}
+                            onChange={(e) => setVariant(e.target.value)}
+                            className="w-full bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-[#1f2937] rounded-lg px-4 py-3 text-sm appearance-none focus:ring-1 focus:ring-blue-600 outline-none transition-all text-slate-900 dark:text-white"
+                          >
+                            <option>Plaid</option>
+                            <option>Long Range</option>
+                            <option>Standard</option>
+                          </select>
+                          <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                            expand_more
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
 
-                <div className="grid grid-cols-2 gap-6">
-                  {/* Model */}
-                  <div className="space-y-2">
-                    <label className="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400">
-                      Model
-                    </label>
-                    <div className="relative">
-                      <select
-                        value={model}
-                        onChange={(e) => setModel(e.target.value)}
-                        className="w-full bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-[#1f2937] rounded-lg px-4 py-3 text-sm appearance-none focus:ring-1 focus:ring-blue-600 outline-none transition-all text-slate-900 dark:text-white"
-                      >
-                        <option>Model S</option>
-                        <option>Model 3</option>
-                        <option>Model X</option>
-                        <option>Model Y</option>
-                      </select>
-                      <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-                        expand_more
-                      </span>
+                    {/* License Plate */}
+                    <div className="space-y-2">
+                      <label className="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400">
+                        License Plate (Optional)
+                      </label>
+                      <input
+                        type="text"
+                        value={licensePlate}
+                        onChange={(e) => setLicensePlate(e.target.value)}
+                        className="w-full bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-[#1f2937] rounded-lg px-4 py-3 text-sm focus:ring-1 focus:ring-blue-600 outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-slate-600 text-slate-900 dark:text-white"
+                        placeholder="e.g. ABC-1234"
+                      />
                     </div>
-                  </div>
 
-                  {/* Variant */}
-                  <div className="space-y-2">
-                    <label className="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400">
-                      Variant / Trim
-                    </label>
-                    <div className="relative">
-                      <select
-                        value={variant}
-                        onChange={(e) => setVariant(e.target.value)}
-                        className="w-full bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-[#1f2937] rounded-lg px-4 py-3 text-sm appearance-none focus:ring-1 focus:ring-blue-600 outline-none transition-all text-slate-900 dark:text-white"
-                      >
-                        <option>Plaid</option>
-                        <option>Long Range</option>
-                        <option>Standard</option>
-                      </select>
-                      <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-                        expand_more
-                      </span>
+                    {/* Info */}
+                    <div className="flex items-center gap-2 pt-4">
+                      <span className="material-symbols-outlined text-blue-600 text-base">info</span>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                        Selecting the correct variant ensures we show compatible parts only.
+                      </p>
                     </div>
-                  </div>
-                </div>
 
-                {/* License Plate */}
-                <div className="space-y-2">
-                  <label className="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400">
-                    License Plate (Optional)
-                  </label>
-                  <input
-                    type="text"
-                    value={licensePlate}
-                    onChange={(e) => setLicensePlate(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-[#1f2937] rounded-lg px-4 py-3 text-sm focus:ring-1 focus:ring-blue-600 outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-slate-600 text-slate-900 dark:text-white"
-                    placeholder="e.g. ABC-1234"
-                  />
-                </div>
+                    {/* Next Button */}
+                    <div className="flex justify-end pt-6">
+                      <button
+                        type="button"
+                        onClick={handleNext}
+                        className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 font-medium"
+                      >
+                        Next Step
+                      </button>
+                    </div>
+                  </>
+                )}
 
-                {/* Info */}
-                <div className="flex items-center gap-2 pt-4">
-                  <span className="material-symbols-outlined text-blue-600 text-base">info</span>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                    Selecting the correct variant ensures we show compatible parts only.
-                  </p>
-                </div>
+                {currentStep === 2 && (
+                  <>
+                    <div className="grid grid-cols-2 gap-6">
+                      {/* Fuel Type */}
+                      <div className="space-y-2">
+                        <label className="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400">
+                          Fuel Type
+                        </label>
+                        <div className="relative">
+                          <select
+                            value={fuelType}
+                            onChange={(e) => setFuelType(e.target.value)}
+                            className="w-full bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-[#1f2937] rounded-lg px-4 py-3 text-sm appearance-none focus:ring-1 focus:ring-blue-600 outline-none transition-all text-slate-900 dark:text-white"
+                          >
+                            <option>Electric</option>
+                            <option>Petrol</option>
+                            <option>Diesel</option>
+                            <option>Hybrid</option>
+                            <option>CNG</option>
+                          </select>
+                          <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                            expand_more
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Transmission */}
+                      <div className="space-y-2">
+                        <label className="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400">
+                          Transmission
+                        </label>
+                        <div className="relative">
+                          <select
+                            value={transmission}
+                            onChange={(e) => setTransmission(e.target.value)}
+                            className="w-full bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-[#1f2937] rounded-lg px-4 py-3 text-sm appearance-none focus:ring-1 focus:ring-blue-600 outline-none transition-all text-slate-900 dark:text-white"
+                          >
+                            <option>Automatic</option>
+                            <option>Manual</option>
+                            <option>CVT</option>
+                            <option>DCT</option>
+                          </select>
+                          <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                            expand_more
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Engine Size/Type */}
+                    <div className="space-y-2">
+                      <label className="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400">
+                        Engine Size / Type
+                      </label>
+                      <div className="relative">
+                        <select
+                          value={engineSize}
+                          onChange={(e) => setEngineSize(e.target.value)}
+                          className="w-full bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-[#1f2937] rounded-lg px-4 py-3 text-sm appearance-none focus:ring-1 focus:ring-blue-600 outline-none transition-all text-slate-900 dark:text-white"
+                        >
+                          <option>Tri-Motor (Electric)</option>
+                          <option>Dual-Motor (Electric)</option>
+                          <option>1.5L Turbo</option>
+                          <option>2.0L Turbo</option>
+                          <option>3.0L V6</option>
+                          <option>4.0L V8</option>
+                        </select>
+                        <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                          expand_more
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Vehicle Nickname */}
+                    <div className="space-y-2">
+                      <label className="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400">
+                        Vehicle Nickname
+                      </label>
+                      <input
+                        type="text"
+                        value={vehicleNickname}
+                        onChange={(e) => setVehicleNickname(e.target.value)}
+                        className="w-full bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-[#1f2937] rounded-lg px-4 py-3 text-sm focus:ring-1 focus:ring-blue-600 outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-slate-600 text-slate-900 dark:text-white"
+                        placeholder="e.g. My Daily Driver"
+                      />
+                    </div>
+
+                    {/* Info */}
+                    <div className="flex items-center gap-2 pt-4">
+                      <span className="material-symbols-outlined text-blue-600 text-base">info</span>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                        Provide accurate details for better diagnostic tools and maintenance reminders.
+                      </p>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex justify-between pt-6">
+                      <button
+                        type="button"
+                        onClick={handlePrevious}
+                        className="px-8 py-3 border border-slate-200 dark:border-[#1f2937] text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-all font-medium"
+                      >
+                        Previous
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleSave}
+                        className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 font-medium"
+                      >
+                        Save Changes
+                      </button>
+                    </div>
+                  </>
+                )}
               </form>
             </section>
           </div>
