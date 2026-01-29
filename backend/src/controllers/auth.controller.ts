@@ -73,6 +73,7 @@ export const login = async (req: Request, res: Response) => {
     email: user.email,
     role: user.role,
     phone_number: user.phone_number,
+    profile_picture: user.profile_picture,
   });
 };
 
@@ -88,6 +89,7 @@ export const me = (req: any, res: Response) => {
     email: req.user.email,
     role: req.user.role,
     phone_number: req.user.phone_number,
+    profile_picture: req.user.profile_picture,
     created_at: req.user.created_at,
   });
 };
@@ -96,16 +98,40 @@ export const updateProfile = async (req: any, res: Response) => {
   const { name, phone_number } = req.body;
   const userId = req.user.id;
 
+  // Handle profile picture upload or deletion
+  let shouldUpdateProfilePicture = false;
+  let profilePictureValue = null;
+
+  if (req.file) {
+    // New file uploaded
+    shouldUpdateProfilePicture = true;
+    profilePictureValue = `uploads/${req.file.filename}`;
+  } else if (req.body.delete_profile_picture === "true") {
+    // Delete existing profile picture
+    shouldUpdateProfilePicture = true;
+    profilePictureValue = null;
+  }
+
   if (!name) {
     return res.status(400).json({ message: "Name is required" });
   }
 
   try {
-    const result = await pool.query(
-      `UPDATE users SET name = $1, phone_number = $2 WHERE id = $3
-       RETURNING id, name, email, role, phone_number`,
-      [name, phone_number || null, userId]
-    );
+    let query, params;
+
+    if (shouldUpdateProfilePicture) {
+      // Update with profile picture (set or delete)
+      query = `UPDATE users SET name = $1, phone_number = $2, profile_picture = $3 WHERE id = $4
+       RETURNING id, name, email, role, phone_number, profile_picture`;
+      params = [name, phone_number || null, profilePictureValue, userId];
+    } else {
+      // Don't update profile picture column
+      query = `UPDATE users SET name = $1, phone_number = $2 WHERE id = $3
+       RETURNING id, name, email, role, phone_number, profile_picture`;
+      params = [name, phone_number || null, userId];
+    }
+
+    const result = await pool.query(query, params);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ message: "User not found" });

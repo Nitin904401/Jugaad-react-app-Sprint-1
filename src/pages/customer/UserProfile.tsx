@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { updateProfile } from "../../api/auth";
+import { updateProfile, updateProfileWithPicture } from "../../api/auth";
 import Modal from "../../Components/common/Modal";
 import { useNavigate } from "react-router-dom";
 
 const UserProfile: React.FC = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, refreshUser } = useAuth();
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState("Profile Settings");
   const [firstName, setFirstName] = useState("");
@@ -13,6 +13,10 @@ const UserProfile: React.FC = () => {
   const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [profilePicture, setProfilePicture] = useState<File | null>(null);
+  const [profilePictureUrl, setProfilePictureUrl] = useState<string>("");
+  const [showPhotoOptions, setShowPhotoOptions] = useState(false);
+  const [deleteProfilePicture, setDeleteProfilePicture] = useState(false);
   const [modal, setModal] = useState<{
     isOpen: boolean;
     type: "success" | "error";
@@ -29,7 +33,46 @@ const UserProfile: React.FC = () => {
     }
     setEmail(user?.email || "");
     setPhoneNumber(user?.phone_number || "");
+    if (user?.profile_picture) {
+      setProfilePictureUrl(user.profile_picture);
+    }
   }, [user]);
+
+  const handleProfilePicClick = () => {
+    // Trigger file input click
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.onchange = (e: any) => {
+      const file = e.target?.files?.[0];
+      if (file) {
+        setProfilePicture(file);
+        // Create preview URL
+        const url = URL.createObjectURL(file);
+        setProfilePictureUrl(url);
+        setShowPhotoOptions(false);
+        setDeleteProfilePicture(false); // Cancel any pending delete
+      }
+    };
+    input.click();
+  };
+
+  const handlePhotoClick = () => {
+    if (profilePictureUrl) {
+      // Show options menu if photo exists
+      setShowPhotoOptions(!showPhotoOptions);
+    } else {
+      // Upload new photo if none exists
+      handleProfilePicClick();
+    }
+  };
+
+  const handleDeletePhoto = () => {
+    setProfilePictureUrl("");
+    setProfilePicture(null);
+    setDeleteProfilePicture(true); // Mark for deletion on save
+    setShowPhotoOptions(false);
+  };
 
   const handleSaveChanges = async () => {
     if (!firstName.trim()) {
@@ -45,10 +88,37 @@ const UserProfile: React.FC = () => {
     setIsSaving(true);
     try {
       const fullName = lastName.trim() ? `${firstName} ${lastName}` : firstName;
-      const updatedUser = await updateProfile({
-        name: fullName,
-        phone_number: phoneNumber || undefined,
-      });
+      
+      if (profilePicture) {
+        // Use FormData if new profile picture is selected
+        const formData = new FormData();
+        formData.append("name", fullName);
+        formData.append("phone_number", phoneNumber || "");
+        formData.append("profile_picture", profilePicture);
+        
+        await updateProfileWithPicture(formData);
+      } else if (deleteProfilePicture) {
+        // If profile picture was marked for deletion
+        const formData = new FormData();
+        formData.append("name", fullName);
+        formData.append("phone_number", phoneNumber || "");
+        formData.append("delete_profile_picture", "true");
+        
+        await updateProfileWithPicture(formData);
+        setDeleteProfilePicture(false); // Reset after successful delete
+      } else {
+        // Use JSON if no profile picture
+        await updateProfile({
+          name: fullName,
+          phone_number: phoneNumber || undefined,
+        });
+      }
+
+      // Refresh user data to get updated values
+      await refreshUser();
+      
+      // Clear selected file after successful update
+      setProfilePicture(null);
 
       setModal({
         isOpen: true,
@@ -56,8 +126,6 @@ const UserProfile: React.FC = () => {
         title: "Profile Updated!",
         message: "Your profile has been saved successfully.",
       });
-      
-      console.log("Profile updated successfully:", updatedUser);
     } catch (err: any) {
       console.error("Error updating profile:", err);
       setModal({
@@ -79,6 +147,13 @@ const UserProfile: React.FC = () => {
     }
     setEmail(user?.email || "");
     setPhoneNumber(user?.phone_number || "");
+    setProfilePicture(null);
+    setDeleteProfilePicture(false);
+    if (user?.profile_picture) {
+      setProfilePictureUrl(user.profile_picture);
+    } else {
+      setProfilePictureUrl("");
+    }
   };
 
   return (
@@ -178,16 +253,42 @@ const UserProfile: React.FC = () => {
                   </h3>
                   
                   <div className="flex gap-6">
-                    <div className="flex-shrink-0">
+                    <div className="flex-shrink-0 relative">
                       <div
-                        className="w-20 h-20 rounded-full bg-cover bg-center border-2 border-slate-600"
+                        className="w-20 h-20 rounded-full bg-cover bg-center border-2 border-slate-600 cursor-pointer"
                         style={{
-                          backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuBbyQ_kRw-geeTNo0sQHWYuNKpLjvk3S5V60DT_wAMbs7Rs__q_NZ2-uF2dH2-m5oyAJY-33_6DP6QWiiXaY5pJtdr8UeTC_U2YIANPSrOTHxIGsdc9m-_F5ONy6ekZERTVZpBfxlODRolx1V-cnoAgCOEd9hQcZHJUSchewa4sci168ft46NvEkBCFp29b7LgTWyvdLz99HC2R0jdofVFXLLui3zyQegaMpo2r3cDeI9hz0_x4lwN-UiOGSOCN8n2Jr_ESUsWA9JDL")'
+                          backgroundImage: profilePictureUrl
+                            ? `url("${profilePictureUrl.startsWith('http') ? profilePictureUrl : `http://localhost:5050/${profilePictureUrl}`}")`
+                            : 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuBbyQ_kRw-geeTNo0sQHWYuNKpLjvk3S5V60DT_wAMbs7Rs__q_NZ2-uF2dH2-m5oyAJY-33_6DP6QWiiXaY5pJtdr8UeTC_U2YIANPSrOTHxIGsdc9m-_F5ONy6ekZERTVZpBfxlODRolx1V-cnoAgCOEd9hQcZHJUSchewa4sci168ft46NvEkBCFp29b7LgTWyvdLz99HC2R0jdofVFXLLui3zyQegaMpo2r3cDeI9hz0_x4lwN-UiOGSOCN8n2Jr_ESUsWA9JDL")'
                         }}
+                        onClick={handlePhotoClick}
                       />
-                      <button className="mt-2 text-blue-500 text-sm hover:text-blue-400">
+                      <button
+                        onClick={handleProfilePicClick}
+                        className="mt-2 text-blue-500 text-sm hover:text-blue-400"
+                      >
                         Change Photo
                       </button>
+                      
+                      {/* Photo options menu */}
+                      {showPhotoOptions && (
+                        <div className="absolute top-24 left-0 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg overflow-hidden z-10 min-w-[150px]">
+                          <button
+                            onClick={handleProfilePicClick}
+                            className="w-full px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2"
+                          >
+                            <span className="material-symbols-outlined text-base">upload</span>
+                            Upload New
+                          </button>
+                          <button
+                            onClick={handleDeletePhoto}
+                            className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2"
+                          >
+                            <span className="material-symbols-outlined text-base">delete</span>
+                            Remove Photo
+                          </button>
+                        </div>
+                      )}
                     </div>
                     
                     <div className="flex-1 grid grid-cols-2 gap-3">

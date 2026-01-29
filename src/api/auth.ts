@@ -62,3 +62,19 @@ export const updateProfile = async (data: {
   }
   return res.json();
 };
+
+// Update profile with profile picture (uses FormData)
+export const updateProfileWithPicture = async (data: FormData) => {
+  const res = await fetch("/api/auth/profile", {
+    method: "PUT",
+    credentials: "include",
+    body: data, // FormData for file upload
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    console.error("Update profile error:", errorData);
+    throw new Error(errorData.message || "Update failed");
+  }
+  return res.json();
+};

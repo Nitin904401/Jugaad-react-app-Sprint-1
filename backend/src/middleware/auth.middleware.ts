@@ -57,7 +57,7 @@ export const requireAuth = async (req: any, res: Response, next: NextFunction) =
     
     // For other routes (admin, products, etc.), check users table
     const result = await pool.query(
-      "SELECT id, name, email, role, phone_number, created_at FROM users WHERE id = $1",
+      "SELECT id, name, email, role, phone_number, profile_picture, created_at FROM users WHERE id = $1",
       [decoded.id]
     );
 
