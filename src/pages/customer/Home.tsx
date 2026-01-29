@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { fetchFeaturedProducts } from "../../api/products";
+import { getVehicles } from "../../api/vehicles";
+import { useAuth } from "../../context/AuthContext";
 
 import arrowDown from "../../assets/arrow_down.svg";
 import { useNavigate } from "react-router-dom";
@@ -30,6 +32,8 @@ const [loading, setLoading] = useState(true);
 const [error, setError] = useState("");
 const navigate = useNavigate();
 const [query, setQuery] = useState("");
+const [vehicleCount, setVehicleCount] = useState(0);
+const { user } = useAuth();
 
   useEffect(() => {
   fetchFeaturedProducts()
@@ -53,7 +57,22 @@ const [query, setQuery] = useState("");
     })
     .catch(() => setError("Failed to load products"))
     .finally(() => setLoading(false));
-}, []);
+    
+    // Fetch vehicle count only if user is logged in
+    if (user) {
+      getVehicles()
+        .then((vehicles) => setVehicleCount(vehicles.length))
+        .catch(() => setVehicleCount(0));
+    }
+}, [user]);
+
+const handleMyGarageClick = () => {
+  if (!user) {
+    navigate('/login');
+  } else {
+    navigate('/my-garage');
+  }
+};
 
   return (
     <div className="bg-[#0f172a] -mr-4 -ml-5 -mt-8 font-display text-slate-100 antialiased selection:bg-primary selection:text-white overflow-x-hidden">
@@ -131,7 +150,7 @@ const [query, setQuery] = useState("");
             </div>
 
             {/* VEHICLE SELECT PANEL */}
-            <div className="relative z-0 -mt-28 w-full flex justify-center animate-[fadeIn_0.8s_ease-out_0.2s_both]">
+            <div className="relative z-20 -mt-28 w-full flex justify-center animate-[fadeIn_0.8s_ease-out_0.2s_both]">
                   <div className="w-full px-6 md:pl-20 md:pr-16">
                 <div className="rounded-3xl p-1 shadow-[0_4px_30px_rgba(0,0,0,0.3)] bg-[rgba(15,23,42,0.6)] backdrop-blur-[16px] border border-white/10 w-full">
                 <div className="bg-[#0f172a]/80 backdrop-blur-md rounded-[1.2rem] p-6 md:p-8 border border-white/5">
@@ -149,15 +168,16 @@ const [query, setQuery] = useState("");
                         Select your vehicle details to ensure 100% fitment.
                       </p>
                     </div>
-                    <a
-                      href="#"
-                      className="group flex items-center gap-2 text-sm text-blue-400 font-bold hover:text-blue-300 transition-colors bg-blue-900/20 px-4 py-2 rounded-lg border border-blue-500/10 hover:border-blue-500/30"
+                    <button
+                      type="button"
+                      onClick={handleMyGarageClick}
+                      className="group flex items-center gap-2 text-sm text-blue-400 font-bold hover:text-blue-300 transition-colors bg-blue-900/20 px-4 py-2 rounded-lg border border-blue-500/10 hover:border-blue-500/30 cursor-pointer shrink-0"
                     >
                       <span className="material-symbols-outlined text-lg group-hover:rotate-12 transition-transform">
                         directions_car
                       </span>
-                      My Garage (3 saved)
-                    </a>
+                      {user ? `My Garage (${vehicleCount} saved)` : 'My Garage (Login)'}
+                    </button>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
