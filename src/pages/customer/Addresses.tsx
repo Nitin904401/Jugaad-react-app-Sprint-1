@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import CustomerSidebar from "../../Components/layout/CustomerSidebar";
 import { getUserAddresses, createAddress, updateUserAddress, deleteAddress, Address } from "../../api/address";
 import Modal from "../../Components/common/Modal";
 
 const Addresses: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -30,7 +31,11 @@ const Addresses: React.FC = () => {
 
   useEffect(() => {
     fetchAddresses();
-  }, []);
+    // Check if we should show the add form
+    if (searchParams.get('add') === 'true') {
+      setShowForm(true);
+    }
+  }, [searchParams]);
 
   const fetchAddresses = async () => {
     try {

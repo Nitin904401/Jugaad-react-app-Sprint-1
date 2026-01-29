@@ -339,28 +339,20 @@ const UserProfile: React.FC = () => {
                       <span className="text-blue-500">📍</span>
                       Address Book
                     </h3>
-                    <div className="flex gap-2">
-                      <button 
-                        onClick={() => navigate('/addresses')}
-                        className="text-blue-500 text-sm hover:text-blue-400 px-3 py-1 rounded border border-blue-500/30 hover:bg-blue-500/10 transition-colors"
-                      >
-                        Edit Address
-                      </button>
-                      <button 
-                        onClick={() => navigate('/addresses')}
-                        className="text-blue-500 text-sm hover:text-blue-400 px-3 py-1 rounded border border-blue-500/30 hover:bg-blue-500/10 transition-colors"
-                      >
-                        Add Address
-                      </button>
-                    </div>
+                    <button 
+                      onClick={() => navigate('/addresses')}
+                      className="text-blue-500 text-sm hover:text-blue-400 px-3 py-1 rounded border border-blue-500/30 hover:bg-blue-500/10 transition-colors"
+                    >
+                      Manage Address
+                    </button>
                   </div>
                   
                   {isLoadingAddress ? (
                     <div className="text-center py-8 text-slate-400">Loading addresses...</div>
                   ) : addresses.length > 0 ? (
-                    <div className="space-y-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       {addresses.slice(0, 2).map((address) => (
-                        <div key={address.id} className={`p-4 rounded-lg ${address.is_primary ? 'bg-blue-500/10 border border-blue-500/20' : 'bg-slate-100 dark:bg-slate-700/30 border border-slate-200 dark:border-slate-600'}`}>
+                        <div key={address.id} className={`group relative p-4 rounded-lg ${address.is_primary ? 'bg-blue-500/10 border border-blue-500/20' : 'bg-slate-100 dark:bg-slate-700/30 border border-slate-200 dark:border-slate-600'}`}>
                           <div className="flex items-center gap-2 mb-2">
                             <span className={address.is_primary ? 'text-blue-500' : 'text-slate-400'}>
                               {address.address_type === 'Home' ? '🏠' : address.address_type === 'Work' ? '🏢' : '📍'}
@@ -377,16 +369,15 @@ const UserProfile: React.FC = () => {
                             {address.city}, {address.state} {address.zip_code}<br />
                             {address.country}
                           </p>
+                          <button
+                            onClick={() => navigate('/addresses')}
+                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-blue-500 p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-800"
+                            title="Edit Address"
+                          >
+                            <span className="material-symbols-outlined text-lg">edit</span>
+                          </button>
                         </div>
                       ))}
-                      {addresses.length > 2 && (
-                        <button
-                          onClick={() => navigate('/addresses')}
-                          className="w-full text-center text-blue-500 text-sm hover:text-blue-400 py-2"
-                        >
-                          View all {addresses.length} addresses →
-                        </button>
-                      )}
                     </div>
                   ) : (
                     <div className="text-center py-8 border-2 border-dashed border-slate-600 rounded-lg">
