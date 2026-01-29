@@ -141,6 +141,8 @@ const MyGarage: React.FC = () => {
     setActiveSection(section);
     if (section === "Profile Settings") {
       navigate("/profile");
+    } else if (section === "Home") {
+      navigate("/");
     }
     // Add other navigation logic as needed
   };
@@ -160,6 +162,7 @@ const MyGarage: React.FC = () => {
         </div>
         <nav className="flex-1 flex flex-col gap-1 px-3 py-4 overflow-y-auto">
           {[
+            { name: "Home", icon: "home" },
             { name: "Profile Settings", icon: "person" },
             { name: "My Garage", icon: "garage" },
             { name: "Orders", icon: "shopping_bag" },
