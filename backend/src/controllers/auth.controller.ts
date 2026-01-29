@@ -43,38 +43,43 @@ export const register = async (req: Request, res: Response) => {
 };
 
 export const login = async (req: Request, res: Response) => {
-  const { email, password } = req.body;
+  try {
+    const { email, password } = req.body;
 
-  const result = await pool.query(
-    "SELECT * FROM users WHERE email = $1",
-    [email]
-  );
+    const result = await pool.query(
+      "SELECT * FROM users WHERE email = $1",
+      [email]
+    );
 
-  const user = result.rows[0];
-  if (!user) {
-    return res.status(401).json({ message: "Invalid credentials" });
+    const user = result.rows[0];
+    if (!user) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    // Check if user is blocked
+    if (user.status === 'blocked') {
+      return res.status(403).json({ message: "Your account has been blocked by admin. Please contact support." });
+    }
+
+    const match = await bcrypt.compare(password, user.password);
+    if (!match) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    const token = signToken({ id: user.id, role: user.role });
+
+    res.cookie("token", token, cookieOptions).json({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      phone_number: user.phone_number,
+      profile_picture: user.profile_picture,
+    });
+  } catch (err: any) {
+    console.error("Login error:", err);
+    res.status(500).json({ message: "Login failed", error: err.message });
   }
-
-  // Check if user is blocked
-  if (user.status === 'blocked') {
-    return res.status(403).json({ message: "Your account has been blocked by admin. Please contact support." });
-  }
-
-  const match = await bcrypt.compare(password, user.password);
-  if (!match) {
-    return res.status(401).json({ message: "Invalid credentials" });
-  }
-
-  const token = signToken({ id: user.id, role: user.role });
-
-  res.cookie("token", token, cookieOptions).json({
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    role: user.role,
-    phone_number: user.phone_number,
-    profile_picture: user.profile_picture,
-  });
 };
 
 export const logout = (_req: Request, res: Response) => {

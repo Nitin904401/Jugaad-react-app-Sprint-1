@@ -73,7 +73,12 @@ export const requireAuth = async (req: any, res: Response, next: NextFunction) =
 
     req.user = user;
     next();
-  } catch {
+  } catch (err: any) {
+    console.error('❌ Token verification failed:', {
+      error: err.message,
+      name: err.name,
+      token: token?.substring(0, 20) + '...',
+    });
     return res.status(401).json({ message: "Invalid token" });
   }
 };

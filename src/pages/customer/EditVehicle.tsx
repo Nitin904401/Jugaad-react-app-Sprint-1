@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { getVehicle, updateVehicle } from "../../api/vehicles";
+import Modal from "../../Components/common/Modal";
 
 const EditVehicle: React.FC = () => {
   const navigate = useNavigate();
@@ -8,19 +10,57 @@ const EditVehicle: React.FC = () => {
   const { user, logout } = useAuth();
   const [activeSection, setActiveSection] = useState("My Garage");
   const [currentStep, setCurrentStep] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [modal, setModal] = useState<{
+    isOpen: boolean;
+    type: "success" | "error";
+    title: string;
+    message: string;
+  }>({ isOpen: false, type: "success", title: "", message: "" });
 
-  // Pre-populate with existing vehicle data (in real app, fetch from API)
-  const [year, setYear] = useState("2022");
-  const [make, setMake] = useState("Tesla");
-  const [model, setModel] = useState("Model S");
-  const [variant, setVariant] = useState("Plaid");
-  const [licensePlate, setLicensePlate] = useState("KNT-4521");
+  const [year, setYear] = useState("");
+  const [make, setMake] = useState("");
+  const [model, setModel] = useState("");
+  const [variant, setVariant] = useState("");
+  const [licensePlate, setLicensePlate] = useState("");
   
   // Step 2 fields
-  const [fuelType, setFuelType] = useState("Electric");
-  const [transmission, setTransmission] = useState("Automatic");
-  const [engineSize, setEngineSize] = useState("Tri-Motor (Electric)");
-  const [vehicleNickname, setVehicleNickname] = useState("Prachi's Tesla");
+  const [fuelType, setFuelType] = useState("");
+  const [transmission, setTransmission] = useState("");
+  const [engineSize, setEngineSize] = useState("");
+  const [vehicleNickname, setVehicleNickname] = useState("");
+
+  useEffect(() => {
+    const fetchVehicle = async () => {
+      if (!id) return;
+      
+      try {
+        const vehicle = await getVehicle(id);
+        setYear(vehicle.year || "");
+        setMake(vehicle.make || "");
+        setModel(vehicle.model || "");
+        setVariant(vehicle.variant || "");
+        setLicensePlate(vehicle.license_plate || "");
+        setFuelType(vehicle.fuel_type || "");
+        setTransmission(vehicle.transmission || "");
+        setEngineSize(vehicle.engine_size || "");
+        setVehicleNickname(vehicle.vehicle_nickname || "");
+      } catch (err) {
+        console.error("Failed to fetch vehicle:", err);
+        setModal({
+          isOpen: true,
+          type: "error",
+          title: "Error",
+          message: "Failed to load vehicle data",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchVehicle();
+  }, [id]);
 
   const handleNavigate = (section: string) => {
     setActiveSection(section);
@@ -35,21 +75,52 @@ const EditVehicle: React.FC = () => {
     navigate("/my-garage");
   };
 
-  const handleSave = () => {
-    // Add save logic here
-    console.log({ 
-      id, 
-      year, 
-      make, 
-      model, 
-      variant, 
-      licensePlate,
-      fuelType,
-      transmission,
-      engineSize,
-      vehicleNickname
-    });
-    navigate("/my-garage");
+  const handleSave = async () => {
+    if (!id || !year || !make || !model) {
+      setModal({
+        isOpen: true,
+        type: "error",
+        title: "Validation Error",
+        message: "Please fill in Year, Make, and Model fields",
+      });
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      await updateVehicle(id, {
+        year,
+        make,
+        model,
+        variant: variant || undefined,
+        license_plate: licensePlate || undefined,
+        fuel_type: fuelType || undefined,
+        transmission: transmission || undefined,
+        engine_size: engineSize || undefined,
+        vehicle_nickname: vehicleNickname || undefined,
+      });
+
+      setModal({
+        isOpen: true,
+        type: "success",
+        title: "Vehicle Updated!",
+        message: "Your vehicle has been updated successfully.",
+      });
+
+      setTimeout(() => {
+        navigate("/my-garage");
+      }, 1500);
+    } catch (err: any) {
+      console.error("Error updating vehicle:", err);
+      setModal({
+        isOpen: true,
+        type: "error",
+        title: "Failed to Update Vehicle",
+        message: err.message || "Failed to update vehicle. Please try again.",
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleNext = () => {
@@ -505,6 +576,15 @@ const EditVehicle: React.FC = () => {
           <span className="material-symbols-outlined">help</span>
         </button>
       </div>
+
+      {/* Modal */}
+      <Modal
+        isOpen={modal.isOpen}
+        onClose={() => setModal({ ...modal, isOpen: false })}
+        type={modal.type}
+        title={modal.title}
+        message={modal.message}
+      />
     </div>
   );
 };
