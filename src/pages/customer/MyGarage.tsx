@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { getVehicles, deleteVehicle } from "../../api/vehicles";
 import Modal from "../../Components/common/Modal";
+import CustomerSidebar from "../../Components/layout/CustomerSidebar";
 
 interface Vehicle {
   id: number;
@@ -22,9 +23,7 @@ interface Vehicle {
 
 const MyGarage: React.FC = () => {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeSection, setActiveSection] = useState("My Garage");
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState<{
@@ -137,69 +136,10 @@ const MyGarage: React.FC = () => {
     return logos[make] || "https://placehold.co/100x100?text=🚗";
   };
 
-  const handleNavigate = (section: string) => {
-    setActiveSection(section);
-    if (section === "Profile Settings") {
-      navigate("/profile");
-    } else if (section === "Home") {
-      navigate("/");
-    }
-    // Add other navigation logic as needed
-  };
-
   return (
     <div className="h-screen bg-slate-50 dark:bg-[#0a0f1d] text-slate-900 dark:text-slate-100 overflow-hidden flex">
       {/* Sidebar */}
-      <aside className="hidden w-64 flex-col border-r border-slate-200 dark:border-white/10 bg-white dark:bg-[#0a0f1d] lg:flex z-20">
-        <div className="flex h-16 items-center gap-3 px-6 border-b border-slate-200 dark:border-white/5">
-          <div className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-8 bg-blue-600 flex items-center justify-center text-white">
-            <span className="material-symbols-outlined text-[20px]">directions_car</span>
-          </div>
-          <div className="flex flex-col">
-            <h1 className="text-white text-base font-bold leading-tight tracking-tight">S J A U T O P A R T</h1>
-            <p className="text-slate-400 text-xs font-medium">Customer Portal</p>
-          </div>
-        </div>
-        <nav className="flex-1 flex flex-col gap-1 px-3 py-4 overflow-y-auto">
-          {[
-            { name: "Home", icon: "home" },
-            { name: "Profile Settings", icon: "person" },
-            { name: "My Garage", icon: "garage" },
-            { name: "Orders", icon: "shopping_bag" },
-            { name: "Addresses", icon: "location_on" },
-            { name: "Security", icon: "lock" },
-            { name: "Payment Methods", icon: "credit_card" },
-          ].map((item) => (
-            <button
-              key={item.name}
-              onClick={() => handleNavigate(item.name)}
-              className={`w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${
-                activeSection === item.name
-                  ? "bg-blue-600/20 text-blue-500 hover:bg-blue-600/30"
-                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5"
-              }`}
-            >
-              <span className="material-symbols-outlined text-[20px]">{item.icon}</span>
-              <span className="text-sm font-medium">{item.name}</span>
-            </button>
-          ))}
-        </nav>
-        <div className="p-4 border-t border-slate-200 dark:border-white/5">
-          <button
-            onClick={() => logout()}
-            className="w-full flex items-center gap-3 rounded-xl bg-slate-100/50 dark:bg-white/5 p-3 hover:bg-slate-200 dark:hover:bg-white/10 cursor-pointer transition-colors border border-slate-200 dark:border-white/5"
-          >
-            <div className="size-9 rounded-full bg-gradient-to-br from-[#067ff9] to-[#0557d4] flex items-center justify-center text-white font-bold text-sm">
-              {user?.name?.charAt(0).toUpperCase() || "U"}
-            </div>
-            <div className="flex flex-col overflow-hidden flex-1 text-left">
-              <p className="text-slate-900 dark:text-white text-sm font-semibold truncate">{user?.name || "User"}</p>
-              <p className="text-slate-500 dark:text-slate-400 text-xs truncate">{user?.email || ""}</p>
-            </div>
-            <span className="material-symbols-outlined text-slate-400 hover:text-red-500 text-[20px]">logout</span>
-          </button>
-        </div>
-      </aside>
+      <CustomerSidebar activeSection="My Garage" />
 
       {/* Main Content */}
       <main className="flex-1 min-h-screen bg-slate-50 dark:bg-[#0a0f1d] overflow-y-auto">

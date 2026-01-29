@@ -20,6 +20,7 @@ import { UserProfile } from '../pages/customer/UserProfile';
 import { MyGarage } from '../pages/customer/MyGarage';
 import { AddVehicle } from '../pages/customer/AddVehicle';
 import { EditVehicle } from '../pages/customer/EditVehicle';
+import Addresses from '../pages/customer/Addresses';
 
 // Vendor Pages
 import { VendorLoginPage } from '../pages/vendor/Login';
@@ -114,6 +115,16 @@ export const AppRouter: React.FC = () => {
               element={
                 <ProtectedRoute>
                   <EditVehicle />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Addresses - Standalone without MainLayout */}
+            <Route
+              path="/addresses"
+              element={
+                <ProtectedRoute>
+                  <Addresses />
                 </ProtectedRoute>
               }
             />

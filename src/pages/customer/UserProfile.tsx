@@ -3,12 +3,12 @@ import { useAuth } from "../../context/AuthContext";
 import { updateProfile, updateProfileWithPicture } from "../../api/auth";
 import { getVehicles } from "../../api/vehicles";
 import Modal from "../../Components/common/Modal";
+import CustomerSidebar from "../../Components/layout/CustomerSidebar";
 import { useNavigate } from "react-router-dom";
 
 const UserProfile: React.FC = () => {
-  const { user, logout, refreshUser } = useAuth();
+  const { user, refreshUser } = useAuth();
   const navigate = useNavigate();
-  const [activeSection, setActiveSection] = useState("Profile Settings");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -189,64 +189,7 @@ const UserProfile: React.FC = () => {
 
       <div className="flex h-screen relative z-10">
         {/* Sidebar */}
-        <aside className="hidden w-64 flex-col border-r border-slate-200 dark:border-white/10 bg-white dark:bg-[#0a0f1d] lg:flex z-20">
-          <div className="flex h-16 items-center gap-3 px-6 border-b border-white/5">
-            <div className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-8 bg-blue-600 flex items-center justify-center text-white">
-              <span className="text-xl">🚗</span>
-            </div>
-            <div className="flex flex-col">
-              <h1 className="text-white text-base font-bold leading-tight tracking-tight">S J A U T O P A R T</h1>
-              <p className="text-slate-400 text-xs font-medium">Customer Portal</p>
-            </div>
-          </div>
-          <nav className="flex-1 flex flex-col gap-1 px-3 py-4 overflow-y-auto">
-            {[
-              { name: "Home", icon: "home", active: false },
-              { name: "Profile Settings", icon: "person", active: true },
-              { name: "My Garage", icon: "garage", active: false },
-              { name: "Orders", icon: "shopping_bag", active: false },
-              { name: "Addresses", icon: "location_on", active: false },
-              { name: "Security", icon: "lock", active: false },
-              { name: "Payment Methods", icon: "credit_card", active: false },
-            ].map((item) => (
-              <button
-                key={item.name}
-                onClick={() => {
-                  if (item.name === "My Garage") {
-                    navigate('/my-garage');
-                  } else if (item.name === "Home") {
-                    navigate('/');
-                  } else {
-                    setActiveSection(item.name);
-                  }
-                }}
-                className={`w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${
-                  activeSection === item.name
-                    ? "bg-blue-600/20 text-blue-500 hover:bg-blue-600/30"
-                    : "text-slate-400 hover:text-white hover:bg-white/5"
-                }`}
-              >
-                <span className="material-symbols-outlined text-[20px]">{item.icon}</span>
-                <span className="text-sm font-medium">{item.name}</span>
-              </button>
-            ))}
-          </nav>
-          <div className="p-4 border-t border-white/5">
-            <button
-              onClick={() => logout()}
-              className="w-full flex items-center gap-3 rounded-xl bg-white/5 p-3 hover:bg-white/10 cursor-pointer transition-colors border border-white/5"
-            >
-              <div className="size-9 rounded-full bg-gradient-to-br from-[#067ff9] to-[#0557d4] flex items-center justify-center text-white font-bold text-sm">
-                {user?.name?.charAt(0).toUpperCase() || "U"}
-              </div>
-              <div className="flex flex-col overflow-hidden flex-1 text-left">
-                <p className="text-white text-sm font-semibold truncate">{user?.name || "User"}</p>
-                <p className="text-slate-400 text-xs truncate">{user?.email || ""}</p>
-              </div>
-              <span className="material-symbols-outlined text-slate-400 hover:text-white text-[20px]">logout</span>
-            </button>
-          </div>
-        </aside>
+        <CustomerSidebar activeSection="Profile Settings" />
 
         {/* Main Content */}
         <main className="flex-1 overflow-hidden flex flex-col">
@@ -464,18 +407,7 @@ const UserProfile: React.FC = () => {
                 </section>
 
                 {/* Stats */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-4 text-center">
-                    <div className="text-green-500 text-lg mb-1">🛍️</div>
-                    <p className="text-2xl font-bold text-white">24</p>
-                    <p className="text-xs text-slate-400">TOTAL ORDERS</p>
-                  </div>
-                  <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-4 text-center">
-                    <div className="text-yellow-500 text-lg mb-1">⭐</div>
-                    <p className="text-2xl font-bold text-white">4.8</p>
-                    <p className="text-xs text-slate-400">RATING</p>
-                  </div>
-                </div>
+                
 
                 {/* Notifications */}
                 <section className="bg-white dark:bg-[#161d2f] rounded-xl p-6 border border-slate-200 dark:border-slate-700">
