@@ -355,8 +355,8 @@ const UserProfile: React.FC = () => {
               <div className="space-y-6">
                 {/* My Garage */}
                 <section className="bg-white dark:bg-[#161d2f] rounded-xl p-6 border border-slate-200 dark:border-slate-700">
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white">My Garage</h3>
+                  <div className="flex justify-between items-center mb-8">
+                    <h3 className="text-xl font-semibold text-slate-900 dark:text-white">My Garage</h3>
                     <button 
                       onClick={() => navigate('/my-garage')}
                       className="text-blue-500 text-sm hover:text-blue-400"
@@ -365,7 +365,7 @@ const UserProfile: React.FC = () => {
                     </button>
                   </div>
                   
-                  <div className="space-y-3">
+                  <div className="space-y-3 flex-1 min-h-[235px]">
                     {isLoadingVehicles ? (
                       <div className="text-center py-4 text-slate-400">Loading vehicles...</div>
                     ) : vehicles.length > 0 ? (
@@ -410,10 +410,10 @@ const UserProfile: React.FC = () => {
                 
 
                 {/* Notifications */}
-                <section className="bg-white dark:bg-[#161d2f] rounded-xl p-6 border border-slate-200 dark:border-slate-700">
-                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">NOTIFICATIONS</h3>
+                <section className="bg-white dark:bg-[#161d2f] rounded-xl p-6 border border-slate-200 dark:border-slate-700 min-h-[200px]">
+                  <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-6">NOTIFICATIONS</h3>
                   
-                  <div className="space-y-4">
+                  <div className="space-y-6 py-10">
                     <div className="flex justify-between items-center">
                       <span className="text-slate-600 dark:text-slate-300">Order Updates</span>
                       <div className="relative">
