@@ -2,9 +2,11 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { updateProfile } from "../../api/auth";
 import Modal from "../../Components/common/Modal";
+import { useNavigate } from "react-router-dom";
 
 const UserProfile: React.FC = () => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState("Profile Settings");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -80,66 +82,76 @@ const UserProfile: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white">
+    <div className="h-screen bg-slate-50 dark:bg-[#0a0f1d] text-slate-900 dark:text-white overflow-hidden">
       {/* Background blobs */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[120px]" />
         <div className="absolute bottom-[-10%] left-[-5%] w-[600px] h-[600px] bg-blue-900/5 rounded-full blur-[120px]" />
       </div>
 
-      <div className="flex min-h-screen relative z-10">
+      <div className="flex h-screen relative z-10">
         {/* Sidebar */}
-        <aside className="w-64 bg-slate-800/50 border-r border-slate-700">
-          <div className="p-6">
-            <nav className="space-y-1">
-              {[
-                { name: "Profile Settings", icon: "👤", active: true },
-                { name: "My Garage", icon: "🚗", active: false },
-                { name: "Orders", icon: "📦", active: false },
-                { name: "Addresses", icon: "📍", active: false },
-                { name: "Security", icon: "🔒", active: false },
-                { name: "Payment Methods", icon: "💳", active: false },
-              ].map((item) => (
-                <button
-                  key={item.name}
-                  onClick={() => setActiveSection(item.name)}
-                  className={`w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 transition-colors ${
-                    activeSection === item.name
-                      ? "bg-blue-600 text-white"
-                      : "text-slate-400 hover:bg-slate-700/50 hover:text-white"
-                  }`}
-                >
-                  <span className="text-lg">{item.icon}</span>
-                  {item.name}
-                </button>
-              ))}
-            </nav>
-            
-            <div className="mt-8 pt-8 border-t border-slate-700">
-              <button
-                onClick={() => logout()}
-                className="w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors"
-              >
-                <span className="text-lg">🚪</span>
-                Sign Out
-              </button>
+        <aside className="hidden w-64 flex-col border-r border-slate-200 dark:border-white/10 bg-white dark:bg-[#0a0f1d] lg:flex z-20">
+          <div className="flex h-16 items-center gap-3 px-6 border-b border-white/5">
+            <div className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-8 bg-blue-600 flex items-center justify-center text-white">
+              <span className="text-xl">🚗</span>
             </div>
+            <div className="flex flex-col">
+              <h1 className="text-white text-base font-bold leading-tight tracking-tight">S J A U T O P A R T</h1>
+              <p className="text-slate-400 text-xs font-medium">Customer Portal</p>
+            </div>
+          </div>
+          <nav className="flex-1 flex flex-col gap-1 px-3 py-4 overflow-y-auto">
+            {[
+              { name: "Profile Settings", icon: "person", active: true },
+              { name: "My Garage", icon: "garage", active: false },
+              { name: "Orders", icon: "shopping_bag", active: false },
+              { name: "Addresses", icon: "location_on", active: false },
+              { name: "Security", icon: "lock", active: false },
+              { name: "Payment Methods", icon: "credit_card", active: false },
+            ].map((item) => (
+              <button
+                key={item.name}
+                onClick={() => {
+                  if (item.name === "My Garage") {
+                    navigate('/my-garage');
+                  } else {
+                    setActiveSection(item.name);
+                  }
+                }}
+                className={`w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${
+                  activeSection === item.name
+                    ? "bg-blue-600/20 text-blue-500 hover:bg-blue-600/30"
+                    : "text-slate-400 hover:text-white hover:bg-white/5"
+                }`}
+              >
+                <span className="material-symbols-outlined text-[20px]">{item.icon}</span>
+                <span className="text-sm font-medium">{item.name}</span>
+              </button>
+            ))}
+          </nav>
+          <div className="p-4 border-t border-white/5">
+            <button
+              onClick={() => logout()}
+              className="w-full flex items-center gap-3 rounded-xl bg-white/5 p-3 hover:bg-white/10 cursor-pointer transition-colors border border-white/5"
+            >
+              <div className="size-9 rounded-full bg-gradient-to-br from-[#067ff9] to-[#0557d4] flex items-center justify-center text-white font-bold text-sm">
+                {user?.name?.charAt(0).toUpperCase() || "U"}
+              </div>
+              <div className="flex flex-col overflow-hidden flex-1 text-left">
+                <p className="text-white text-sm font-semibold truncate">{user?.name || "User"}</p>
+                <p className="text-slate-400 text-xs truncate">{user?.email || ""}</p>
+              </div>
+              <span className="material-symbols-outlined text-slate-400 hover:text-white text-[20px]">logout</span>
+            </button>
           </div>
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 overflow-y-auto">
-          {/* Header */}
-          <header className="px-8 py-6 border-b border-slate-700">
-            <div className="flex justify-between items-start">
-              <div>
-                <h1 className="text-3xl font-bold text-white mb-2">Account Settings</h1>
-                <p className="text-slate-400">
-                  Manage your personal information, address book, and garage preferences<br />
-                  to streamline your checkout process.
-                </p>
-              </div>
-              <div className="flex gap-3">
+        <main className="flex-1 overflow-hidden flex flex-col">
+          <div className="flex-1 overflow-y-auto px-8 py-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">{/* Action Buttons */}
+              <div className="lg:col-span-3 flex justify-end gap-3 mb-4">
                 <button
                   onClick={handleCancel}
                   disabled={isSaving}
@@ -155,15 +167,11 @@ const UserProfile: React.FC = () => {
                   {isSaving ? "Saving..." : "Save Changes"}
                 </button>
               </div>
-            </div>
-          </header>
 
-          <div className="p-8 max-w-7xl">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Left Column - Personal Info & Address */}
-              <div className="lg:col-span-2 space-y-8">
+              <div className="lg:col-span-2 space-y-6">
                 {/* Personal Information */}
-                <section className="bg-slate-800/50 rounded-xl p-6 border border-slate-700">
+                <section className="bg-white dark:bg-[#161d2f] rounded-xl p-6 border border-slate-200 dark:border-slate-700">
                   <h3 className="text-xl font-semibold mb-6 flex items-center gap-2 text-white">
                     <span className="text-blue-500">👤</span>
                     Personal Information
@@ -182,47 +190,47 @@ const UserProfile: React.FC = () => {
                       </button>
                     </div>
                     
-                    <div className="flex-1 grid grid-cols-2 gap-4">
+                    <div className="flex-1 grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-sm font-medium text-slate-300 mb-2">FIRST NAME</label>
+                        <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">FIRST NAME</label>
                         <input
                           type="text"
                           value={firstName}
                           onChange={(e) => setFirstName(e.target.value)}
-                          className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                          className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-slate-300 mb-2">LAST NAME</label>
+                        <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">LAST NAME</label>
                         <input
                           type="text"
                           value={lastName}
                           onChange={(e) => setLastName(e.target.value)}
-                          className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                          className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
                         />
                       </div>
                       <div className="col-span-2">
-                        <label className="block text-sm font-medium text-slate-300 mb-2">EMAIL ADDRESS</label>
+                        <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">EMAIL ADDRESS</label>
                         <div className="relative">
                           <input
                             type="email"
                             value={email}
                             disabled
-                            className="w-full px-12 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500 opacity-60 cursor-not-allowed"
+                            className="w-full px-12 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 opacity-60 cursor-not-allowed"
                           />
                           <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400">✉️</span>
                           <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-green-500 text-sm">✓ Verified</span>
                         </div>
                       </div>
                       <div className="col-span-2">
-                        <label className="block text-sm font-medium text-slate-300 mb-2">PHONE NUMBER</label>
+                        <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">PHONE NUMBER</label>
                         <div className="relative">
                           <input
                             type="tel"
                             value={phoneNumber}
                             onChange={(e) => setPhoneNumber(e.target.value)}
                             placeholder="+1 (555) 123-4567"
-                            className="w-full px-12 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500 placeholder-slate-400"
+                            className="w-full px-12 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 placeholder-slate-400"
                           />
                           <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400">📞</span>
                         </div>
@@ -232,7 +240,7 @@ const UserProfile: React.FC = () => {
                 </section>
 
                 {/* Address Book */}
-                <section className="bg-slate-800/50 rounded-xl p-6 border border-slate-700">
+                <section className="bg-white dark:bg-[#161d2f] rounded-xl p-6 border border-slate-200 dark:border-slate-700">
                   <div className="flex justify-between items-center mb-6">
                     <h3 className="text-xl font-semibold flex items-center gap-2 text-white">
                       <span className="text-blue-500">📍</span>
@@ -243,27 +251,27 @@ const UserProfile: React.FC = () => {
                     </button>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
                       <div className="flex items-center gap-2 mb-2">
                         <span className="text-blue-500">🏠</span>
                         <span className="text-blue-500 text-sm font-medium">PRIMARY HOME</span>
                       </div>
-                      <h4 className="font-semibold text-white mb-1">John Doe</h4>
-                      <p className="text-slate-300 text-sm">
+                      <h4 className="font-semibold text-slate-900 dark:text-white mb-1">John Doe</h4>
+                      <p className="text-slate-600 dark:text-slate-300 text-sm">
                         1234 Motorsports Blvd, Apt 48<br />
                         Los Angeles, CA 90012<br />
                         United States
                       </p>
                     </div>
                     
-                    <div className="bg-slate-700/30 border border-slate-600 rounded-lg p-4">
+                    <div className="bg-slate-100 dark:bg-slate-700/30 border border-slate-200 dark:border-slate-600 rounded-lg p-4">
                       <div className="flex items-center gap-2 mb-2">
                         <span className="text-slate-400">🏢</span>
                         <span className="text-slate-400 text-sm font-medium">WORK</span>
                       </div>
-                      <h4 className="font-semibold text-white mb-1">John Doe (Office)</h4>
-                      <p className="text-slate-300 text-sm">
+                      <h4 className="font-semibold text-slate-900 dark:text-white mb-1">John Doe (Office)</h4>
+                      <p className="text-slate-600 dark:text-slate-300 text-sm">
                         800 Auto Park Way, Suite 200<br />
                         Irvine, CA 92618<br />
                         United States
@@ -276,10 +284,13 @@ const UserProfile: React.FC = () => {
               {/* Right Column - Garage & Stats */}
               <div className="space-y-6">
                 {/* My Garage */}
-                <section className="bg-slate-800/50 rounded-xl p-6 border border-slate-700">
+                <section className="bg-white dark:bg-[#161d2f] rounded-xl p-6 border border-slate-200 dark:border-slate-700">
                   <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-semibold text-white">My Garage</h3>
-                    <button className="text-blue-500 text-sm hover:text-blue-400">
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white">My Garage</h3>
+                    <button 
+                      onClick={() => navigate('/my-garage')}
+                      className="text-blue-500 text-sm hover:text-blue-400"
+                    >
                       View All
                     </button>
                   </div>
@@ -327,12 +338,12 @@ const UserProfile: React.FC = () => {
                 </div>
 
                 {/* Notifications */}
-                <section className="bg-slate-800/50 rounded-xl p-6 border border-slate-700">
-                  <h3 className="text-lg font-semibold text-white mb-4">NOTIFICATIONS</h3>
+                <section className="bg-white dark:bg-[#161d2f] rounded-xl p-6 border border-slate-200 dark:border-slate-700">
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">NOTIFICATIONS</h3>
                   
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
-                      <span className="text-slate-300">Order Updates</span>
+                      <span className="text-slate-600 dark:text-slate-300">Order Updates</span>
                       <div className="relative">
                         <input type="checkbox" defaultChecked className="sr-only" />
                         <div className="w-10 h-6 bg-blue-600 rounded-full relative">
@@ -342,7 +353,7 @@ const UserProfile: React.FC = () => {
                     </div>
                     
                     <div className="flex justify-between items-center">
-                      <span className="text-slate-300">Promotions</span>
+                      <span className="text-slate-600 dark:text-slate-300">Promotions</span>
                       <div className="relative">
                         <input type="checkbox" className="sr-only" />
                         <div className="w-10 h-6 bg-slate-600 rounded-full relative">

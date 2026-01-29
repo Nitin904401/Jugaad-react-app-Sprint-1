@@ -17,6 +17,9 @@ import { CartPage } from '../pages/customer/Cart';
 import { CheckoutPage } from '../pages/customer/Checkout';
 import { AccountPage } from '../pages/customer/Account';
 import { UserProfile } from '../pages/customer/UserProfile';
+import { MyGarage } from '../pages/customer/MyGarage';
+import { AddVehicle } from '../pages/customer/AddVehicle';
+import { EditVehicle } from '../pages/customer/EditVehicle';
 
 // Vendor Pages
 import { VendorLoginPage } from '../pages/vendor/Login';
@@ -73,15 +76,47 @@ export const AppRouter: React.FC = () => {
                   </ProtectedRoute>
                 }
               />
-              <Route
-                path="/profile"
-                element={
-                  <ProtectedRoute>
-                    <UserProfile />
-                  </ProtectedRoute>
-                }
-              />
             </Route>
+
+            {/* User Profile - Standalone without MainLayout */}
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <UserProfile />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* My Garage - Standalone without MainLayout */}
+            <Route
+              path="/my-garage"
+              element={
+                <ProtectedRoute>
+                  <MyGarage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Add Vehicle - Standalone without MainLayout */}
+            <Route
+              path="/add-vehicle"
+              element={
+                <ProtectedRoute>
+                  <AddVehicle />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Edit Vehicle - Standalone without MainLayout */}
+            <Route
+              path="/edit-vehicle/:id"
+              element={
+                <ProtectedRoute>
+                  <EditVehicle />
+                </ProtectedRoute>
+              }
+            />
 
             {/* Vendor Routes */}
             <Route path="/vendor/login" element={<VendorLoginPage />} />
