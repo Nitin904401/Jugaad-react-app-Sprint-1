@@ -28,6 +28,8 @@ const AddVehicle: React.FC = () => {
   const [transmission, setTransmission] = useState("");
   const [engineSize, setEngineSize] = useState("");
   const [vehicleNickname, setVehicleNickname] = useState("");
+  const [vehicleImage, setVehicleImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const handleNavigate = (section: string) => {
     setActiveSection(section);
@@ -43,6 +45,23 @@ const AddVehicle: React.FC = () => {
     navigate("/my-garage");
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setVehicleImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setVehicleImage(null);
+    setImagePreview(null);
+  };
+
   const handleSave = async () => {
     if (!year || !make || !model) {
       setModal({
@@ -56,17 +75,28 @@ const AddVehicle: React.FC = () => {
 
     setIsSaving(true);
     try {
-      await createVehicle({
-        year,
-        make,
-        model,
-        variant: variant || undefined,
-        license_plate: licensePlate || undefined,
-        fuel_type: fuelType || undefined,
-        transmission: transmission || undefined,
-        engine_size: engineSize || undefined,
-        vehicle_nickname: vehicleNickname || undefined,
+      const formData = new FormData();
+      formData.append("year", year);
+      formData.append("make", make);
+      formData.append("model", model);
+      if (variant) formData.append("variant", variant);
+      if (licensePlate) formData.append("license_plate", licensePlate);
+      if (fuelType) formData.append("fuel_type", fuelType);
+      if (transmission) formData.append("transmission", transmission);
+      if (engineSize) formData.append("engine_size", engineSize);
+      if (vehicleNickname) formData.append("vehicle_nickname", vehicleNickname);
+      if (vehicleImage) formData.append("vehicle_image", vehicleImage);
+
+      const res = await fetch("/api/vehicles", {
+        method: "POST",
+        credentials: "include",
+        body: formData,
       });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || "Failed to create vehicle");
+      }
 
       setModal({
         isOpen: true,
@@ -452,6 +482,52 @@ const AddVehicle: React.FC = () => {
                           className="w-full bg-slate-100 dark:bg-[#1e293b] border-transparent focus:border-blue-600 focus:ring-0 rounded-lg py-3 px-4 text-slate-900 dark:text-white"
                           placeholder="e.g. My Daily Driver"
                         />
+                      </div>
+
+                      {/* Vehicle Image Upload */}
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                            Vehicle Image (Optional)
+                          </label>
+                          {imagePreview && (
+                            <span className="text-xs text-green-400 flex items-center gap-1">
+                              <span className="material-symbols-outlined text-[14px]">check</span> Uploaded
+                            </span>
+                          )}
+                        </div>
+
+                        {imagePreview ? (
+                          <div className="relative flex items-center p-3 rounded-lg border border-green-500/30 bg-green-500/5">
+                            <div className="size-16 rounded bg-slate-200 dark:bg-[#27303a] flex items-center justify-center mr-3 overflow-hidden">
+                              <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                            </div>
+                            <div className="flex flex-col min-w-0 flex-1">
+                              <p className="text-sm text-slate-900 dark:text-white truncate font-medium">
+                                {vehicleImage?.name}
+                              </p>
+                              <p className="text-xs text-slate-500 dark:text-slate-400">
+                                {vehicleImage ? `${(vehicleImage.size / 1024 / 1024).toFixed(2)} MB` : ''}
+                              </p>
+                            </div>
+                            <button 
+                              className="p-2 text-slate-500 dark:text-slate-400 hover:text-red-400 transition-colors" 
+                              onClick={handleRemoveImage}
+                              type="button"
+                            >
+                              <span className="material-symbols-outlined">delete</span>
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="relative flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl hover:border-blue-600 hover:bg-blue-50/5 transition-all cursor-pointer group">
+                            <div className="size-12 rounded-full bg-slate-100 dark:bg-[#27303a] group-hover:bg-blue-100 dark:group-hover:bg-blue-900/20 flex items-center justify-center mb-3 transition-colors">
+                              <span className="material-symbols-outlined text-slate-500 dark:text-slate-400 group-hover:text-blue-600" style={{ fontSize: 24 }}>cloud_upload</span>
+                            </div>
+                            <p className="text-sm text-slate-900 dark:text-white font-medium">Click to upload vehicle image</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 text-center">JPG, PNG, WEBP (max 5MB)</p>
+                            <input className="absolute inset-0 opacity-0 cursor-pointer" type="file" accept="image/jpeg,image/jpg,image/png,image/webp" onChange={handleImageChange} />
+                          </div>
+                        )}
                       </div>
 
                       {/* Info */}

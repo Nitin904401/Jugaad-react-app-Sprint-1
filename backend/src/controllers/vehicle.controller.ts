@@ -55,6 +55,8 @@ export const createVehicle = async (req: any, res: Response) => {
     vehicle_nickname,
   } = req.body;
 
+  const vehicle_image = req.file ? `/uploads/vehicle-images/${req.file.filename}` : null;
+
   if (!year || !make || !model) {
     return res.status(400).json({ message: "Year, make, and model are required" });
   }
@@ -63,8 +65,8 @@ export const createVehicle = async (req: any, res: Response) => {
     const result = await pool.query(
       `INSERT INTO vehicles (
         user_id, year, make, model, variant, license_plate, 
-        fuel_type, transmission, engine_size, vehicle_nickname
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+        fuel_type, transmission, engine_size, vehicle_nickname, vehicle_image
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
       RETURNING *`,
       [
         userId,
@@ -77,6 +79,7 @@ export const createVehicle = async (req: any, res: Response) => {
         transmission || null,
         engine_size || null,
         vehicle_nickname || null,
+        vehicle_image,
       ]
     );
 
@@ -112,39 +115,48 @@ export const updateVehicle = async (req: any, res: Response) => {
     vehicle_nickname,
   } = req.body;
 
+  const vehicle_image = req.file ? `/uploads/vehicle-images/${req.file.filename}` : undefined;
+
   if (!year || !make || !model) {
     return res.status(400).json({ message: "Year, make, and model are required" });
   }
 
   try {
-    const result = await pool.query(
-      `UPDATE vehicles SET 
-        year = $1, 
-        make = $2, 
-        model = $3, 
-        variant = $4, 
-        license_plate = $5,
-        fuel_type = $6,
-        transmission = $7,
-        engine_size = $8,
-        vehicle_nickname = $9,
-        updated_at = CURRENT_TIMESTAMP
-      WHERE id = $10 AND user_id = $11
-      RETURNING *`,
-      [
-        year,
-        make,
-        model,
-        variant || null,
-        license_plate || null,
-        fuel_type || null,
-        transmission || null,
-        engine_size || null,
-        vehicle_nickname || null,
-        vehicleId,
-        userId,
-      ]
-    );
+    // Build update query dynamically to only update image if provided
+    let query = `UPDATE vehicles SET 
+      year = $1, 
+      make = $2, 
+      model = $3, 
+      variant = $4, 
+      license_plate = $5,
+      fuel_type = $6,
+      transmission = $7,
+      engine_size = $8,
+      vehicle_nickname = $9`;
+    
+    const params: any[] = [
+      year,
+      make,
+      model,
+      variant || null,
+      license_plate || null,
+      fuel_type || null,
+      transmission || null,
+      engine_size || null,
+      vehicle_nickname || null,
+    ];
+
+    if (vehicle_image) {
+      query += `, vehicle_image = $10, updated_at = CURRENT_TIMESTAMP WHERE id = $11 AND user_id = $12`;
+      params.push(vehicle_image, vehicleId, userId);
+    } else {
+      query += `, updated_at = CURRENT_TIMESTAMP WHERE id = $10 AND user_id = $11`;
+      params.push(vehicleId, userId);
+    }
+
+    query += ` RETURNING *`;
+
+    const result = await pool.query(query, params);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ message: "Vehicle not found" });
