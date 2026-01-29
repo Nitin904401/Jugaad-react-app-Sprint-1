@@ -21,6 +21,10 @@ const Addresses: React.FC = () => {
   const [country, setCountry] = useState("United States");
   const [isPrimary, setIsPrimary] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [deleteConfirmModal, setDeleteConfirmModal] = useState<{
+    isOpen: boolean;
+    addressId: number | null;
+  }>({ isOpen: false, addressId: null });
   
   const [modal, setModal] = useState<{
     isOpen: boolean;
@@ -81,8 +85,15 @@ const Addresses: React.FC = () => {
     setShowForm(true);
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this address?")) return;
+  const handleDeleteClick = (id: number) => {
+    setDeleteConfirmModal({ isOpen: true, addressId: id });
+  };
+
+  const handleConfirmDelete = async () => {
+    const id = deleteConfirmModal.addressId;
+    if (!id) return;
+
+    setDeleteConfirmModal({ isOpen: false, addressId: null });
     
     try {
       await deleteAddress(id);
@@ -101,6 +112,10 @@ const Addresses: React.FC = () => {
         message: error.message || "Failed to delete address.",
       });
     }
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteConfirmModal({ isOpen: false, addressId: null });
   };
 
   const handleSaveAddress = async () => {
@@ -231,7 +246,7 @@ const Addresses: React.FC = () => {
                               <span className="material-symbols-outlined text-xl">edit</span>
                             </button>
                             <button
-                              onClick={() => handleDelete(address.id!)}
+                              onClick={() => handleDeleteClick(address.id!)}
                               className="text-slate-400 hover:text-red-500 transition-colors"
                               title="Delete"
                             >
@@ -417,6 +432,41 @@ const Addresses: React.FC = () => {
         title={modal.title}
         message={modal.message}
       />
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-6">
+          <div className="w-full max-w-md rounded-xl shadow-2xl overflow-hidden flex flex-col items-center text-center p-8 bg-white dark:bg-[#161d2f] border border-slate-200 dark:border-slate-700">
+            <div className="mb-6">
+              <div className="size-16 rounded-full bg-red-500/10 flex items-center justify-center border border-red-500/20 mx-auto">
+                <span className="material-symbols-outlined text-red-500 text-4xl">delete</span>
+              </div>
+            </div>
+            
+            <div className="space-y-3 mb-8">
+              <h2 className="text-slate-900 dark:text-white text-2xl font-bold">Delete Address?</h2>
+              <p className="text-slate-600 dark:text-slate-400 text-sm">
+                Are you sure you want to delete this address? This action cannot be undone.
+              </p>
+            </div>
+
+            <div className="flex gap-3 w-full">
+              <button
+                onClick={handleCancelDelete}
+                className="flex-1 px-6 py-3 rounded-lg border border-slate-300 dark:border-slate-700 font-medium hover:bg-slate-100 dark:hover:bg-slate-800 transition-all text-slate-900 dark:text-white"
+              >
+                No, Keep It
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                className="flex-1 px-6 py-3 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700 transition-all"
+              >
+                Yes, Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
