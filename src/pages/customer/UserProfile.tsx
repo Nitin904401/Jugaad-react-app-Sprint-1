@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { updateProfile, updateProfileWithPicture } from "../../api/auth";
+import { getVehicles } from "../../api/vehicles";
 import Modal from "../../Components/common/Modal";
 import { useNavigate } from "react-router-dom";
 
@@ -17,6 +18,8 @@ const UserProfile: React.FC = () => {
   const [profilePictureUrl, setProfilePictureUrl] = useState<string>("");
   const [showPhotoOptions, setShowPhotoOptions] = useState(false);
   const [deleteProfilePicture, setDeleteProfilePicture] = useState(false);
+  const [vehicles, setVehicles] = useState<any[]>([]);
+  const [isLoadingVehicles, setIsLoadingVehicles] = useState(true);
   const [modal, setModal] = useState<{
     isOpen: boolean;
     type: "success" | "error";
@@ -35,6 +38,26 @@ const UserProfile: React.FC = () => {
     setPhoneNumber(user?.phone_number || "");
     if (user?.profile_picture) {
       setProfilePictureUrl(user.profile_picture);
+    }
+  }, [user]);
+
+  // Fetch user vehicles
+  useEffect(() => {
+    const fetchVehicles = async () => {
+      try {
+        setIsLoadingVehicles(true);
+        const data = await getVehicles();
+        setVehicles(data || []);
+      } catch (error) {
+        console.error("Failed to fetch vehicles:", error);
+        setVehicles([]);
+      } finally {
+        setIsLoadingVehicles(false);
+      }
+    };
+
+    if (user) {
+      fetchVehicles();
     }
   }, [user]);
 
@@ -400,27 +423,40 @@ const UserProfile: React.FC = () => {
                   </div>
                   
                   <div className="space-y-3">
-                    <div className="flex items-center gap-3 p-3 bg-slate-700/30 rounded-lg">
-                      <div className="w-12 h-8 bg-slate-600 rounded flex items-center justify-center">
-                        <span className="text-xs">🚗</span>
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-medium text-white">2022 Tesla M...</p>
-                        <p className="text-slate-400 text-xs">Plaid • Black</p>
-                      </div>
-                    </div>
+                    {isLoadingVehicles ? (
+                      <div className="text-center py-4 text-slate-400">Loading vehicles...</div>
+                    ) : vehicles.length > 0 ? (
+                      vehicles.slice(0, 2).map((vehicle) => (
+                        <div key={vehicle.id} className="flex items-center gap-3 p-3 bg-slate-700/30 rounded-lg">
+                          {vehicle.vehicle_image ? (
+                            <div 
+                              className="w-12 h-8 bg-slate-600 rounded flex items-center justify-center bg-cover bg-center"
+                              style={{ backgroundImage: `url(http://localhost:5050${vehicle.vehicle_image})` }}
+                            />
+                          ) : (
+                            <div className="w-12 h-8 bg-slate-600 rounded flex items-center justify-center">
+                              <span className="text-xs">🚗</span>
+                            </div>
+                          )}
+                          <div className="flex-1">
+                            <p className="font-medium text-white">
+                              {vehicle.year} {vehicle.make} {vehicle.model}
+                            </p>
+                            <p className="text-slate-400 text-xs">
+                              {vehicle.variant && `${vehicle.variant} • `}
+                              {vehicle.fuel_type || 'Vehicle'}
+                            </p>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-4 text-slate-400">No vehicles added yet</div>
+                    )}
                     
-                    <div className="flex items-center gap-3 p-3 bg-slate-700/30 rounded-lg">
-                      <div className="w-12 h-8 bg-blue-600 rounded flex items-center justify-center">
-                        <span className="text-xs text-white">BMW</span>
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-medium text-white">2018 BMW M4</p>
-                        <p className="text-slate-400 text-xs">Competition • Blue</p>
-                      </div>
-                    </div>
-                    
-                    <button className="w-full flex items-center justify-center gap-2 p-3 border border-dashed border-slate-600 rounded-lg text-slate-400 hover:text-white hover:border-slate-500 transition-colors">
+                    <button 
+                      onClick={() => navigate('/add-vehicle')}
+                      className="w-full flex items-center justify-center gap-2 p-3 border border-dashed border-slate-600 rounded-lg text-slate-400 hover:text-white hover:border-slate-500 transition-colors"
+                    >
                       <span>➕</span>
                       Add Vehicle
                     </button>
